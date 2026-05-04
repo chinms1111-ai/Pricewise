@@ -1,0 +1,133 @@
+flask is a python tool that listen to the internet
+
+flask is like a shop attendant that goes to the store to grab lists and hands it back
+
+the store is the data base(price_wise.db)
+
+duties
+1. he saves transactions to the database like saels and purchase
+2. he logs new prices of things from people or sites recommendation
+3. he gets all the products like the list of products
+4. shows the change in price price log like from old price to new price
+
+n.b 
+the database is Sqlited.
+
+flask : it bring in the shop attendant (it opens the shop)
+request : lets flask read what the user is asking for (it listens to the customers)
+jsonify : converts python data into format the browser understands (it translates what the customers says to what computer understands)
+Sqlite3 : connects to the store room(database)
+data : lets us stamp date on everyprice we save
+render_template : shows the shop display 
+
+
+
+
+
+
+om flask  import Flask, request, jsonify , render_template
+from flask_cors import CORS
+import sqlite3
+from datetime import date
+
+
+# it starts the flask app
+app = Flask(__name__)
+
+# it gives permission to access it like the security guy now frontend html can access the backend python code without any issues
+CORS(app)
+
+
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+ 
+
+def get_db():
+    # opens the door to the database and allows us to interact with it
+    conn = sqlite3.connect('pricewise.db')
+    
+    # it makes the database return as a neat dictionary instead of a messy list, so we can easily access the data by column names
+    conn.row_factory = sqlite3.Row
+    
+    # hands the connection back to whoever called it
+    return conn
+
+
+# when someone knocks/add products and sends data flask answer
+# POST means they are sending info not just asking for it
+@app.route("/add_product", methods=["POST"])
+
+def add_product():
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data received"}), 400
+    
+    name = data.get("name","").strip()
+    
+    if not name:
+        return jsonify({"error": "Product name is required"}), 400
+    
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("INSERT INTO products (name, url) VALUES (?, ?)",
+              (name , data.get("url", "")))
+    
+    conn.commit()
+    product_id = c.lastrowid
+    conn.close()
+    return jsonify({"message": "Product added", "id ": product_id})
+
+
+ 
+
+@app.route("/log_price",methods = ["POST"])
+def log_price():
+    data = request.json
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("INSERT INTO price history (product_id ,price ,date) VALUES (?,?,?)",
+              (data["product_id"] , data["price"] , str(date.today())))
+    conn.commit()
+    conn.close()
+    return jsonify({"message":"Price logged"})
+
+
+# this time we are not sending data using POST we are now asking for data using GET
+@app.route("/products" , methods = ["GET"])
+
+def get_products():
+    conn = get_db()
+    c = conn.cursor()
+    
+    # telling the pen to get everything from the product table 
+    c.execute("SELECT * FROM products")
+    
+    # ot converts every row into a clean dictionary like gets all the row and converts them to another
+    products = [dict(row) for row in c.fetchall()]
+    
+    
+    conn.close()
+    return jsonify(products)
+
+# the <int:product_id> means the url carries a number like history 1 or history 5 from another time
+# and product_id help its only ge details from specified products not everything at once
+@app.route("/history/<int:product_id>", methods= ["GET"])
+def get_history(product_id):
+    conn = get_db()
+    c = conn.cursor()
+    
+    # order by date ASC sort the oldest to newest so the graph shows the direction
+    c.execute("SELECT * FROM price_history WHERE  product_id = ? ORDER BY date ASC",
+                 (product_id))
+    
+    history = [dict(row) for row in c.fetchall()]
+    conn.close()
+    return jsonify(history)
+
+# it prevents the app from from acidently starting it will only run if it starts directy
+if __name__ == "__main__":
+    
+    # app.run starts the shop and debug==trueif something goes wrong or there is an error so it debugs and tells you rather than just crashing 
+    app.run(debug=True)

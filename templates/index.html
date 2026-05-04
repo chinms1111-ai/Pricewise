@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+     
+    <title>PriceWise</title>
+     
+</head>
+ 
+
+<style>
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #0a0a0a;
+        color: white;
+        padding: 20px;
+    }
+
+
+    h1 {
+        text-align: center;
+        color: #f0a500;
+        margin-bottom: 5px;
+        letter-spacing: 2px;
+        font-size: 42px;
+    }
+
+    .subtitle{
+        text-align: center;
+        color: #888;
+        margin-bottom: 30px;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .container {
+        max-width: 850px;
+        margin: auto;
+    }
+
+
+    input {
+        padding : 12px;
+        margin : 5px;
+        border-radius : 8px;
+        border:1px solid #333;
+        width: 250px;
+        background: #1a1a1a;
+        color: white;
+    }
+    
+    button{
+        background: #f0a500;
+        color: black;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 12px 20px;
+        margin: 5px;
+        border-radius: 8px;
+        border: none;
+        transition: background 0.2s;
+    }
+
+    button.hover {background: #ffbb33;}
+
+    .product-card{
+        background : #141414;
+        padding: 20px;
+        margin:15px 0;
+        border-radius : 12px;
+        border: 1px solid #222;
+
+    }
+
+    .product-card h2{
+        color: #f0a500;
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+
+    #buyInsight{
+        background: #1a1a1a;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+        border: 1px solid #333;
+        font-size: 16px;
+    }
+
+</style>
+<body>
+     
+
+
+
+    <div class="container">
+        <h1>PriceWise</h1>
+        <p class="subtitle">TrackPrices . Buy smart,</p>
+    </div>
+
+
+    <!-- Add product form -->
+
+    <div class="product-card">
+        <h2>AddProduct</h2>
+        <input type="text" id="productName" placeholder="Productname e.g nike shoes">
+        <input type="text" id="productUrl" placeholder="JumiaUrl(optional)">
+        <button onclick="addProduct()">AddProduct</button>
+         
+    </div>
+
+    <!-- log price form -->
+     <div class="product-card">
+        <h2>Log a Price</h2>
+        <input type="number" id="productId" placeholder="ProductID">
+        <input type="number" id="priceInput" placeholder="Price e.g $30000">
+        <button onclick="logPrice()">Log Price</button>
+
+
+
+    <!-- product list -->
+    <div class="product-card">
+        <h2>Tracked Products</h2>
+        <div id="productsList">Loading.....</div>
+    </div>
+
+
+    <!-- price history -->
+
+    <div class="product-card">
+        <h2 id="graphTitle">Price History Graph</h2>
+         
+            <canvas id="priceChart" width="800" height="400"></canvas>
+            <div id="buyInsight" style="margin-top: 15px;"></div>
+
+       
+         
+    </div>
+
+
+    <script>
+        let chart = null
+         
+        
+        async function addProduct() {
+            const name = document.getElementById("productName").value;
+            const url = document.getElementById("productUrl").value;
+
+            const response =await fetch("http://127.0.0.1:5000/add_product", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({name, url})
+
+
+            });
+
+            const data = await response.json();
+           
+            loadProducts();
+        }
+
+
+        async function logPrice() {
+            const product_id = document.getElementById("productId").value;
+            const price = document.getElementById("priceInput").value;
+
+
+            const response = await fetch("http://127.0.0.1:5000/log_price",{
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({product_id:product_id, price:price})
+            })
+
+            const data = await response.json();
+            
+        }
+
+        async function loadProducts() {
+            const response = await fetch("http://127.0.0.1:5000/products");
+            const products = await response.json();
+            const div = document.getElementById("productsList");
+
+            if (products.length === 0) {
+                div.innerHTML = "<p>No products yet . Add one above!</p>";
+                return;
+            }
+
+
+            div.innerHTML = products.map(p => `
+                <div style = "margin:10px; padding:10px; border:1px solid white; border-radius:8px;background:black;">
+                    <strong>${p.name}</strong> _ ID: ${p.id} 
+                    <button onclick="loadChart(${p.id}, '${p.name}')" style="margin-left:20px;">
+                        View Graph
+
+                    </button>
+
+                     
+                </div>
+            
+            
+            
+            `).join("");
+                
+             
+                
+        }
+
+        
+        async function loadChart(productId ,productName) {
+            Chart.getChart("priceChart")?.destroy();
+            const response = await fetch(`http://127.0.0.1:5000/history/${productId}`);
+
+            const history = await response.json();
+            const labels = history.map((h, index) => "Entry " +(index + 1)) ;
+            const prices = history.map(h => Number(h.price));
+            document.getElementById("graphTitle").innerHTML = "Price History -" + productName;
+ 
+
+            
+            const canvas = document.getElementById("priceChart");
+           
+            const ctx = canvas.getContext("2d");
+            
+
+            charts = new Chart( ctx,{
+                type: "line",
+                data : {
+                    labels: labels,
+                    datasets: [{
+                        label: "Price History",
+                        data: prices,
+                        borderColor: "#f0a500",
+                        backgroundColor: "blue",
+                        tension: 0.4,
+                        pointBackgroundColor : "#f0a500",
+                        pointRadius : 6,
+                        borderWidth : 3,
+                        fill:true
+                    }]
+                },
+
+                options :{
+                    responsive : false,
+                    
+                    plugins:{
+                        legend:{labels: {color: "white"}}
+
+                    },
+                    scales:{
+                        x : {ticks:{color : "orange"} , grid : {color : "gray"}},
+                        y : {ticks:{color : "orange"} , grid : {color : "gray"}},
+                        
+                    }
+                }
+            });
+            analyzeBestTime(prices)
+            
+            
+        
+        }
+
+
+        function analyzeBestTime(prices) {
+            const current = prices[prices.length - 1];
+            const lowest = Math.min(...prices);
+            const highest = Math.max(...prices);
+            const average = prices.reduce((a , b) => a + b , 0)/ prices.length;
+
+            let message = "";
+            let color = "";
+
+            if (current <= lowest) {
+                message = "🟢 Best time to buy";
+                color = "lightgreen";
+
+            } else if (current >= highest) {
+                message = " 🔴Wait price is at its highest right now"
+                color = "tomato"
+            } else if (current < average) {
+                message = " 🟡Good time to buy . Price is below average"
+                color = "gold"
+
+            } else {
+                message = " 🟠consider waiting . Price si above average"
+                color = "orange"
+            }
+
+            document.getElementById("buyInsight").innerHTML = 
+            `<p style = "color:${color} ,font-size: 18px; font-weight : bold;">${message}</p>`;
+
+        }
+
+        loadProducts();
+
+            
+    </script>
+    
+</body>
+</html>
