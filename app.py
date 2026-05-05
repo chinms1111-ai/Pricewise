@@ -22,6 +22,7 @@ def init_db():
             url TEXT
         )
     ''')
+    c.execute('''DROP TABLE IF EXISTS price_history''')
     c.execute('''
         CREATE TABLE IF NOT EXISTS price_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
