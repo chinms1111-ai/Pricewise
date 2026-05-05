@@ -149,7 +149,7 @@
             const name = document.getElementById("productName").value;
             const url = document.getElementById("productUrl").value;
 
-            const response =await fetch("http://127.0.0.1:5000/add_product", {
+            const response =await fetch("/add_product", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -170,7 +170,7 @@
             const price = document.getElementById("priceInput").value;
 
 
-            const response = await fetch("http://127.0.0.1:5000/log_price",{
+            const response = await fetch("/log_price",{
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -183,7 +183,7 @@
         }
 
         async function loadProducts() {
-            const response = await fetch("http://127.0.0.1:5000/products");
+            const response = await fetch("/products");
             const products = await response.json();
             const div = document.getElementById("productsList");
 
@@ -215,7 +215,7 @@
         
         async function loadChart(productId ,productName) {
             Chart.getChart("priceChart")?.destroy();
-            const response = await fetch(`http://127.0.0.1:5000/history/${productId}`);
+            const response = await fetch(`/history/${productId}`);
 
             const history = await response.json();
             const labels = history.map((h, index) => "Entry " +(index + 1)) ;
