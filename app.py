@@ -18,69 +18,87 @@ def init_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT ,url TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS price_history (
+            name TEXT,
+            url TEXT
+        )
+    ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS price_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            product_id INTEGER,price REAL,date TEXT)''')
+            product_id INTEGER,
+            price REAL,
+            platform TEXT,
+            date TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
-    
+
 init_db()
-    
 
-
- 
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 @app.route("/add_product", methods=["POST"])
 def add_product():
-    data = request.json
-    if not data:
-        return jsonify({"error": "No data received"}), 400
-    name = data.get("name", "").strip()
-    if not name:
-        return jsonify({"error": "Product name required"}), 400
+    data = request.get_json()
+    name = data.get("name")
+    url = data.get("url", "")
+
     conn = get_db()
     c = conn.cursor()
-    c.execute("INSERT INTO products (name, url) VALUES (?, ?)",
-              (name, data.get("url", "")))
+    c.execute("INSERT INTO products (name, url) VALUES (?, ?)", (name, url))
     conn.commit()
-    product_id = c.lastrowid
     conn.close()
-    return jsonify({"message": "Product added ✅", "id": product_id})
+
+    return jsonify({"message": "Product added successfully"})
+
 
 @app.route("/log_price", methods=["POST"])
 def log_price():
-    data = request.json
+    data = request.get_json()
+    product_id = data.get("product_id")
+    price = data.get("price")
+    platform = data.get("platform", "Unknown")
+    today = str(date.today())
+
     conn = get_db()
     c = conn.cursor()
-    c.execute("INSERT INTO price_history (product_id, price, date) VALUES (?, ?, ?)",
-              (data["product_id"], data["price"], str(date.today())))
+    c.execute(
+        "INSERT INTO price_history (product_id, price, platform, date) VALUES (?, ?, ?, ?)",
+        (product_id, price, platform, today)
+    )
     conn.commit()
     conn.close()
-    return jsonify({"message": "Price logged ✅"})
 
-@app.route("/products", methods=["GET"])
-def get_products():
+    return jsonify({"message": "Price logged successfully"})
+
+
+@app.route("/products")
+def products():
     conn = get_db()
     c = conn.cursor()
     c.execute("SELECT * FROM products")
-    products = [dict(row) for row in c.fetchall()]
+    rows = c.fetchall()
     conn.close()
-    return jsonify(products)
 
-@app.route("/history/<int:product_id>", methods=["GET"])
-def get_history(product_id):
+    return jsonify([{"id": r["id"], "name": r["name"], "url": r["url"]} for r in rows])
+
+
+@app.route("/history/<int:product_id>")
+def history(product_id):
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT * FROM price_history WHERE product_id = ? ORDER BY date ASC",
-              (product_id,))
-    history = [dict(row) for row in c.fetchall()]
+    c.execute(
+        "SELECT price, platform, date FROM price_history WHERE product_id = ? ORDER BY id ASC",
+        (product_id,)
+    )
+    rows = c.fetchall()
     conn.close()
-    return jsonify(history)
-
+    
 if __name__ == "__main__":
-    app.run(debug=True) 
+    import os
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

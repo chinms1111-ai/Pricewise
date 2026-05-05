@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-     
     <title>PriceWise</title>
-     
 </head>
- 
 
 <style>
     * {margin: 0; padding: 0; box-sizing: border-box;}
@@ -19,7 +16,6 @@
         padding: 20px;
     }
 
-
     h1 {
         text-align: center;
         color: #f0a500;
@@ -28,7 +24,7 @@
         font-size: 42px;
     }
 
-    .subtitle{
+    .subtitle {
         text-align: center;
         color: #888;
         margin-bottom: 30px;
@@ -41,18 +37,22 @@
         margin: auto;
     }
 
-
-    input {
-        padding : 12px;
-        margin : 5px;
-        border-radius : 8px;
-        border:1px solid #333;
+    input, select {
+        padding: 12px;
+        margin: 5px;
+        border-radius: 8px;
+        border: 1px solid #333;
         width: 250px;
         background: #1a1a1a;
         color: white;
     }
-    
-    button{
+
+    select option {
+        background: #1a1a1a;
+        color: white;
+    }
+
+    button {
         background: #f0a500;
         color: black;
         font-weight: bold;
@@ -64,24 +64,23 @@
         transition: background 0.2s;
     }
 
-    button.hover {background: #ffbb33;}
+    button:hover { background: #ffbb33; }
 
-    .product-card{
-        background : #141414;
+    .product-card {
+        background: #141414;
         padding: 20px;
-        margin:15px 0;
-        border-radius : 12px;
+        margin: 15px 0;
+        border-radius: 12px;
         border: 1px solid #222;
-
     }
 
-    .product-card h2{
+    .product-card h2 {
         color: #f0a500;
         margin-bottom: 15px;
         font-size: 18px;
     }
 
-    #buyInsight{
+    #buyInsight {
         background: #1a1a1a;
         padding: 15px;
         border-radius: 10px;
@@ -90,96 +89,97 @@
         font-size: 16px;
     }
 
+    .chart-wrapper {
+        overflow-x: auto;
+    }
 </style>
+
 <body>
-     
-
-
-
     <div class="container">
         <h1>PriceWise</h1>
-        <p class="subtitle">TrackPrices . Buy smart,</p>
-    </div>
+        <p class="subtitle">Track Prices . Buy Smart.</p>
 
+        <!-- Add Product Form -->
+        <div class="product-card">
+            <h2>Add Product</h2>
+            <input type="text" id="productName" placeholder="Product name e.g Nike Shoes">
+            <input type="text" id="productUrl" placeholder="URL (optional)">
+            <button onclick="addProduct()">Add Product</button>
+        </div>
 
-    <!-- Add product form -->
+        <!-- Log Price Form -->
+        <div class="product-card">
+            <h2>Log a Price</h2>
+            <input type="number" id="productId" placeholder="Product ID">
+            <input type="number" id="priceInput" placeholder="Price e.g 30000">
+            <select id="platformSelect">
+                <option value="" disabled selected>Select Platform</option>
+                <option value="Jumia">Jumia</option>
+                <option value="Konga">Konga</option>
+                <option value="Jiji">Jiji</option>
+            </select>
+            <button onclick="logPrice()">Log Price</button>
+        </div>
 
-    <div class="product-card">
-        <h2>AddProduct</h2>
-        <input type="text" id="productName" placeholder="Productname e.g nike shoes">
-        <input type="text" id="productUrl" placeholder="JumiaUrl(optional)">
-        <button onclick="addProduct()">AddProduct</button>
-         
-    </div>
+        <!-- Product List -->
+        <div class="product-card">
+            <h2>Tracked Products</h2>
+            <div id="productsList">Loading...</div>
+        </div>
 
-    <!-- log price form -->
-     <div class="product-card">
-        <h2>Log a Price</h2>
-        <input type="number" id="productId" placeholder="ProductID">
-        <input type="number" id="priceInput" placeholder="Price e.g $30000">
-        <button onclick="logPrice()">Log Price</button>
-
-
-
-    <!-- product list -->
-    <div class="product-card">
-        <h2>Tracked Products</h2>
-        <div id="productsList">Loading.....</div>
-    </div>
-
-
-    <!-- price history -->
-
-    <div class="product-card">
-        <h2 id="graphTitle">Price History Graph</h2>
-         
-            <canvas id="priceChart" width="800" height="400"></canvas>
+        <!-- Price History Graph -->
+        <div class="product-card">
+            <h2 id="graphTitle">Price History Graph</h2>
+            <div class="chart-wrapper">
+                <canvas id="priceChart" width="800" height="400"></canvas>
+            </div>
             <div id="buyInsight" style="margin-top: 15px;"></div>
+        </div>
 
-       
-         
     </div>
-
 
     <script>
-        let chart = null
-         
-        
+        const PLATFORM_COLORS = {
+            "Jumia": "#f0a500",
+            "Konga": "#00c2ff",
+            "Jiji": "#ff4f4f",
+            "Unknown": "#aaaaaa"
+        };
+
         async function addProduct() {
             const name = document.getElementById("productName").value;
             const url = document.getElementById("productUrl").value;
 
-            const response =await fetch("/add_product", {
+            await fetch("/add_product", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({name, url})
-
-
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, url })
             });
 
-            const data = await response.json();
-           
+            document.getElementById("productName").value = "";
+            document.getElementById("productUrl").value = "";
             loadProducts();
         }
-
 
         async function logPrice() {
             const product_id = document.getElementById("productId").value;
             const price = document.getElementById("priceInput").value;
+            const platform = document.getElementById("platformSelect").value;
 
+            if (!product_id || !price || !platform) {
+                alert("Please fill in Product ID, Price, and Platform.");
+                return;
+            }
 
-            const response = await fetch("/log_price",{
+            await fetch("/log_price", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({product_id:product_id, price:price})
-            })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ product_id, price, platform })
+            });
 
-            const data = await response.json();
-            
+            document.getElementById("priceInput").value = "";
+            document.getElementById("platformSelect").selectedIndex = 0;
+            alert("Price logged successfully!");
         }
 
         async function loadProducts() {
@@ -188,119 +188,131 @@
             const div = document.getElementById("productsList");
 
             if (products.length === 0) {
-                div.innerHTML = "<p>No products yet . Add one above!</p>";
+                div.innerHTML = "<p>No products yet. Add one above!</p>";
                 return;
             }
 
-
             div.innerHTML = products.map(p => `
-                <div style = "margin:10px; padding:10px; border:1px solid white; border-radius:8px;background:black;">
-                    <strong>${p.name}</strong> _ ID: ${p.id} 
+                <div style="margin:10px; padding:10px; border:1px solid #333; border-radius:8px; background:black;">
+                    <strong>${p.name}</strong> — ID: ${p.id}
                     <button onclick="loadChart(${p.id}, '${p.name}')" style="margin-left:20px;">
                         View Graph
-
                     </button>
-
-                     
                 </div>
-            
-            
-            
             `).join("");
-                
-             
-                
         }
 
-        
-        async function loadChart(productId ,productName) {
-            Chart.getChart("priceChart")?.destroy();
+        async function loadChart(productId, productName) {
+            const existing = Chart.getChart("priceChart");
+            if (existing) existing.destroy();
+
             const response = await fetch(`/history/${productId}`);
-
             const history = await response.json();
-            const labels = history.map((h, index) => "Entry " +(index + 1)) ;
-            const prices = history.map(h => Number(h.price));
-            document.getElementById("graphTitle").innerHTML = "Price History -" + productName;
- 
 
-            
-            const canvas = document.getElementById("priceChart");
-           
-            const ctx = canvas.getContext("2d");
-            
+            if (history.length === 0) {
+                document.getElementById("graphTitle").innerHTML = "Price History — " + productName;
+                document.getElementById("buyInsight").innerHTML = "<p style='color:#888'>No price history yet.</p>";
+                return;
+            }
 
-            charts = new Chart( ctx,{
+            const platforms = {};
+            history.forEach((entry, index) => {
+                const p = entry.platform || "Unknown";
+                if (!platforms[p]) platforms[p] = [];
+                platforms[p].push({ x: "Entry " + (index + 1), y: Number(entry.price) });
+            });
+
+            const allLabels = history.map((_, i) => "Entry " + (i + 1));
+
+            const datasets = Object.entries(platforms).map(([platformName, points]) => {
+                const color = PLATFORM_COLORS[platformName] || "#ffffff";
+                const data = allLabels.map(label => {
+                    const found = points.find(p => p.x === label);
+                    return found ? found.y : null;
+                });
+
+                return {
+                    label: platformName,
+                    data: data,
+                    borderColor: color,
+                    backgroundColor: color + "22",
+                    tension: 0.4,
+                    pointBackgroundColor: color,
+                    pointRadius: 6,
+                    borderWidth: 3,
+                    fill: false,
+                    spanGaps: false
+                };
+            });
+
+            document.getElementById("graphTitle").innerHTML = "Price History — " + productName;
+
+            const ctx = document.getElementById("priceChart").getContext("2d");
+            new Chart(ctx, {
                 type: "line",
-                data : {
-                    labels: labels,
-                    datasets: [{
-                        label: "Price History",
-                        data: prices,
-                        borderColor: "#f0a500",
-                        backgroundColor: "blue",
-                        tension: 0.4,
-                        pointBackgroundColor : "#f0a500",
-                        pointRadius : 6,
-                        borderWidth : 3,
-                        fill:true
-                    }]
-                },
-
-                options :{
-                    responsive : false,
-                    
-                    plugins:{
-                        legend:{labels: {color: "white"}}
-
+                data: { labels: allLabels, datasets: datasets },
+                options: {
+                    responsive: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: "white", font: { size: 13 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.dataset.label}: ₦${ctx.parsed.y.toLocaleString()}`
+                            }
+                        }
                     },
-                    scales:{
-                        x : {ticks:{color : "orange"} , grid : {color : "gray"}},
-                        y : {ticks:{color : "orange"} , grid : {color : "gray"}},
-                        
+                    scales: {
+                        x: { ticks: { color: "orange" }, grid: { color: "#222" } },
+                        y: {
+                            ticks: {
+                                color: "orange",
+                                callback: val => "₦" + val.toLocaleString()
+                            },
+                            grid: { color: "#222" }
+                        }
                     }
                 }
             });
-            analyzeBestTime(prices)
-            
-            
-        
+
+            analyzeBestTime(history);
         }
 
+        function analyzeBestTime(history) {
+            const latestByPlatform = {};
+            history.forEach(entry => {
+                latestByPlatform[entry.platform] = Number(entry.price);
+            });
 
-        function analyzeBestTime(prices) {
-            const current = prices[prices.length - 1];
-            const lowest = Math.min(...prices);
-            const highest = Math.max(...prices);
-            const average = prices.reduce((a , b) => a + b , 0)/ prices.length;
+            const entries = Object.entries(latestByPlatform);
+            if (entries.length === 0) return;
 
-            let message = "";
-            let color = "";
+            const cheapest = entries.reduce((a, b) => a[1] < b[1] ? a : b);
+            const allPrices = history.map(h => Number(h.price));
+            const lowest = Math.min(...allPrices);
+            const current = allPrices[allPrices.length - 1];
 
-            if (current <= lowest) {
-                message = "🟢 Best time to buy";
-                color = "lightgreen";
+            let message = `💰 Cheapest right now: <strong>${cheapest[0]}</strong> at ₦${cheapest[1].toLocaleString()}`;
 
-            } else if (current >= highest) {
-                message = " 🔴Wait price is at its highest right now"
-                color = "tomato"
-            } else if (current < average) {
-                message = " 🟡Good time to buy . Price is below average"
-                color = "gold"
-
-            } else {
-                message = " 🟠consider waiting . Price si above average"
-                color = "orange"
+            if (entries.length > 1) {
+                const sorted = [...entries].sort((a, b) => a[1] - b[1]);
+                const comparison = sorted.map(([p, price]) =>
+                    `<span style="color:${PLATFORM_COLORS[p] || '#fff'}">${p}: ₦${price.toLocaleString()}</span>`
+                ).join(" | ");
+                message += `<br><br>${comparison}`;
             }
 
-            document.getElementById("buyInsight").innerHTML = 
-            `<p style = "color:${color} ,font-size: 18px; font-weight : bold;">${message}</p>`;
+            if (current <= lowest) {
+                message += `<br><br>🟢 Price is at its lowest — great time to buy!`;
+            } else {
+                message += `<br><br>🟡 Compare platforms above to get the best deal.`;
+            }
 
+            document.getElementById("buyInsight").innerHTML = `<p>${message}</p>`;
         }
 
         loadProducts();
-
-            
     </script>
-    
 </body>
 </html>
