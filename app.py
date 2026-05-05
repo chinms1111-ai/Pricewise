@@ -22,7 +22,6 @@ def init_db():
             url TEXT
         )
     ''')
-    c.execute('''DROP TABLE IF EXISTS price_history''')
     c.execute('''
         CREATE TABLE IF NOT EXISTS price_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -99,6 +98,8 @@ def history(product_id):
     )
     rows = c.fetchall()
     conn.close()
+    
+    return jsonify([{"price": r["price"], "platform": r["platform"], "date": r["date"]} for r in rows])
     
 if __name__ == "__main__":
     import os
