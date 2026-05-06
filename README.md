@@ -21,6 +21,13 @@ Screenshots
 Dashboard with dark theme and platform comparison graph
 
 Show Image
+## Screenshots
+
+### Dashboard
+![PriceWise Dashboard](screenshots/dashboard1.png)
+
+### Price History Graph
+![PriceWise Graph](screenshots/graph.png)
 
 Tech Stack
 LayerTechnologyBackendPython, FlaskDatabaseSQLiteFrontendHTML, CSS, JavaScriptChartsChart.jsDeploymentRenderVersion ControlGitHub
