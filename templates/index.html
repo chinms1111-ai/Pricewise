@@ -92,6 +92,12 @@
     .chart-wrapper {
         overflow-x: auto;
     }
+
+    .divider {
+        border: none;
+        border-top: 1px solid #222;
+        margin: 20px 0;
+    }
 </style>
 
 <body>
@@ -134,6 +140,16 @@
                 <canvas id="priceChart" width="800" height="400"></canvas>
             </div>
             <div id="buyInsight" style="margin-top: 15px;"></div>
+
+            <!-- Divider -->
+            <hr class="divider">
+
+            <!-- Platform Comparison Bar Chart -->
+            <h2 id="barTitle" style="margin-bottom: 15px;">Platform Price Comparison</h2>
+            <p style="color:#888; font-size:13px; margin-bottom:10px;">Latest price per platform — see where it's cheapest today</p>
+            <div class="chart-wrapper">
+                <canvas id="barChart" width="800" height="300"></canvas>
+            </div>
         </div>
 
     </div>
@@ -206,6 +222,9 @@
             const existing = Chart.getChart("priceChart");
             if (existing) existing.destroy();
 
+            const existingBar = Chart.getChart("barChart");
+            if (existingBar) existingBar.destroy();
+
             const response = await fetch(`/history/${productId}`);
             const history = await response.json();
 
@@ -215,14 +234,15 @@
                 return;
             }
 
+            // --- Line Chart ---
             const platforms = {};
-            history.forEach((entry, index) => {
+            history.forEach((entry) => {
                 const p = entry.platform || "Unknown";
                 if (!platforms[p]) platforms[p] = [];
-                platforms[p].push({ x: "Entry " + (index + 1), y: Number(entry.price) });
+                platforms[p].push({ x: entry.date, y: Number(entry.price) });
             });
 
-            const allLabels = history.map((_, i) => "Entry " + (i + 1));
+            const allLabels = [...new Set(history.map(e => e.date))].sort();
 
             const datasets = Object.entries(platforms).map(([platformName, points]) => {
                 const color = PLATFORM_COLORS[platformName] || "#ffffff";
@@ -254,9 +274,7 @@
                 options: {
                     responsive: false,
                     plugins: {
-                        legend: {
-                            labels: { color: "white", font: { size: 13 } }
-                        },
+                        legend: { labels: { color: "white", font: { size: 13 } } },
                         tooltip: {
                             callbacks: {
                                 label: ctx => `${ctx.dataset.label}: ₦${ctx.parsed.y.toLocaleString()}`
@@ -266,10 +284,7 @@
                     scales: {
                         x: { ticks: { color: "orange" }, grid: { color: "#222" } },
                         y: {
-                            ticks: {
-                                color: "orange",
-                                callback: val => "₦" + val.toLocaleString()
-                            },
+                            ticks: { color: "orange", callback: val => "₦" + val.toLocaleString() },
                             grid: { color: "#222" }
                         }
                     }
@@ -277,6 +292,63 @@
             });
 
             analyzeBestTime(history);
+
+            // --- Bar Chart ---
+            // Get the latest price per platform
+            const latestByPlatform = {};
+            history.forEach(entry => {
+                latestByPlatform[entry.platform || "Unknown"] = Number(entry.price);
+            });
+
+            const barLabels = Object.keys(latestByPlatform);
+            const barData = Object.values(latestByPlatform);
+            const barColors = barLabels.map(p => PLATFORM_COLORS[p] || "#aaaaaa");
+
+            // Highlight the cheapest bar
+            const minPrice = Math.min(...barData);
+            const barBorderColors = barData.map((price, i) =>
+                price === minPrice ? "#ffffff" : barColors[i]
+            );
+            const borderWidths = barData.map(price => price === minPrice ? 3 : 1);
+
+            document.getElementById("barTitle").innerHTML = "Platform Price Comparison — " + productName;
+
+            const barCtx = document.getElementById("barChart").getContext("2d");
+            new Chart(barCtx, {
+                type: "bar",
+                data: {
+                    labels: barLabels,
+                    datasets: [{
+                        label: "Latest Price",
+                        data: barData,
+                        backgroundColor: barColors.map(c => c + "bb"),
+                        borderColor: barBorderColors,
+                        borderWidth: borderWidths,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `₦${ctx.parsed.y.toLocaleString()}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: "orange", font: { size: 14, weight: "bold" } },
+                            grid: { color: "#222" }
+                        },
+                        y: {
+                            ticks: { color: "orange", callback: val => "₦" + val.toLocaleString() },
+                            grid: { color: "#222" }
+                        }
+                    }
+                }
+            });
         }
 
         function analyzeBestTime(history) {
@@ -315,4 +387,4 @@
         loadProducts();
     </script>
 </body>
-</html>
+</html> 
