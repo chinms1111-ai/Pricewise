@@ -1,10 +1,17 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template ,send_from_directory
 from flask_cors import CORS
 import sqlite3
 from datetime import date
 
+
+ 
+
 app = Flask(__name__)
 CORS(app)
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory('static', 'pricewise_logo.svg', mimetype='image/svg+xml')
 
 
 def get_db():
