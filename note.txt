@@ -1,3 +1,7 @@
+ n.b front end is the visible part that  the users serves
+ backend is what handles all the logic and api behind the scene
+
+
 flask is a python tool that listen to the internet
 
 flask is like a shop attendant that goes to the store to grab lists and hands it back
@@ -13,6 +17,12 @@ duties
 n.b 
 the database is Sqlited.
 
+
+
+n.b database.py creates the database using sqlite3
+a database is like a filing cabinet that stores all info and saves them for future use without it u cant save inf or data
+and database.py creates thatcabinet that stores the data which is pricewise.db
+
 flask : it bring in the shop attendant (it opens the shop)
 request : lets flask read what the user is asking for (it listens to the customers)
 jsonify : converts python data into format the browser understands (it translates what the customers says to what computer understands)
@@ -21,12 +31,18 @@ data : lets us stamp date on everyprice we save
 render_template : shows the shop display 
 
 
+from flask  import Flask, request, jsonify , render_template
+# Flask is the main tool that creates your webapp its the foundation of the web app
+#requests is the tool that receivs information from the user when someone clicks the request catches the data
+#jsonify is the tol that convert python data into json format so that javascript frontend can read it its like a translator between python and javascript
+#render_template is the tool that serves or give the browser your html file or your webisite it sends them the webapp
 
 
 
-
-om flask  import Flask, request, jsonify , render_template
+ 
 from flask_cors import CORS
+n.b CORS stands for Cross origin resources sharing
+
 import sqlite3
 from datetime import date
 

@@ -2,11 +2,16 @@ from flask import Flask, request, jsonify, render_template ,send_from_directory
 from flask_cors import CORS
 import sqlite3
 from datetime import date
+from agent import ask_agent
+
 
 
  
-
+ 
+# it is the entire web application, it is the main entry point of the application and it is responsible for handling all the routes and logic of the application
 app = Flask(__name__)
+
+# CORS wraps the app so it doesnt get blocked by the browser when we make requests from the frontend to the backend, it allows cross-origin requests which means we can make requests from a different domain or port without getting blocked by the browser's same-origin policy
 CORS(app)
 
 @app.route('/favicon.ico')
@@ -108,6 +113,16 @@ def history(product_id):
     
     return jsonify([{"price": r["price"], "platform": r["platform"], "date": r["date"]} for r in rows])
     
+    
+@app.route("/ask", methods=["POST"])
+def ask():
+    data = request.get_json()
+    question = data.get("question")
+    role = data.get("role", "consumer")
+    answer = ask_agent(question, role)
+    return jsonify({"answer": answer})
+
+
 if __name__ == "__main__":
     import os
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

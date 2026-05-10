@@ -154,6 +154,25 @@
             </div>
         </div>
 
+
+        <div class="product-card">
+            <h2>🤖 PriceWise Agent</h2>
+            <p style="color:#888; font-size:13px; margin-bottom:15px;">Ask anything about commodity prices in Nigeria</p>
+            <div style="margin-bottom:10px;">
+                <label style="color:#888; font-size:13px;">I am a:</label><br><br>
+                <button id="roleConsumer" onclick="setRole('consumer')" style="background:#333; color:white; margin-right:10px;">🛒 Consumer</button>
+                <button id="roleTrader" onclick="setRole('trader')" style="background:#333; color:white; margin-right:10px;">📦 Trader</button>
+                <button id="roleSmallBiz" onclick="setRole('small_business')" style="background:#333; color:white;">🏪 Small Business</button>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <input type="text" id="agentQuestion" placeholder="e.g Should I buy rice now?" style="width:100%;">
+                <button onclick="askAgent()">Ask</button>
+            </div>
+            <div id="agentAnswer" style="margin-top:15px; padding:15px; background:#1a1a1a; border-radius:10px; border:1px solid #333; display:none; line-height:1.7;">
+
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -385,6 +404,40 @@
 
             document.getElementById("buyInsight").innerHTML = `<p>${message}</p>`;
         }
+
+        let userRole = "consumer";
+        function setRole(role) {
+            userRole = role;
+            // Reset all buttons
+            document.getElementById("roleConsumer").style.background = "#333";
+            document.getElementById("roleTrader").style.background = "#333";
+            document.getElementById("roleSmallBiz").style.background = "#333";
+            // Highlight selected
+            const map = {
+                "consumer": "roleConsumer",
+                "trader": "roleTrader",
+                "small_business": "roleSmallBiz"
+            };
+            document.getElementById(map[role]).style.background = "#f0a500";
+            document.getElementById(map[role]).style.color = "black";
+        }
+        async function askAgent() {
+            const question = document.getElementById("agentQuestion").value;
+            if (!question) return;
+            const answerDiv = document.getElementById("agentAnswer");
+            answerDiv.style.display = "block";
+            answerDiv.innerHTML = "🤔 Thinking...";
+            const response = await fetch("/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question, role: userRole })
+            });
+            const data = await response.json();
+            answerDiv.innerHTML = data.answer.replace(/\n/g, "<br>")
+        }
+
+
+        
 
         loadProducts();
     </script>
