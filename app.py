@@ -43,6 +43,19 @@ def init_db():
             date TEXT
         )
     ''')
+    
+    c.execute('''
+              CREATE TABLE IF NOT EXISTS user_sessions (
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  session_id TEXT NOT NULL,
+                  role TEXT,
+                  commodities TEXT,
+                  questions TEXT,
+                  last_seen TEXT
+        )
+    ''')
+    
+    
     conn.commit()
     conn.close()
 

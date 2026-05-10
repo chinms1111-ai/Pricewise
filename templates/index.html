@@ -421,20 +421,28 @@
             document.getElementById(map[role]).style.background = "#f0a500";
             document.getElementById(map[role]).style.color = "black";
         }
+
+
         async function askAgent() {
             const question = document.getElementById("agentQuestion").value;
             if (!question) return;
+            let sessionId = localStorage.getItem("pricewise_session");
+            if (!sessionId) {
+                sessionId = "user_" + Date.now();
+                localStorage.setItem("pricewise_session", sessionId);
+            }
             const answerDiv = document.getElementById("agentAnswer");
             answerDiv.style.display = "block";
             answerDiv.innerHTML = "🤔 Thinking...";
             const response = await fetch("/ask", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question, role: userRole })
+                body: JSON.stringify({ question, role: userRole, session_id: sessionId })
             });
             const data = await response.json();
-            answerDiv.innerHTML = data.answer.replace(/\n/g, "<br>")
+            answerDiv.innerHTML = data.answer.replace(/\n/g, "<br>");
         }
+         
 
 
         
