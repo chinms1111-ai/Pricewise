@@ -1,7 +1,12 @@
 import sqlite3
 from groq import Groq
+import os
+from dotenv import load_dotenv
 
-client = Groq(api_key="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")
+
+load_dotenv()
+
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def get_db():
     conn = sqlite3.connect("pricewise.db")
