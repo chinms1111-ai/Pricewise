@@ -144,7 +144,7 @@ def get_history(product_id):
 
 
 
-    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
+     
 
 # it prevents the app from from acidently starting it will only run if it starts directy
 if __name__ == "__main__":
