@@ -421,31 +421,54 @@
             document.getElementById(map[role]).style.background = "#f0a500";
             document.getElementById(map[role]).style.color = "black";
         }
-
-
+        let chatHistory = [];
         async function askAgent() {
             const question = document.getElementById("agentQuestion").value;
             if (!question) return;
+            document.getElementById("agentQuestion").value = "";
+            // Add user message to history
+            chatHistory.push({ role: "user", content: question });
+            // Display user message
+            const answerDiv = document.getElementById("agentAnswer");
+            answerDiv.style.display = "block";
+            answerDiv.innerHTML += `
+            <div style="margin-bottom:10px; text-align:right;">
+                <span style="background:#f0a500; color:black; padding:8px 12px; border-radius:10px; display:inline-block; max-width:80%;">${question}</span>
+            </div>
+            <div id="thinking" style="color:#888; margin-bottom:10px;">🤔 Thinking...</div>
+            `;
+            answerDiv.scrollTop = answerDiv.scrollHeight;
             let sessionId = localStorage.getItem("pricewise_session");
             if (!sessionId) {
                 sessionId = "user_" + Date.now();
                 localStorage.setItem("pricewise_session", sessionId);
             }
-            const answerDiv = document.getElementById("agentAnswer");
-            answerDiv.style.display = "block";
-            answerDiv.innerHTML = "🤔 Thinking...";
             const response = await fetch("/ask", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question, role: userRole, session_id: sessionId })
+                body: JSON.stringify({ 
+                    question, 
+                    role: userRole, 
+                    session_id: sessionId,
+                    history: chatHistory
+                })
             });
             const data = await response.json();
-            answerDiv.innerHTML = data.answer.replace(/\n/g, "<br>");
+            // Add agent response to history
+            chatHistory.push({ role: "assistant", content: data.answer });
+            // Remove thinking and add response
+            document.getElementById("thinking").remove();
+            answerDiv.innerHTML += `
+            <div style="margin-bottom:15px;">
+                <span style="color:#f0a500; font-size:12px;">🤖 PriceWise Agent</span><br>
+                <span style="display:inline-block; max-width:90%; line-height:1.7;">${data.answer.replace(/\n/g, "<br>")}</span>
+            </div>
+            `;
+            answerDiv.scrollTop = answerDiv.scrollHeight;
         }
+
+
          
-
-
-        
 
         loadProducts();
     </script>

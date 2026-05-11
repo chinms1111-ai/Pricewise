@@ -127,12 +127,15 @@ def history(product_id):
     return jsonify([{"price": r["price"], "platform": r["platform"], "date": r["date"]} for r in rows])
     
     
+    
 @app.route("/ask", methods=["POST"])
 def ask():
     data = request.get_json()
     question = data.get("question")
     role = data.get("role", "consumer")
-    answer = ask_agent(question, role)
+    session_id = data.get("session_id", "default")
+    history = data.get("history", [])
+    answer = ask_agent(question, role, session_id, history)
     return jsonify({"answer": answer})
 
 
