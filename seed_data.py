@@ -12,6 +12,7 @@ def seed():
     # Clear existing data
     c.execute("DELETE FROM price_history")
     c.execute("DELETE FROM products")
+    c.execute("DELETE FROM state_prices")
     conn.commit()
  
     commodities = [
@@ -29,29 +30,26 @@ def seed():
  
     # ─────────────────────────────────────────────
     # RICE (50kg bag) — Real NBS verified data
-    # Sources: NBS Selected Food Price Watch Reports
-    # Platform prices: Online slightly above NBS national avg
     # ─────────────────────────────────────────────
     rice_id = products["Rice (50kg bag)"]
     rice_data = [
-        # date, Online(Jumia), Market(open market), Wholesale
         ("2023-05-01", 28500, 27759, 25000),
         ("2023-06-01", 29500, 28800, 26000),
         ("2023-07-01", 31000, 30200, 27500),
         ("2023-08-01", 33000, 32100, 29000),
-        ("2023-09-01", 39000, 37853, 34000),   # NBS: N37,853 verified
+        ("2023-09-01", 39000, 37853, 34000),
         ("2023-10-01", 42000, 40500, 37000),
         ("2023-11-01", 45000, 43350, 39500),
-        ("2023-12-01", 48000, 45897, 42000),   # NBS: N45,897 verified
-        ("2024-01-01", 53000, 51090, 47000),   # NBS: N51,090 verified
-        ("2024-02-01", 63000, 61149, 56000),   # NBS: N61,149 verified
-        ("2024-03-01", 69000, 67037, 62000),   # NBS: N67,037 verified
-        ("2024-04-01", 72000, 69967, 65000),   # NBS: N69,967 verified
-        ("2024-05-01", 83000, 80445, 75000),   # NBS: N80,445 verified
+        ("2023-12-01", 48000, 45897, 42000),
+        ("2024-01-01", 53000, 51090, 47000),
+        ("2024-02-01", 63000, 61149, 56000),
+        ("2024-03-01", 69000, 67037, 62000),
+        ("2024-04-01", 72000, 69967, 65000),
+        ("2024-05-01", 83000, 80445, 75000),
         ("2024-06-01", 87000, 85000, 79000),
         ("2024-07-01", 91000, 88500, 82000),
         ("2024-08-01", 94000, 91200, 85000),
-        ("2024-09-01", 98000, 95738, 89000),   # NBS: N95,738 verified
+        ("2024-09-01", 98000, 95738, 89000),
         ("2024-10-01", 100000, 97200, 91000),
         ("2024-11-01", 101000, 97990, 92000),
         ("2024-12-01", 100000, 97220, 91000),
@@ -68,8 +66,8 @@ def seed():
         ("2025-11-01", 106000, 103000, 96000),
         ("2025-12-01", 107000, 104000, 97000),
         ("2026-01-01", 108000, 105000, 98000),
-        ("2026-02-01", 96000, 92946, 87000),   # NBS: N92,946 verified
-        ("2026-03-01", 115000, 112000, 105000), # NBS: N112,000 verified
+        ("2026-02-01", 96000, 92946, 87000),
+        ("2026-03-01", 115000, 112000, 105000),
         ("2026-04-01", 118000, 115000, 108000),
         ("2026-05-01", 120000, 117000, 110000),
     ]
@@ -101,8 +99,8 @@ def seed():
         ("2024-05-01", 1500, 1420, 1310),
         ("2024-06-01", 1520, 1440, 1330),
         ("2024-07-01", 1530, 1450, 1340),
-        ("2024-08-01", 1540, 1460, 1350),   # NBS: N1,459.85 verified
-        ("2024-09-01", 1610, 1528, 1410),   # NBS: N1,528.19 verified
+        ("2024-08-01", 1540, 1460, 1350),
+        ("2024-09-01", 1610, 1528, 1410),
         ("2024-10-01", 1630, 1550, 1430),
         ("2024-11-01", 1650, 1570, 1450),
         ("2024-12-01", 1660, 1580, 1460),
@@ -134,13 +132,10 @@ def seed():
  
     # ─────────────────────────────────────────────
     # FUEL (per litre) — Real verified pump prices
-    # Source: NNPCL official prices + market reality
     # ─────────────────────────────────────────────
     fuel_id = products["Fuel (per litre)"]
     fuel_data = [
-        # Pre subsidy removal
         ("2023-05-01", 190, 185, 183),
-        # June 2023 — subsidy removed at inauguration
         ("2023-06-01", 490, 480, 468),
         ("2023-07-01", 520, 510, 498),
         ("2023-08-01", 550, 540, 528),
@@ -156,7 +151,6 @@ def seed():
         ("2024-06-01", 890, 880, 868),
         ("2024-07-01", 910, 900, 888),
         ("2024-08-01", 960, 950, 938),
-        # Sep 2024 — price adjustment
         ("2024-09-01", 1030, 1020, 1008),
         ("2024-10-01", 1040, 1030, 1018),
         ("2024-11-01", 1060, 1050, 1038),
@@ -173,10 +167,9 @@ def seed():
         ("2025-10-01", 1260, 1250, 1238),
         ("2025-11-01", 1270, 1260, 1248),
         ("2025-12-01", 1280, 1270, 1258),
-        # 2026 — Middle East crisis drives prices up
         ("2026-01-01", 1290, 1280, 1268),
         ("2026-02-01", 1300, 1290, 1278),
-        ("2026-03-01", 1320, 1310, 1298),  # NBS: above N1,300 verified
+        ("2026-03-01", 1320, 1310, 1298),
         ("2026-04-01", 1350, 1340, 1328),
         ("2026-05-01", 1380, 1370, 1358),
     ]
@@ -188,6 +181,68 @@ def seed():
                 (fuel_id, price, platform, entry_date)
             )
  
+    # ─────────────────────────────────────────────
+    # STATE PRICES — May 2026 (current snapshot)
+    # Logic: national avg adjusted by regional factors
+    # Kano/North — production zones, cheaper
+    # Lagos/Abuja — high demand + transport premium
+    # Onitsha — major trading hub, competitive
+    # Port Harcourt — oil city, fuel cheaper, food expensive
+    # ─────────────────────────────────────────────
+ 
+    today = "2026-05-01"
+ 
+    # RICE state prices (national open market avg: ₦117,000)
+    rice_state_prices = [
+        ("Kano",          96000,  "Open Market"),   # production zone, northern grain belt
+        ("Kaduna",        99000,  "Open Market"),   # northern, close to supply
+        ("Onitsha",       103000, "Open Market"),   # major trading hub, competitive
+        ("Ibadan",        108000, "Open Market"),   # southwest, mid-range
+        ("Port Harcourt", 112000, "Open Market"),   # south-south, transport costs
+        ("Lagos",         120000, "Open Market"),   # highest demand, transport premium
+        ("Abuja",         117000, "Open Market"),   # federal capital premium
+        ("Enugu",         106000, "Open Market"),   # southeast, moderate
+    ]
+ 
+    # BREAD state prices (national open market avg: ₦1,670)
+    bread_state_prices = [
+        ("Kano",          1420, "Open Market"),
+        ("Kaduna",        1450, "Open Market"),
+        ("Onitsha",       1500, "Open Market"),
+        ("Ibadan",        1550, "Open Market"),
+        ("Port Harcourt", 1620, "Open Market"),
+        ("Lagos",         1750, "Open Market"),
+        ("Abuja",         1700, "Open Market"),
+        ("Enugu",         1530, "Open Market"),
+    ]
+ 
+    # FUEL state prices (national open market avg: ₦1,370)
+    # Port Harcourt cheapest — near refineries
+    # Lagos most expensive — high demand
+    fuel_state_prices = [
+        ("Kano",          1410, "Open Market"),
+        ("Kaduna",        1390, "Open Market"),
+        ("Onitsha",       1360, "Open Market"),
+        ("Ibadan",        1350, "Open Market"),
+        ("Port Harcourt", 1290, "Open Market"),   # refinery proximity
+        ("Lagos",         1420, "Open Market"),   # highest demand
+        ("Abuja",         1380, "Open Market"),
+        ("Enugu",         1370, "Open Market"),
+    ]
+ 
+    state_data = [
+        (rice_id,  rice_state_prices),
+        (bread_id, bread_state_prices),
+        (fuel_id,  fuel_state_prices),
+    ]
+ 
+    for product_id, state_list in state_data:
+        for state, price, platform in state_list:
+            c.execute(
+                "INSERT INTO state_prices (product_id, state, price, platform, date, source) VALUES (?, ?, ?, ?, ?, ?)",
+                (product_id, state, price, platform, today, "seeded")
+            )
+ 
     conn.commit()
     conn.close()
     print("✅ Real NBS data seeded successfully!")
@@ -196,5 +251,6 @@ def seed():
     print("⛽ Fuel: 37 months (May 2023 - May 2026)")
     print("🏪 Platforms: Online, Open Market, Wholesale")
     print("📌 Source: NBS Selected Food Price Watch Reports")
+    print("🗺️  State prices: 8 states seeded for arbitrage detection")
  
 seed()

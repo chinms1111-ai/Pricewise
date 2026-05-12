@@ -140,4 +140,4 @@ def migrate_community_tables():
  
  
 init_db()
-migrate_community_tables()  # ← runs once on deploy to fix Render's old schema
+ 
