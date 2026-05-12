@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PriceWise — Seller Registration</title>
+    <style>
+        * {margin: 0; padding: 0; box-sizing: border-box;}
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0a0a0a;
+            color: white;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #f0a500;
+            margin-bottom: 5px;
+            font-size: 36px;
+            letter-spacing: 2px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .card {
+            background: #141414;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #222;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: #f0a500;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        input, select {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 100%;
+            background: #1a1a1a;
+            color: white;
+            font-size: 14px;
+        }
+        select option {background: #1a1a1a;}
+        label {
+            color: #aaa;
+            font-size: 13px;
+            margin-top: 10px;
+            display: block;
+        }
+        .checkbox-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1a1a1a;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            cursor: pointer;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            accent-color: #f0a500;
+        }
+        .seller-type-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .type-btn {
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #333;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .type-btn.selected {
+            background: #f0a500;
+            color: black;
+            font-weight: bold;
+            border-color: #f0a500;
+        }
+        button[type="submit"], .submit-btn {
+            background: #f0a500;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 14px;
+            width: 100%;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        button[type="submit"]:hover, .submit-btn:hover {background: #ffbb33;}
+        .back-link {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .back-link a {
+            color: #f0a500;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* Step indicators */
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 30px;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+        .step.active { color: #f0a500; }
+        .step.done { color: #4caf50; }
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #222;
+            border: 1px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .step.active .step-num { background: #f0a500; color: black; border-color: #f0a500; }
+        .step.done .step-num { background: #1a3a1a; color: #4caf50; border-color: #2a6a2a; }
+        .step-divider {
+            width: 40px;
+            height: 1px;
+            background: #333;
+            margin: 0 8px;
+            align-self: center;
+        }
+
+        /* Price entry rows */
+        .price-row {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .price-row .commodity-label {
+            color: #f0a500;
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+        .price-row-fields {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .price-row-fields input {
+            flex: 1;
+            min-width: 120px;
+            margin: 0;
+        }
+        .price-row-fields select {
+            flex: 1;
+            min-width: 130px;
+            margin: 0;
+        }
+
+        /* Success state */
+        #successMsg {
+            display: none;
+            background: #1a3a1a;
+            border: 1px solid #2a6a2a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        #successMsg h3 {color: #4caf50; margin-bottom: 10px;}
+        #successMsg p {color: #aaa; font-size: 14px;}
+
+        /* Price submission success */
+        #priceSuccessMsg {
+            display: none;
+            background: #1a3a1a;
+            border: 1px solid #2a6a2a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        #priceSuccessMsg h3 {color: #4caf50; margin-bottom: 10px;}
+        #priceSuccessMsg p {color: #aaa; font-size: 14px;}
+
+        /* Step sections */
+        #step2Section { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PriceWise</h1>
+        <p class="subtitle">Seller Registration</p>
+
+        <div class="back-link">
+            <a href="/">← Back to Main App</a>
+        </div>
+
+        <!-- Step indicator -->
+        <div class="steps">
+            <div class="step active" id="stepIndicator1">
+                <div class="step-num">1</div>
+                <span>Your Details</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step" id="stepIndicator2">
+                <div class="step-num">2</div>
+                <span>List Your Prices</span>
+            </div>
+        </div>
+
+
+        <!-- ═══════════ STEP 1: Registration ═══════════ -->
+        <div id="step1Section">
+            <div class="card">
+                <h2>👤 Personal Information</h2>
+                <label>Full Name *</label>
+                <input type="text" id="fullName" placeholder="e.g Emeka Okonkwo">
+
+                <label>Business Name (optional)</label>
+                <input type="text" id="businessName" placeholder="e.g Emeka Rice Depot">
+
+                <label>Phone Number *</label>
+                <input type="tel" id="phone" placeholder="e.g 08012345678">
+            </div>
+
+            <div class="card">
+                <h2>📍 Location</h2>
+                <label>Market / Street Name *</label>
+                <input type="text" id="location" placeholder="e.g Mile 12 Market">
+
+                <label>Area *</label>
+                <input type="text" id="area" placeholder="e.g Kosofe">
+
+                <label>LGA *</label>
+                <input type="text" id="lga" placeholder="e.g Kosofe LGA">
+
+                <label>State *</label>
+                <select id="state">
+                    <option value="" disabled selected>Select State</option>
+                    <option>Lagos</option>
+                    <option>Abuja (FCT)</option>
+                    <option>Rivers</option>
+                    <option>Kano</option>
+                    <option>Oyo</option>
+                    <option>Anambra</option>
+                    <option>Delta</option>
+                    <option>Enugu</option>
+                    <option>Kaduna</option>
+                    <option>Imo</option>
+                    <option>Abia</option>
+                    <option>Ogun</option>
+                    <option>Osun</option>
+                    <option>Ekiti</option>
+                    <option>Ondo</option>
+                    <option>Edo</option>
+                    <option>Benue</option>
+                    <option>Plateau</option>
+                    <option>Nasarawa</option>
+                    <option>Niger</option>
+                    <option>Kwara</option>
+                    <option>Kogi</option>
+                    <option>Taraba</option>
+                    <option>Adamawa</option>
+                    <option>Gombe</option>
+                    <option>Bauchi</option>
+                    <option>Yobe</option>
+                    <option>Borno</option>
+                    <option>Sokoto</option>
+                    <option>Kebbi</option>
+                    <option>Zamfara</option>
+                    <option>Jigawa</option>
+                    <option>Katsina</option>
+                    <option>Cross River</option>
+                    <option>Akwa Ibom</option>
+                    <option>Bayelsa</option>
+                    <option>Ebonyi</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <h2>🏪 Seller Type</h2>
+                <div class="seller-type-group">
+                    <button class="type-btn" onclick="selectType('Individual Seller')">👤 Individual Seller</button>
+                    <button class="type-btn" onclick="selectType('Retailer')">🏪 Retailer</button>
+                    <button class="type-btn" onclick="selectType('Wholesaler')">📦 Wholesaler</button>
+                </div>
+                <input type="hidden" id="sellerType" value="">
+            </div>
+
+            <div class="card">
+                <h2>🛒 What do you sell?</h2>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="Rice (50kg bag)"> 🌾 Rice
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="Bread (sliced loaf)"> 🍞 Bread
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="Fuel (per litre)"> ⛽ Fuel
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" onclick="registerSeller()">Continue — List My Prices →</button>
+        </div>
+
+
+        <!-- ═══════════ STEP 2: Price Submission ═══════════ -->
+        <div id="step2Section">
+            <div class="card">
+                <h2>✅ Registered! Now list your prices</h2>
+                <p style="color:#aaa; font-size:14px; margin-bottom:5px;">
+                    Seller ID: <strong id="sellerIdDisplay" style="color:#f0a500;"></strong>
+                </p>
+                <p style="color:#888; font-size:13px; margin-top:8px; line-height:1.6;">
+                    Enter today's prices for the commodities you sell. Buyers on PriceWise will see your prices and the AI agent will use them to give real-time advice.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>💰 Your Current Prices</h2>
+                <p style="color:#888; font-size:13px; margin-bottom:20px;">Fill in the price for each commodity you sell. Leave blank if you don't sell it.</p>
+
+                <div id="priceFields">
+                    <!-- Dynamically generated based on selected commodities -->
+                </div>
+
+                <label style="margin-top:16px;">Platform / Market Type</label>
+                <select id="pricePlatform">
+                    <option value="Open Market">Open Market</option>
+                    <option value="Wholesale">Wholesale</option>
+                    <option value="Online">Online</option>
+                    <option value="Retail Shop">Retail Shop</option>
+                </select>
+            </div>
+
+            <button class="submit-btn" onclick="submitPrices()">Submit My Prices 🚀</button>
+
+            <div id="priceSuccessMsg">
+                <h3>🎉 You're live on PriceWise!</h3>
+                <p>Your prices are now visible to buyers and the AI agent will use them for advice.</p>
+                <p style="margin-top:15px;">
+                    <a href="/" style="color:#f0a500;">← Go to main app</a>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    <a href="/seller" style="color:#aaa;">Register another seller</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let selectedType = "";
+        let registeredSellerId = null;
+        let registeredState = "";
+        let selectedCommodities = [];
+
+        // Unit defaults per commodity
+        const COMMODITY_UNITS = {
+            "Rice (50kg bag)": "50kg bag",
+            "Bread (sliced loaf)": "sliced loaf",
+            "Fuel (per litre)": "litre"
+        };
+
+        function selectType(type) {
+            selectedType = type;
+            document.getElementById("sellerType").value = type;
+            document.querySelectorAll(".type-btn").forEach(btn => {
+                btn.classList.remove("selected");
+                if (btn.textContent.includes(type.split(" ")[0]) || btn.textContent.includes(type)) {
+                    btn.classList.add("selected");
+                }
+            });
+        }
+
+        async function registerSeller() {
+            const fullName = document.getElementById("fullName").value.trim();
+            const businessName = document.getElementById("businessName").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const location = document.getElementById("location").value.trim();
+            const area = document.getElementById("area").value.trim();
+            const lga = document.getElementById("lga").value.trim();
+            const state = document.getElementById("state").value;
+            const sellerType = document.getElementById("sellerType").value;
+
+            const checkboxes = document.querySelectorAll(".checkbox-group input[type='checkbox']:checked");
+            selectedCommodities = Array.from(checkboxes).map(cb => cb.value);
+
+            if (!fullName || !phone || !location || !area || !lga || !state || !sellerType || selectedCommodities.length === 0) {
+                alert("Please fill in all required fields and select at least one commodity.");
+                return;
+            }
+
+            registeredState = state;
+
+            const response = await fetch("/register_seller", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    full_name: fullName,
+                    business_name: businessName,
+                    phone, location, area, lga, state,
+                    seller_type: sellerType,
+                    commodities: JSON.stringify(selectedCommodities)
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.seller_id) {
+                registeredSellerId = data.seller_id;
+                goToStep2(data.seller_id);
+            } else {
+                alert("Something went wrong. Please try again.");
+            }
+        }
+
+        function goToStep2(sellerId) {
+            // Update step indicators
+            document.getElementById("stepIndicator1").classList.remove("active");
+            document.getElementById("stepIndicator1").classList.add("done");
+            document.getElementById("stepIndicator2").classList.add("active");
+
+            // Hide step 1, show step 2
+            document.getElementById("step1Section").style.display = "none";
+            document.getElementById("step2Section").style.display = "block";
+
+            // Show seller ID
+            document.getElementById("sellerIdDisplay").textContent = "PW-" + sellerId;
+
+            // Build price input fields for each selected commodity
+            buildPriceFields();
+
+            window.scrollTo(0, 0);
+        }
+
+        function buildPriceFields() {
+            const container = document.getElementById("priceFields");
+            container.innerHTML = "";
+
+            selectedCommodities.forEach(commodity => {
+                const unit = COMMODITY_UNITS[commodity] || "";
+                const emoji = commodity.includes("Rice") ? "🌾" :
+                              commodity.includes("Bread") ? "🍞" :
+                              commodity.includes("Fuel") ? "⛽" : "📦";
+
+                container.innerHTML += `
+                    <div class="price-row">
+                        <div class="commodity-label">${emoji} ${commodity}</div>
+                        <div class="price-row-fields">
+                            <input
+                                type="number"
+                                id="price_${commodity.replace(/[^a-z0-9]/gi, '_')}"
+                                placeholder="Your price in ₦"
+                                min="0"
+                            >
+                        </div>
+                        <p style="color:#555; font-size:12px; margin-top:8px;">Per ${unit}</p>
+                    </div>
+                `;
+            });
+        }
+
+        async function submitPrices() {
+            if (!registeredSellerId) {
+                alert("Seller ID missing. Please refresh and try again.");
+                return;
+            }
+
+            const platform = document.getElementById("pricePlatform").value;
+            const prices = [];
+
+            for (const commodity of selectedCommodities) {
+                const inputId = "price_" + commodity.replace(/[^a-z0-9]/gi, '_');
+                const input = document.getElementById(inputId);
+                const price = input ? input.value.trim() : "";
+
+                if (price && Number(price) > 0) {
+                    prices.push({
+                        commodity: commodity,
+                        price: Number(price),
+                        unit: COMMODITY_UNITS[commodity] || "",
+                        platform: platform
+                    });
+                }
+            }
+
+            if (prices.length === 0) {
+                alert("Please enter at least one price before submitting.");
+                return;
+            }
+
+            const response = await fetch("/submit_price", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    seller_id: registeredSellerId,
+                    state: registeredState,
+                    prices: prices
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.inserted > 0) {
+                document.querySelector(".submit-btn").style.display = "none";
+                document.getElementById("priceSuccessMsg").style.display = "block";
+                window.scrollTo(0, document.body.scrollHeight);
+            } else {
+                alert("Something went wrong submitting prices. Please try again.");
+            }
+        }
+    </script>
+</body>
+</html>

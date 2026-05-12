@@ -6,8 +6,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>PriceWise</title>
     <link rel="icon" type="image/svg+xml" href="/static/pricewise_logo.svg">
-     
-     
 </head>
 
 <style>
@@ -101,31 +99,143 @@
         border-top: 1px solid #222;
         margin: 20px 0;
     }
+
+    /* Community prices panel */
+    .community-price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        background: #1a1a1a;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        border: 1px solid #2a2a2a;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .community-price-row:hover {
+        border-color: #f0a500;
+        background: #1e1e1e;
+    }
+    .community-commodity {
+        font-size: 13px;
+        color: #f0a500;
+        font-weight: bold;
+        min-width: 140px;
+    }
+    .community-price-val {
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+    }
+    .community-meta {
+        font-size: 12px;
+        color: #666;
+        text-align: right;
+    }
+    .community-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        background: #1a2a1a;
+        color: #4caf50;
+        border: 1px solid #2a4a2a;
+    }
+    .community-badge.seller-type-wholesaler {
+        background: #1a1a2a;
+        color: #6ab0ff;
+        border-color: #2a2a4a;
+    }
+    .community-badge.seller-type-retailer {
+        background: #2a2a1a;
+        color: #f0c040;
+        border-color: #4a4a1a;
+    }
+    .no-community-msg {
+        text-align: center;
+        padding: 30px 20px;
+        color: #555;
+    }
+    .no-community-msg .cta-link {
+        color: #f0a500;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    .community-filter-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+    .filter-tab {
+        background: #1a1a1a;
+        color: #888;
+        border: 1px solid #333;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: normal;
+    }
+    .filter-tab.active {
+        background: #f0a500;
+        color: black;
+        border-color: #f0a500;
+        font-weight: bold;
+    }
+
+    /* Seller CTA banner */
+    .seller-cta {
+        background: linear-gradient(135deg, #1a1400, #141414);
+        border: 1px solid #f0a500;
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .seller-cta p {
+        color: #aaa;
+        font-size: 13px;
+    }
+    .seller-cta a {
+        background: #f0a500;
+        color: black;
+        font-weight: bold;
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+    .seller-cta a:hover { background: #ffbb33; }
 </style>
 
 <body>
-
-    <!-- Welcome Modal -->
+    <!-- Welcome Modal — simplified to one button -->
     <div id="welcomeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background:#141414; border:1px solid #f0a500; border-radius:16px; padding:40px; max-width:500px; width:90%; text-align:center;">
-            <div style="font-size:48px; margin-bottom:10px;">🤖</div>
-            <h2 style="color:#f0a500; font-size:24px; margin-bottom:10px;">Welcome to PriceWise Agent</h2>
-            <p style="color:#aaa; margin-bottom:25px; line-height:1.7;">Your smart market assistant for everyday Nigerians. Track commodity prices, compare platforms and get AI powered advice on when to buy.</p>
-            
-            <div style="text-align:left; margin-bottom:25px;">
-                <div style="margin-bottom:12px; color:white;">📊 <strong style="color:#f0a500;">Track</strong> — Rice, Bread and Fuel prices across Jumia, Konga and Jiji</div>
-                <div style="margin-bottom:12px; color:white;">🤖 <strong style="color:#f0a500;">Ask</strong> — Get personalized advice based on your role</div>
-                <div style="margin-bottom:12px; color:white;">📈 <strong style="color:#f0a500;">Decide</strong> — Buy at the right time from the right place</div>
-                <div style="color:white;">🧠 <strong style="color:#f0a500;">Remember</strong> — Agent learns your preferences over time</div>
-            </div>
-
-            <p style="color:#888; font-size:13px; margin-bottom:20px;">Select your role to get started — consumer, trader or small business owner.</p>
-            
-            <button onclick="closeWelcome()" style="background:#f0a500; color:black; font-weight:bold; padding:14px 40px; border-radius:10px; border:none; font-size:16px; cursor:pointer;">Get Started 🚀</button>
+        <div style="background:#141414; border:1px solid #f0a500; border-radius:16px; padding:40px; max-width:480px; width:90%; text-align:center;">
+            <div style="font-size:52px; margin-bottom:12px;">📊</div>
+            <h2 style="color:#f0a500; font-size:26px; margin-bottom:12px;">Welcome to PriceWise</h2>
+            <p style="color:#aaa; margin-bottom:10px; line-height:1.7; font-size:15px;">
+                Real-time commodity prices across Nigeria. AI advice on when to buy, where to buy, and how to profit.
+            </p>
+            <p style="color:#666; font-size:13px; margin-bottom:28px;">
+                Tracking Rice · Bread · Fuel across all states
+            </p>
+            <button onclick="enterApp()" style="width:100%; padding:16px; font-size:16px; border-radius:10px; background:#f0a500; color:black; font-weight:bold; border:none; cursor:pointer;">
+                Enter PriceWise →
+            </button>
+            <p style="margin-top:16px; color:#555; font-size:12px;">
+                Are you a seller? <a href="/seller" style="color:#f0a500; text-decoration:none;">Register here to list your prices</a>
+            </p>
         </div>
     </div>
-
-
 
     <div class="container">
         <h1>PriceWise</h1>
@@ -167,10 +277,8 @@
             </div>
             <div id="buyInsight" style="margin-top: 15px;"></div>
 
-            <!-- Divider -->
             <hr class="divider">
 
-            <!-- Platform Comparison Bar Chart -->
             <h2 id="barTitle" style="margin-bottom: 15px;">Platform Price Comparison</h2>
             <p style="color:#888; font-size:13px; margin-bottom:10px;">Latest price per platform — see where it's cheapest today</p>
             <div class="chart-wrapper">
@@ -178,7 +286,39 @@
             </div>
         </div>
 
+        <!-- ══════════════════════════════════════════ -->
+        <!-- COMMUNITY PRICES PANEL — Door 1           -->
+        <!-- ══════════════════════════════════════════ -->
+        <div class="product-card">
+            <h2>📍 Live Community Prices</h2>
+            <p style="color:#888; font-size:13px; margin-bottom:16px;">
+                Real prices from sellers on the ground — updated today
+            </p>
 
+            <!-- Seller CTA -->
+            <div class="seller-cta">
+                <p>🏪 <strong style="color:white;">Are you a seller?</strong> List your prices so buyers can find you</p>
+                <a href="/seller">Register as Seller →</a>
+            </div>
+
+            <!-- Commodity filter tabs -->
+            <div class="community-filter-tabs">
+                <button class="filter-tab active" onclick="filterCommunity('all', this)">All</button>
+                <button class="filter-tab" onclick="filterCommunity('Rice (50kg bag)', this)">🌾 Rice</button>
+                <button class="filter-tab" onclick="filterCommunity('Bread (sliced loaf)', this)">🍞 Bread</button>
+                <button class="filter-tab" onclick="filterCommunity('Fuel (per litre)', this)">⛽ Fuel</button>
+            </div>
+
+            <div id="communityPricesList">
+                <div class="no-community-msg">
+                    <div style="font-size:32px; margin-bottom:10px;">⏳</div>
+                    <p style="margin-bottom:10px;">Loading community prices...</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Agent -->
         <div class="product-card">
             <h2>🤖 PriceWise Agent</h2>
             <p style="color:#888; font-size:13px; margin-bottom:15px;">Ask anything about commodity prices in Nigeria</p>
@@ -192,9 +332,7 @@
                 <input type="text" id="agentQuestion" placeholder="e.g Should I buy rice now?" style="width:100%;">
                 <button onclick="askAgent()">Ask</button>
             </div>
-            <div id="agentAnswer" style="margin-top:15px; padding:15px; background:#1a1a1a; border-radius:10px; border:1px solid #333; display:none; line-height:1.7;">
-
-            </div>
+            <div id="agentAnswer" style="margin-top:15px; padding:15px; background:#1a1a1a; border-radius:10px; border:1px solid #333; display:none; line-height:1.7;"></div>
         </div>
 
     </div>
@@ -207,6 +345,21 @@
             "Unknown": "#aaaaaa"
         };
 
+        // ─── Welcome modal ───────────────────────────────────────────
+        function enterApp() {
+            localStorage.setItem("pricewise_visited", "true");
+            document.getElementById("welcomeModal").style.display = "none";
+        }
+
+        window.onload = function() {
+            if (!localStorage.getItem("pricewise_visited")) {
+                document.getElementById("welcomeModal").style.display = "flex";
+            }
+            loadProducts();
+            loadCommunityPrices();
+        };
+
+        // ─── Products ────────────────────────────────────────────────
         async function addProduct() {
             const name = document.getElementById("productName").value;
             const url = document.getElementById("productUrl").value;
@@ -263,6 +416,7 @@
             `).join("");
         }
 
+        // ─── Charts ──────────────────────────────────────────────────
         async function loadChart(productId, productName) {
             const existing = Chart.getChart("priceChart");
             if (existing) existing.destroy();
@@ -279,7 +433,6 @@
                 return;
             }
 
-            // --- Line Chart ---
             const platforms = {};
             history.forEach((entry) => {
                 const p = entry.platform || "Unknown";
@@ -338,8 +491,6 @@
 
             analyzeBestTime(history);
 
-            // --- Bar Chart ---
-            // Get the latest price per platform
             const latestByPlatform = {};
             history.forEach(entry => {
                 latestByPlatform[entry.platform || "Unknown"] = Number(entry.price);
@@ -349,7 +500,6 @@
             const barData = Object.values(latestByPlatform);
             const barColors = barLabels.map(p => PLATFORM_COLORS[p] || "#aaaaaa");
 
-            // Highlight the cheapest bar
             const minPrice = Math.min(...barData);
             const barBorderColors = barData.map((price, i) =>
                 price === minPrice ? "#ffffff" : barColors[i]
@@ -429,14 +579,101 @@
             document.getElementById("buyInsight").innerHTML = `<p>${message}</p>`;
         }
 
+        // ─── Community Prices ─────────────────────────────────────────
+        let allCommunityPrices = [];
+        let activeCommodityFilter = "all";
+
+        async function loadCommunityPrices() {
+            const listEl = document.getElementById("communityPricesList");
+
+            try {
+                const response = await fetch("/community_prices");
+                allCommunityPrices = await response.json();
+                renderCommunityPrices(allCommunityPrices);
+            } catch (e) {
+                listEl.innerHTML = `<div class="no-community-msg"><p>Could not load community prices.</p></div>`;
+            }
+        }
+
+        function filterCommunity(commodity, tabEl) {
+            activeCommodityFilter = commodity;
+            document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+            tabEl.classList.add("active");
+
+            const filtered = commodity === "all"
+                ? allCommunityPrices
+                : allCommunityPrices.filter(p => p.commodity === commodity);
+
+            renderCommunityPrices(filtered);
+        }
+
+        function renderCommunityPrices(prices) {
+            const listEl = document.getElementById("communityPricesList");
+
+            if (!prices || prices.length === 0) {
+                const msg = activeCommodityFilter === "all"
+                    ? `<div class="no-community-msg">
+                            <div style="font-size:36px; margin-bottom:12px;">🏪</div>
+                            <p style="color:#666; margin-bottom:12px;">No community prices yet. Be the first seller!</p>
+                            <a class="cta-link" href="/seller">Register as a Seller →</a>
+                       </div>`
+                    : `<div class="no-community-msg">
+                            <p style="color:#666;">No community prices for this commodity yet.</p>
+                       </div>`;
+                listEl.innerHTML = msg;
+                return;
+            }
+
+            const commodityEmoji = {
+                "Rice (50kg bag)": "🌾",
+                "Bread (sliced loaf)": "🍞",
+                "Fuel (per litre)": "⛽"
+            };
+
+            const typeClass = {
+                "Wholesaler": "seller-type-wholesaler",
+                "Retailer": "seller-type-retailer",
+                "Individual Seller": ""
+            };
+
+            listEl.innerHTML = prices.map(p => {
+                const emoji = commodityEmoji[p.commodity] || "📦";
+                const badgeClass = typeClass[p.seller_type] || "";
+                const dateStr = p.date ? p.date.slice(0, 10) : "—";
+                const verifiedStr = p.verified_count > 0
+                    ? `<span style="color:#4caf50; font-size:11px;">✓ ${p.verified_count} confirmed</span>`
+                    : `<span style="color:#444; font-size:11px;">Unverified</span>`;
+
+                return `
+                    <div class="community-price-row">
+                        <div>
+                            <div class="community-commodity">${emoji} ${p.commodity}</div>
+                            <div style="font-size:12px; color:#555; margin-top:3px;">${p.seller_name} · ${p.location}, ${p.state}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="community-price-val">₦${Number(p.price).toLocaleString()}</div>
+                            <div class="community-meta">${p.platform} · ${dateStr}</div>
+                            <div style="margin-top:4px; display:flex; gap:6px; justify-content:flex-end; align-items:center; flex-wrap:wrap;">
+                                <span class="community-badge ${badgeClass}">${p.seller_type}</span>
+                                ${verifiedStr}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // ─── Agent ───────────────────────────────────────────────────
         let userRole = "consumer";
         function setRole(role) {
             userRole = role;
-            // Reset all buttons
             document.getElementById("roleConsumer").style.background = "#333";
+            document.getElementById("roleConsumer").style.color = "white";
             document.getElementById("roleTrader").style.background = "#333";
+            document.getElementById("roleTrader").style.color = "white";
             document.getElementById("roleSmallBiz").style.background = "#333";
-            // Highlight selected
+            document.getElementById("roleSmallBiz").style.color = "white";
+
             const map = {
                 "consumer": "roleConsumer",
                 "trader": "roleTrader",
@@ -445,69 +682,65 @@
             document.getElementById(map[role]).style.background = "#f0a500";
             document.getElementById(map[role]).style.color = "black";
         }
+
         let chatHistory = [];
+
         async function askAgent() {
             const question = document.getElementById("agentQuestion").value;
             if (!question) return;
             document.getElementById("agentQuestion").value = "";
-            // Add user message to history
+
             chatHistory.push({ role: "user", content: question });
-            // Display user message
+
             const answerDiv = document.getElementById("agentAnswer");
             answerDiv.style.display = "block";
             answerDiv.innerHTML += `
-            <div style="margin-bottom:10px; text-align:right;">
-                <span style="background:#f0a500; color:black; padding:8px 12px; border-radius:10px; display:inline-block; max-width:80%;">${question}</span>
-            </div>
-            <div id="thinking" style="color:#888; margin-bottom:10px;">🤔 Thinking...</div>
+                <div style="margin-bottom:10px; text-align:right;">
+                    <span style="background:#f0a500; color:black; padding:8px 12px; border-radius:10px; display:inline-block; max-width:80%;">${question}</span>
+                </div>
+                <div id="thinking" style="color:#888; margin-bottom:10px;">🤔 Thinking...</div>
             `;
             answerDiv.scrollTop = answerDiv.scrollHeight;
+
             let sessionId = localStorage.getItem("pricewise_session");
             if (!sessionId) {
                 sessionId = "user_" + Date.now();
                 localStorage.setItem("pricewise_session", sessionId);
             }
+
             const response = await fetch("/ask", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    question, 
-                    role: userRole, 
+                body: JSON.stringify({
+                    question,
+                    role: userRole,
                     session_id: sessionId,
                     history: chatHistory
                 })
             });
+
             const data = await response.json();
-            // Add agent response to history
             chatHistory.push({ role: "assistant", content: data.answer });
-            // Remove thinking and add response
+
             document.getElementById("thinking").remove();
             answerDiv.innerHTML += `
-            <div style="margin-bottom:15px;">
-                <span style="color:#f0a500; font-size:12px;">🤖 PriceWise Agent</span><br>
-                <span style="display:inline-block; max-width:90%; line-height:1.7;">${data.answer.replace(/\n/g, "<br>")}</span>
-            </div>
+                <div style="margin-bottom:15px;">
+                    <span style="color:#f0a500; font-size:12px;">🤖 PriceWise Agent</span><br>
+                    <span style="display:inline-block; max-width:90%; line-height:1.7;">${data.answer.replace(/\n/g, "<br>")}</span>
+                </div>
             `;
             answerDiv.scrollTop = answerDiv.scrollHeight;
         }
 
-        function closeWelcome() {
-            document.getElementById("welcomeModal").style.display = "none";
-            localStorage.setItem("pricewise_visited", "true");
-        }
-
-        // Show modal only on first visit
-        window.onload = function() {
-            if (!localStorage.getItem("pricewise_visited")) {
-                document.getElementById("welcomeModal").style.display = "flex";
+        // Allow Enter key in agent input
+        document.addEventListener("DOMContentLoaded", function() {
+            const input = document.getElementById("agentQuestion");
+            if (input) {
+                input.addEventListener("keydown", function(e) {
+                    if (e.key === "Enter") askAgent();
+                });
             }
-            loadProducts();
-        }
-
-
-         
-
-         
+        });
     </script>
 </body>
-</html> 
+</html>
