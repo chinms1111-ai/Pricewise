@@ -4,252 +4,543 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PriceWise — Seller Registration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        * {margin: 0; padding: 0; box-sizing: border-box;}
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0a0a0a;
-            color: white;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            color: #f0a500;
-            margin-bottom: 5px;
-            font-size: 36px;
-            letter-spacing: 2px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-        }
-        .card {
-            background: #141414;
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid #222;
-            margin-bottom: 20px;
-        }
-        .card h2 {
-            color: #f0a500;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        input, select {
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border: 1px solid #333;
-            width: 100%;
-            background: #1a1a1a;
-            color: white;
-            font-size: 14px;
-        }
-        select option {background: #1a1a1a;}
-        label {
-            color: #aaa;
-            font-size: 13px;
-            margin-top: 10px;
-            display: block;
-        }
-        .checkbox-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin: 10px 0;
-        }
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #1a1a1a;
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            cursor: pointer;
-        }
-        .checkbox-item input[type="checkbox"] {
-            width: auto;
-            margin: 0;
-            accent-color: #f0a500;
-        }
-        .seller-type-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 10px 0;
-        }
-        .type-btn {
-            background: #1a1a1a;
-            color: white;
-            border: 1px solid #333;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        .type-btn.selected {
-            background: #f0a500;
-            color: black;
-            font-weight: bold;
-            border-color: #f0a500;
-        }
-        button[type="submit"], .submit-btn {
-            background: #f0a500;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 14px;
-            width: 100%;
-            border-radius: 8px;
-            border: none;
-            font-size: 16px;
-            margin-top: 20px;
-            transition: background 0.2s;
-        }
-        button[type="submit"]:hover, .submit-btn:hover {background: #ffbb33;}
-        .back-link {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .back-link a {
-            color: #f0a500;
-            text-decoration: none;
-            font-size: 14px;
+        :root {
+            --gold: #f0a500;
+            --gold-bright: #ffbb33;
+            --gold-dim: #a87200;
+            --gold-glow: rgba(240, 165, 0, 0.18);
+            --gold-glow-strong: rgba(240, 165, 0, 0.35);
+            --obsidian: #080a0c;
+            --surface-1: #0e1015;
+            --surface-2: #131720;
+            --surface-3: #1a1f2e;
+            --surface-hover: #1e2535;
+            --border: #1e2535;
+            --border-glow: rgba(240, 165, 0, 0.5);
+            --text-primary: #eef0f4;
+            --text-secondary: #7a8499;
+            --text-muted: #3d4557;
+            --green: #00e676;
+            --red: #ff4f4f;
+            --blue: #00c2ff;
         }
 
-        /* Step indicators */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--obsidian);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(240,165,0,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(240,165,0,0.025) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Header bar ── */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--surface-1);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            height: 48px;
+        }
+        .top-bar-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 4px;
+            color: transparent;
+            background: linear-gradient(135deg, #a87200, #f0a500, #ffdd80, #f0a500, #a87200);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        .top-bar-back {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+        .top-bar-back:hover { color: var(--gold); }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            padding: 48px 20px 24px;
+            position: relative;
+            z-index: 1;
+        }
+        .header-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 52px;
+            letter-spacing: 6px;
+            color: transparent;
+            background: linear-gradient(135deg, #a87200, #f0a500, #ffdd80, #f0a500, #a87200);
+            -webkit-background-clip: text;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(240,165,0,0.35));
+        }
+        .header-sub {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            text-transform: uppercase;
+        }
+
+        /* ── Container ── */
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Step Indicator ── */
         .steps {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 0;
-            margin-bottom: 30px;
+            margin-bottom: 36px;
         }
         .step {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #555;
+            gap: 10px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-transform: uppercase;
         }
-        .step.active { color: #f0a500; }
-        .step.done { color: #4caf50; }
+        .step.active { color: var(--gold); }
+        .step.done { color: var(--green); }
         .step-num {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #222;
-            border: 1px solid #444;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
+            width: 28px; height: 28px;
+            border-radius: 2px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 500;
             font-size: 13px;
+            flex-shrink: 0;
+            transition: all 0.3s;
         }
-        .step.active .step-num { background: #f0a500; color: black; border-color: #f0a500; }
-        .step.done .step-num { background: #1a3a1a; color: #4caf50; border-color: #2a6a2a; }
-        .step-divider {
-            width: 40px;
+        .step.active .step-num {
+            background: var(--gold);
+            color: #0a0800;
+            border-color: var(--gold);
+            box-shadow: 0 0 12px var(--gold-glow-strong);
+        }
+        .step.done .step-num {
+            background: rgba(0,230,118,0.1);
+            color: var(--green);
+            border-color: rgba(0,230,118,0.3);
+        }
+        .step-line {
+            width: 48px;
             height: 1px;
-            background: #333;
-            margin: 0 8px;
-            align-self: center;
+            background: var(--border);
+            margin: 0 12px;
         }
 
-        /* Price entry rows */
-        .price-row {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            border-radius: 10px;
-            padding: 16px;
-            margin-bottom: 12px;
+        /* ── Cards ── */
+        .card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 28px;
+            margin-bottom: 16px;
+            position: relative;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeUp 0.5s forwards;
         }
-        .price-row .commodity-label {
-            color: #f0a500;
-            font-weight: bold;
-            font-size: 15px;
-            margin-bottom: 12px;
+        .card:hover {
+            border-color: rgba(240,165,0,0.2);
+            box-shadow: 0 0 20px var(--gold-glow);
         }
-        .price-row-fields {
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(240,165,0,0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+        .card-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 3px;
+            color: var(--gold);
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title-icon {
+            width: 26px; height: 26px;
+            border: 1px solid var(--gold-dim);
+            border-radius: 2px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+            color: var(--gold);
+            background: rgba(240,165,0,0.08);
+            flex-shrink: 0;
+        }
+
+        /* ── Form elements ── */
+        label {
+            display: block;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin: 18px 0 6px;
+        }
+        label:first-child { margin-top: 0; }
+
+        input[type="text"],
+        input[type="tel"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 11px 14px;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--text-primary);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            margin: 0;
+        }
+        input:focus, select:focus {
+            border-color: var(--gold-dim);
+            box-shadow: 0 0 0 2px var(--gold-glow);
+        }
+        input::placeholder { color: var(--text-muted); }
+        select option { background: var(--surface-2); color: var(--text-primary); }
+
+        /* ── Type buttons ── */
+        .type-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .type-btn {
+            flex: 1;
+            min-width: 120px;
+            background: var(--surface-1);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .type-btn:hover { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-glow); }
+        .type-btn.selected {
+            background: var(--gold);
+            color: #0a0800;
+            font-weight: 700;
+            border-color: var(--gold);
+            box-shadow: 0 0 12px var(--gold-glow-strong);
+        }
+
+        /* ── Checkboxes ── */
+        .checkbox-group {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
-        .price-row-fields input {
-            flex: 1;
-            min-width: 120px;
-            margin: 0;
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface-1);
+            padding: 10px 16px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
         }
-        .price-row-fields select {
-            flex: 1;
-            min-width: 130px;
-            margin: 0;
+        .checkbox-item:hover { border-color: var(--gold-dim); color: var(--gold); }
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            accent-color: var(--gold);
+            width: 14px; height: 14px;
+            padding: 0;
+            border: none;
+            background: none;
+            box-shadow: none;
         }
 
-        /* Success state */
-        #successMsg {
+        /* ── Submit button ── */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #d49200, #f0a500, #d49200);
+            background-size: 200% 100%;
+            color: #0a0800;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background-position 0.3s, box-shadow 0.3s, transform 0.1s;
+        }
+        .btn-submit:hover {
+            background-position: 100% 0;
+            box-shadow: 0 0 24px var(--gold-glow-strong);
+        }
+        .btn-submit:active { transform: scale(0.99); }
+
+        /* ── Price rows ── */
+        .price-row {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 18px;
+            margin-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+        .price-row:hover { border-color: rgba(240,165,0,0.2); }
+        .price-row-commodity {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 17px;
+            letter-spacing: 2px;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+        .price-row-unit {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
+
+        /* ── Success state ── */
+        .success-box {
             display: none;
-            background: #1a3a1a;
-            border: 1px solid #2a6a2a;
-            padding: 20px;
-            border-radius: 10px;
+            background: rgba(0,230,118,0.06);
+            border: 1px solid rgba(0,230,118,0.25);
+            padding: 28px;
+            border-radius: 4px;
             text-align: center;
+            margin-top: 16px;
+        }
+        .success-box-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .success-box h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            letter-spacing: 3px;
+            color: var(--green);
+            margin-bottom: 10px;
+        }
+        .success-box p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-family: 'DM Mono', monospace;
+        }
+        .success-box-links {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
             margin-top: 20px;
         }
-        #successMsg h3 {color: #4caf50; margin-bottom: 10px;}
-        #successMsg p {color: #aaa; font-size: 14px;}
-
-        /* Price submission success */
-        #priceSuccessMsg {
-            display: none;
-            background: #1a3a1a;
-            border: 1px solid #2a6a2a;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            margin-top: 20px;
+        .success-link-primary {
+            background: var(--gold);
+            color: #0a0800;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 14px;
+            letter-spacing: 2px;
+            padding: 10px 22px;
+            border-radius: 3px;
+            text-decoration: none;
+            transition: box-shadow 0.2s;
         }
-        #priceSuccessMsg h3 {color: #4caf50; margin-bottom: 10px;}
-        #priceSuccessMsg p {color: #aaa; font-size: 14px;}
+        .success-link-primary:hover { box-shadow: 0 0 14px var(--gold-glow-strong); }
+        .success-link-secondary {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 2px;
+            display: flex;
+            align-items: center;
+        }
+        .success-link-secondary:hover { color: var(--text-secondary); }
 
-        /* Step sections */
-        #step2Section { display: none; }
+        /* ── Seller ID display ── */
+        .seller-id-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface-1);
+            border: 1px solid var(--gold-dim);
+            border-radius: 3px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+        }
+        .seller-id-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .seller-id-value {
+            font-family: 'DM Mono', monospace;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
+
+        /* ══════════════════════════════
+           MOBILE RESPONSIVE
+           ══════════════════════════════ */
+        @media (max-width: 600px) {
+
+            /* Header */
+            .header { padding: 24px 16px 16px; }
+            .header-title { font-size: 38px; letter-spacing: 3px; }
+            .header-sub { font-size: 10px; letter-spacing: 2px; }
+
+            /* Top bar */
+            .top-bar { padding: 0 16px; }
+            .top-bar-logo { font-size: 18px; letter-spacing: 2px; }
+
+            /* Container & cards */
+            .container { padding: 0 12px 60px; }
+            .card { padding: 20px 14px; }
+            .card-title { font-size: 17px; letter-spacing: 2px; margin-bottom: 16px; }
+
+            /* Steps */
+            .steps { gap: 0; }
+            .step { font-size: 10px; gap: 6px; }
+            .step-line { width: 24px; margin: 0 6px; }
+
+            /* Inputs — full width on mobile */
+            input[type="text"],
+            input[type="tel"],
+            input[type="number"],
+            select {
+                width: 100%;
+                margin: 0;
+            }
+
+            /* Type buttons */
+            .type-group { gap: 6px; }
+            .type-btn { padding: 10px 10px; font-size: 11px; min-width: 90px; }
+
+            /* Checkbox group */
+            .checkbox-group { gap: 8px; }
+            .checkbox-item { padding: 8px 12px; font-size: 11px; }
+
+            /* Submit button */
+            .btn-submit { font-size: 16px; letter-spacing: 2px; padding: 14px; }
+
+            /* Price row fields */
+            .price-row { padding: 14px 12px; }
+
+            /* Success links */
+            .success-box-links { flex-direction: column; align-items: center; gap: 12px; }
+            .success-link-primary { text-align: center; }
+
+            /* Seller ID badge */
+            .seller-id-badge { width: 100%; justify-content: space-between; }
+        }
+
+        @media (max-width: 380px) {
+            .type-btn { font-size: 10px; padding: 8px 8px; min-width: 80px; }
+            .header-title { font-size: 32px; }
+        }
     </style>
 </head>
 <body>
+
+    <!-- ── Top bar ── -->
+    <div class="top-bar">
+        <div class="top-bar-logo">PriceWise</div>
+        <a href="/" class="top-bar-back">← Back to App</a>
+    </div>
+
+    <!-- ── Header ── -->
+    <div class="header">
+        <div class="header-title">Seller Portal</div>
+        <div class="header-sub">List your prices · Reach more buyers</div>
+    </div>
+
     <div class="container">
-        <h1>PriceWise</h1>
-        <p class="subtitle">Seller Registration</p>
 
-        <div class="back-link">
-            <a href="/">← Back to Main App</a>
-        </div>
-
-        <!-- Step indicator -->
+        <!-- ── Step indicators ── -->
         <div class="steps">
             <div class="step active" id="stepIndicator1">
                 <div class="step-num">1</div>
                 <span>Your Details</span>
             </div>
-            <div class="step-divider"></div>
+            <div class="step-line"></div>
             <div class="step" id="stepIndicator2">
                 <div class="step-num">2</div>
-                <span>List Your Prices</span>
+                <span>List Prices</span>
             </div>
         </div>
 
-
-        <!-- ═══════════ STEP 1: Registration ═══════════ -->
+        <!-- ═══════ STEP 1 ═══════ -->
         <div id="step1Section">
             <div class="card">
-                <h2>👤 Personal Information</h2>
+                <div class="card-title"><div class="card-title-icon">👤</div>Personal Information</div>
+
                 <label>Full Name *</label>
                 <input type="text" id="fullName" placeholder="e.g Emeka Okonkwo">
 
@@ -261,7 +552,8 @@
             </div>
 
             <div class="card">
-                <h2>📍 Location</h2>
+                <div class="card-title"><div class="card-title-icon">📍</div>Location</div>
+
                 <label>Market / Street Name *</label>
                 <input type="text" id="location" placeholder="e.g Mile 12 Market">
 
@@ -274,50 +566,26 @@
                 <label>State *</label>
                 <select id="state">
                     <option value="" disabled selected>Select State</option>
-                    <option>Lagos</option>
-                    <option>Abuja (FCT)</option>
-                    <option>Rivers</option>
-                    <option>Kano</option>
-                    <option>Oyo</option>
-                    <option>Anambra</option>
-                    <option>Delta</option>
-                    <option>Enugu</option>
-                    <option>Kaduna</option>
-                    <option>Imo</option>
-                    <option>Abia</option>
-                    <option>Ogun</option>
-                    <option>Osun</option>
-                    <option>Ekiti</option>
-                    <option>Ondo</option>
-                    <option>Edo</option>
-                    <option>Benue</option>
-                    <option>Plateau</option>
-                    <option>Nasarawa</option>
-                    <option>Niger</option>
-                    <option>Kwara</option>
-                    <option>Kogi</option>
-                    <option>Taraba</option>
-                    <option>Adamawa</option>
-                    <option>Gombe</option>
-                    <option>Bauchi</option>
-                    <option>Yobe</option>
-                    <option>Borno</option>
-                    <option>Sokoto</option>
-                    <option>Kebbi</option>
-                    <option>Zamfara</option>
-                    <option>Jigawa</option>
-                    <option>Katsina</option>
-                    <option>Cross River</option>
-                    <option>Akwa Ibom</option>
-                    <option>Bayelsa</option>
+                    <option>Lagos</option><option>Abuja (FCT)</option><option>Rivers</option>
+                    <option>Kano</option><option>Oyo</option><option>Anambra</option>
+                    <option>Delta</option><option>Enugu</option><option>Kaduna</option>
+                    <option>Imo</option><option>Abia</option><option>Ogun</option>
+                    <option>Osun</option><option>Ekiti</option><option>Ondo</option>
+                    <option>Edo</option><option>Benue</option><option>Plateau</option>
+                    <option>Nasarawa</option><option>Niger</option><option>Kwara</option>
+                    <option>Kogi</option><option>Taraba</option><option>Adamawa</option>
+                    <option>Gombe</option><option>Bauchi</option><option>Yobe</option>
+                    <option>Borno</option><option>Sokoto</option><option>Kebbi</option>
+                    <option>Zamfara</option><option>Jigawa</option><option>Katsina</option>
+                    <option>Cross River</option><option>Akwa Ibom</option><option>Bayelsa</option>
                     <option>Ebonyi</option>
                 </select>
             </div>
 
             <div class="card">
-                <h2>🏪 Seller Type</h2>
-                <div class="seller-type-group">
-                    <button class="type-btn" onclick="selectType('Individual Seller')">👤 Individual Seller</button>
+                <div class="card-title"><div class="card-title-icon">🏪</div>Seller Type</div>
+                <div class="type-group">
+                    <button class="type-btn" onclick="selectType('Individual Seller')">👤 Individual</button>
                     <button class="type-btn" onclick="selectType('Retailer')">🏪 Retailer</button>
                     <button class="type-btn" onclick="selectType('Wholesaler')">📦 Wholesaler</button>
                 </div>
@@ -325,45 +593,45 @@
             </div>
 
             <div class="card">
-                <h2>🛒 What do you sell?</h2>
+                <div class="card-title"><div class="card-title-icon">🛒</div>What Do You Sell?</div>
                 <div class="checkbox-group">
                     <label class="checkbox-item">
-                        <input type="checkbox" value="Rice (50kg bag)"> 🌾 Rice
+                        <input type="checkbox" value="Rice (50kg bag)">🌾 Rice
                     </label>
                     <label class="checkbox-item">
-                        <input type="checkbox" value="Bread (sliced loaf)"> 🍞 Bread
+                        <input type="checkbox" value="Bread (sliced loaf)">🍞 Bread
                     </label>
                     <label class="checkbox-item">
-                        <input type="checkbox" value="Fuel (per litre)"> ⛽ Fuel
+                        <input type="checkbox" value="Fuel (per litre)">⛽ Fuel
                     </label>
                 </div>
             </div>
 
-            <button type="submit" onclick="registerSeller()">Continue — List My Prices →</button>
+            <button class="btn-submit" onclick="registerSeller()">Continue — List My Prices →</button>
         </div>
 
+        <!-- ═══════ STEP 2 ═══════ -->
+        <div id="step2Section" style="display:none;">
 
-        <!-- ═══════════ STEP 2: Price Submission ═══════════ -->
-        <div id="step2Section">
             <div class="card">
-                <h2>✅ Registered! Now list your prices</h2>
-                <p style="color:#aaa; font-size:14px; margin-bottom:5px;">
-                    Seller ID: <strong id="sellerIdDisplay" style="color:#f0a500;"></strong>
-                </p>
-                <p style="color:#888; font-size:13px; margin-top:8px; line-height:1.6;">
-                    Enter today's prices for the commodities you sell. Buyers on PriceWise will see your prices and the AI agent will use them to give real-time advice.
+                <div class="card-title"><div class="card-title-icon">✓</div>Registration Complete</div>
+                <div class="seller-id-badge">
+                    <span class="seller-id-label">Seller ID</span>
+                    <span class="seller-id-value" id="sellerIdDisplay"></span>
+                </div>
+                <p style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted);line-height:1.8;">
+                    Enter today's prices for the commodities you sell. Buyers on PriceWise will see your prices and the AI agent will use them for real-time advice.
                 </p>
             </div>
 
             <div class="card">
-                <h2>💰 Your Current Prices</h2>
-                <p style="color:#888; font-size:13px; margin-bottom:20px;">Fill in the price for each commodity you sell. Leave blank if you don't sell it.</p>
+                <div class="card-title"><div class="card-title-icon">₦</div>Your Current Prices</div>
+                <p style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:20px;letter-spacing:1px;">
+                    Fill in the price for each commodity you sell. Leave blank if you don't sell it.
+                </p>
+                <div id="priceFields"></div>
 
-                <div id="priceFields">
-                    <!-- Dynamically generated based on selected commodities -->
-                </div>
-
-                <label style="margin-top:16px;">Platform / Market Type</label>
+                <label>Platform / Market Type</label>
                 <select id="pricePlatform">
                     <option value="Open Market">Open Market</option>
                     <option value="Wholesale">Wholesale</option>
@@ -372,16 +640,16 @@
                 </select>
             </div>
 
-            <button class="submit-btn" onclick="submitPrices()">Submit My Prices 🚀</button>
+            <button class="btn-submit" onclick="submitPrices()">Submit My Prices 🚀</button>
 
-            <div id="priceSuccessMsg">
-                <h3>🎉 You're live on PriceWise!</h3>
-                <p>Your prices are now visible to buyers and the AI agent will use them for advice.</p>
-                <p style="margin-top:15px;">
-                    <a href="/" style="color:#f0a500;">← Go to main app</a>
-                    &nbsp;&nbsp;|&nbsp;&nbsp;
-                    <a href="/seller" style="color:#aaa;">Register another seller</a>
-                </p>
+            <div class="success-box" id="priceSuccessMsg">
+                <div class="success-box-icon">🎉</div>
+                <h3>You're Live on PriceWise!</h3>
+                <p>Your prices are now visible to buyers across Nigeria.<br>The AI agent will use them for real-time market advice.</p>
+                <div class="success-box-links">
+                    <a href="/" class="success-link-primary">← Go to Main App</a>
+                    <a href="/seller" class="success-link-secondary">Register another seller</a>
+                </div>
             </div>
         </div>
 
@@ -393,7 +661,6 @@
         let registeredState = "";
         let selectedCommodities = [];
 
-        // Unit defaults per commodity
         const COMMODITY_UNITS = {
             "Rice (50kg bag)": "50kg bag",
             "Bread (sliced loaf)": "sliced loaf",
@@ -405,7 +672,7 @@
             document.getElementById("sellerType").value = type;
             document.querySelectorAll(".type-btn").forEach(btn => {
                 btn.classList.remove("selected");
-                if (btn.textContent.includes(type.split(" ")[0]) || btn.textContent.includes(type)) {
+                if (btn.textContent.trim().toLowerCase().includes(type.split(" ")[0].toLowerCase())) {
                     btn.classList.add("selected");
                 }
             });
@@ -454,57 +721,39 @@
         }
 
         function goToStep2(sellerId) {
-            // Update step indicators
             document.getElementById("stepIndicator1").classList.remove("active");
             document.getElementById("stepIndicator1").classList.add("done");
             document.getElementById("stepIndicator2").classList.add("active");
-
-            // Hide step 1, show step 2
             document.getElementById("step1Section").style.display = "none";
             document.getElementById("step2Section").style.display = "block";
-
-            // Show seller ID
             document.getElementById("sellerIdDisplay").textContent = "PW-" + sellerId;
-
-            // Build price input fields for each selected commodity
             buildPriceFields();
-
             window.scrollTo(0, 0);
         }
 
         function buildPriceFields() {
             const container = document.getElementById("priceFields");
             container.innerHTML = "";
-
             selectedCommodities.forEach(commodity => {
                 const unit = COMMODITY_UNITS[commodity] || "";
-                const emoji = commodity.includes("Rice") ? "🌾" :
-                              commodity.includes("Bread") ? "🍞" :
-                              commodity.includes("Fuel") ? "⛽" : "📦";
-
+                const emoji = commodity.includes("Rice") ? "🌾" : commodity.includes("Bread") ? "🍞" : commodity.includes("Fuel") ? "⛽" : "📦";
                 container.innerHTML += `
                     <div class="price-row">
-                        <div class="commodity-label">${emoji} ${commodity}</div>
-                        <div class="price-row-fields">
-                            <input
-                                type="number"
-                                id="price_${commodity.replace(/[^a-z0-9]/gi, '_')}"
-                                placeholder="Your price in ₦"
-                                min="0"
-                            >
-                        </div>
-                        <p style="color:#555; font-size:12px; margin-top:8px;">Per ${unit}</p>
+                        <div class="price-row-commodity">${emoji} ${commodity}</div>
+                        <input
+                            type="number"
+                            id="price_${commodity.replace(/[^a-z0-9]/gi, '_')}"
+                            placeholder="Your price in ₦"
+                            min="0"
+                        >
+                        <div class="price-row-unit">Per ${unit}</div>
                     </div>
                 `;
             });
         }
 
         async function submitPrices() {
-            if (!registeredSellerId) {
-                alert("Seller ID missing. Please refresh and try again.");
-                return;
-            }
-
+            if (!registeredSellerId) { alert("Seller ID missing. Please refresh and try again."); return; }
             const platform = document.getElementById("pricePlatform").value;
             const prices = [];
 
@@ -512,36 +761,22 @@
                 const inputId = "price_" + commodity.replace(/[^a-z0-9]/gi, '_');
                 const input = document.getElementById(inputId);
                 const price = input ? input.value.trim() : "";
-
                 if (price && Number(price) > 0) {
-                    prices.push({
-                        commodity: commodity,
-                        price: Number(price),
-                        unit: COMMODITY_UNITS[commodity] || "",
-                        platform: platform
-                    });
+                    prices.push({ commodity, price: Number(price), unit: COMMODITY_UNITS[commodity] || "", platform });
                 }
             }
 
-            if (prices.length === 0) {
-                alert("Please enter at least one price before submitting.");
-                return;
-            }
+            if (prices.length === 0) { alert("Please enter at least one price before submitting."); return; }
 
             const response = await fetch("/submit_price", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    seller_id: registeredSellerId,
-                    state: registeredState,
-                    prices: prices
-                })
+                body: JSON.stringify({ seller_id: registeredSellerId, state: registeredState, prices })
             });
-
             const data = await response.json();
 
             if (data.inserted > 0) {
-                document.querySelector(".submit-btn").style.display = "none";
+                document.querySelector(".btn-submit").style.display = "none";
                 document.getElementById("priceSuccessMsg").style.display = "block";
                 window.scrollTo(0, document.body.scrollHeight);
             } else {
