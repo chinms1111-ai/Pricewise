@@ -3,7 +3,7 @@ import os
 import json
 from groq import Groq
 from dotenv import load_dotenv
-from datetime import date
+from datetime import date, datetime
  
 load_dotenv()
  
@@ -358,11 +358,123 @@ def detect_commodities(question):
     return found
  
  
+def detect_question_type(question):
+    """Classify what kind of question the user is asking."""
+    q = question.lower()
+    if any(w in q for w in ["buy", "sell", "profit", "arbitrage", "move", "trade"]):
+        return "arbitrage"
+    elif any(w in q for w in ["trend", "rising", "falling", "going up", "going down", "increase", "decrease"]):
+        return "trend"
+    elif any(w in q for w in ["cheap", "cheapest", "best price", "where", "lowest"]):
+        return "sourcing"
+    elif any(w in q for w in ["how much", "price", "cost", "rate"]):
+        return "price_check"
+    elif any(w in q for w in ["store", "stock", "inventory", "keep", "hold"]):
+        return "inventory"
+    else:
+        return "general"
+ 
+ 
+def detect_state_mentioned(question):
+    """Extract Nigerian state mentioned in the question if any."""
+    states = [
+        "Lagos", "Abuja", "Kano", "Rivers", "Oyo", "Kaduna", "Enugu",
+        "Delta", "Anambra", "Imo", "Ogun", "Osun", "Kwara", "Benue",
+        "Plateau", "Niger", "Sokoto", "Zamfara", "Kebbi", "Kogi",
+        "Nasarawa", "Taraba", "Adamawa", "Gombe", "Bauchi", "Yobe",
+        "Borno", "Jigawa", "Katsina", "Ekiti", "Ondo", "Edo",
+        "Cross River", "Akwa Ibom", "Bayelsa", "Ebonyi", "Abia"
+    ]
+    q = question.lower()
+    for state in states:
+        if state.lower() in q:
+            return state
+    return None
+ 
+ 
+def log_behavior(session_id, question, commodities_mentioned):
+    """
+    Writes a behavior log entry for every agent question.
+    Called automatically inside ask_agent() after every response.
+    """
+    if not commodities_mentioned:
+        # Still log even if no specific commodity detected — use 'general'
+        commodities_mentioned = ["general"]
+ 
+    question_type = detect_question_type(question)
+    state_mentioned = detect_state_mentioned(question)
+ 
+    conn = get_db()
+    c = conn.cursor()
+ 
+    for commodity in commodities_mentioned:
+        c.execute("""
+            INSERT INTO user_behavior_log
+            (session_id, action_type, commodity, question_type, state_mentioned, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            session_id,
+            "agent_question",
+            commodity,
+            question_type,
+            state_mentioned,
+            datetime.now().isoformat()
+        ))
+ 
+    conn.commit()
+    conn.close()
+ 
+ 
+def get_user_profile(session_id):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT * FROM user_profiles WHERE session_id = ?", (session_id,))
+    row = c.fetchone()
+ 
+    # Also get behavior log summary
+    c.execute("""
+        SELECT commodity, COUNT(*) as cnt
+        FROM user_behavior_log
+        WHERE session_id = ?
+        GROUP BY commodity ORDER BY cnt DESC LIMIT 1
+    """, (session_id,))
+    top_commodity = c.fetchone()
+ 
+    c.execute("""
+        SELECT question_type, COUNT(*) as cnt
+        FROM user_behavior_log
+        WHERE session_id = ?
+        GROUP BY question_type ORDER BY cnt DESC LIMIT 1
+    """, (session_id,))
+    top_question = c.fetchone()
+ 
+    conn.close()
+ 
+    if not row:
+        return "New user — no profile yet. Treat as general consumer."
+ 
+    profile = f"""
+USER PROFILE (built from onboarding + behavior):
+- Role: {row['role']}
+- Primary Commodity: {row['primary_commodity']}
+- State: {row['state']}
+- Buys in bulk: {row['bulk_frequency']}
+- Cares most about: {row['priority']}
+- Sessions on platform: {row['total_sessions']}
+- Most searched commodity: {top_commodity['commodity'] if top_commodity else 'unknown'}
+- Most common question type: {top_question['question_type'] if top_question else 'unknown'}
+ 
+Adapt your tone, recommendations, and review generation to match this user's profile exactly.
+"""
+    return profile
+ 
+ 
 def ask_agent(question, role="consumer", session_id="default", history=[]):
     context = get_price_context()
     trends = analyze_trends()
     arbitrage = get_arbitrage_context()
-    community = get_community_price_context()   # ← NEW: real seller prices
+    community = get_community_price_context()
+    user_profile = get_user_profile(session_id)
     session = get_or_create_session(session_id, role)
  
     past_questions = json.loads(session["questions"])
@@ -406,7 +518,10 @@ YOUR PERSONALITY:
 YOUR ROLE CONTEXT:
 {role_context}
  
-WHAT YOU KNOW ABOUT THIS USER:
+DEEP USER PROFILE:
+{user_profile}
+ 
+WHAT YOU KNOW ABOUT THIS USER (session memory):
 {memory_context if memory_context else "New user — no history yet."}
  
 VERIFIED MARKET TRENDS RIGHT NOW:
@@ -475,4 +590,206 @@ IMPORTANT:
     commodities_mentioned = detect_commodities(question)
     update_session(session_id, question, commodities_mentioned)
  
+    # FIX 1 — Log behavior after every agent interaction
+    log_behavior(session_id, question, commodities_mentioned)
+ 
     return answer
+ 
+ 
+def generate_user_review(session_id, commodity):
+    """
+    The clone function. Given a user's profile and a commodity,
+    generates a star rating + written review as if the user wrote it.
+    Saves to generated_reviews table and returns the result.
+    """
+    conn = get_db()
+    c = conn.cursor()
+ 
+    # Get user profile
+    c.execute("SELECT * FROM user_profiles WHERE session_id = ?", (session_id,))
+    profile = c.fetchone()
+ 
+    # FIX 2 — Get count AND full behavior detail for this commodity
+    c.execute("""
+        SELECT COUNT(*) as cnt FROM user_behavior_log
+        WHERE session_id = ? AND commodity = ?
+    """, (session_id, commodity))
+    commodity_searches = c.fetchone()["cnt"]
+ 
+    # Get full behavior log — last 20 interactions across all commodities
+    c.execute("""
+        SELECT action_type, commodity, question_type, state_mentioned, timestamp
+        FROM user_behavior_log
+        WHERE session_id = ?
+        ORDER BY timestamp DESC LIMIT 20
+    """, (session_id,))
+    behavior_rows = c.fetchall()
+ 
+    # Build human-readable behavior summary
+    if behavior_rows:
+        behavior_summary = "What this user has actually been asking about:\n"
+        for b in behavior_rows:
+            line = f"- {b['question_type']} question about {b['commodity']}"
+            if b['state_mentioned']:
+                line += f" (mentioned {b['state_mentioned']})"
+            behavior_summary += line + "\n"
+    else:
+        behavior_summary = "No behavior logged yet — base review on profile and price data only."
+ 
+    # Get current price data for this commodity
+    c.execute("""
+        SELECT ph.price, ph.platform, ph.date, p.name
+        FROM price_history ph
+        JOIN products p ON ph.product_id = p.id
+        WHERE p.name = ?
+        ORDER BY ph.date DESC LIMIT 6
+    """, (commodity,))
+    recent_prices = c.fetchall()
+ 
+    # Get state prices for arbitrage
+    c.execute("""
+        SELECT sp.state, sp.price
+        FROM state_prices sp
+        JOIN products p ON sp.product_id = p.id
+        WHERE p.name = ?
+        ORDER BY sp.price ASC
+    """, (commodity,))
+    state_prices = c.fetchall()
+ 
+    conn.close()
+ 
+    if not recent_prices:
+        return None
+ 
+    latest_price = recent_prices[0]["price"]
+    prices_list = [r["price"] for r in recent_prices]
+    avg_price = sum(prices_list) / len(prices_list)
+    price_trend = "rising" if latest_price > avg_price else "falling" if latest_price < avg_price else "stable"
+ 
+    # Build state price summary
+    state_summary = ""
+    if state_prices:
+        cheapest = state_prices[0]
+        most_expensive = state_prices[-1]
+        state_summary = f"Cheapest state: {cheapest['state']} at ₦{cheapest['price']:,.0f}. Most expensive: {most_expensive['state']} at ₦{most_expensive['price']:,.0f}."
+ 
+    # Build profile context
+    if profile:
+        role = profile["role"]
+        user_state = profile["state"] or "Nigeria"
+        bulk_freq = profile["bulk_frequency"] or "occasionally"
+        priority = profile["priority"] or "best price"
+        sessions = profile["total_sessions"]
+    else:
+        role = "consumer"
+        user_state = "Nigeria"
+        bulk_freq = "occasionally"
+        priority = "best price"
+        sessions = 1
+ 
+    role_voice = {
+        "consumer": "everyday Nigerian consumer who buys for their family. Speak like a regular person — use Pidgin naturally, be emotional about price increases, celebrate good prices.",
+        "trader": "experienced Nigerian commodity trader who buys in bulk and resells for profit. Focus on margins, arbitrage opportunities, and market timing. Use trader language.",
+        "small_business": "small business owner in Nigeria managing costs carefully. Think about inventory, cash flow, and supplier reliability. Be analytical but relatable."
+    }
+ 
+    voice = role_voice.get(role, role_voice["consumer"])
+ 
+    # FIX 3 — Pass full behavior summary into the review prompt
+    review_prompt = f"""You are simulating a market review written by a specific Nigerian user. You are their clone — you know everything about them and must write EXACTLY as they would.
+ 
+USER PROFILE:
+- Role: {role}
+- State: {user_state}
+- Buys: {bulk_freq}
+- Cares about: {priority}
+- Times on platform: {sessions}
+- Times searched this commodity: {commodity_searches}
+ 
+OBSERVED BEHAVIOR (what this user has actually been doing on the platform):
+{behavior_summary}
+ 
+CURRENT MARKET DATA FOR {commodity}:
+- Latest price: ₦{latest_price:,.0f}
+- Recent average: ₦{avg_price:,.0f}
+- Trend: {price_trend}
+- {state_summary}
+ 
+YOUR TASK:
+Write a review of the current {commodity} market AS THIS USER.
+The review must reflect their actual behavior above — if they kept asking about arbitrage, their review should sound like a trader chasing margins. If they kept asking about cheapest price, sound like someone watching every kobo.
+ 
+Rules:
+1. Start with RATING: X/5 (just the number, nothing else on that line)
+2. Then write the review on the next line
+3. Review must be 3-5 sentences in their voice
+4. Use Nigerian Pidgin naturally — not forced, just how they'd actually talk
+5. Reference actual prices from the data
+6. Their rating logic:
+   - Consumer: rising prices = low stars, falling = high stars
+   - Trader: good arbitrage opportunity = high stars regardless of direction
+   - Small business: stability = high stars, volatility = low stars
+7. Sound like a real person wrote this, not an AI
+8. If behavior shows they were focused on a specific state or question type, reflect that in the review
+ 
+Example format:
+RATING: 3/5
+E don do small. Rice price don drop from ₦118k to ₦112k for Lagos side...
+"""
+ 
+    response = client.chat.completions.create(
+        messages=[{"role": "user", "content": review_prompt}],
+        model="llama-3.3-70b-versatile",
+    )
+ 
+    raw = response.choices[0].message.content.strip()
+ 
+    # Parse rating and review text
+    lines = raw.split("\n")
+    star_rating = 3  # default
+    review_lines = []
+ 
+    for i, line in enumerate(lines):
+        if line.startswith("RATING:"):
+            try:
+                star_rating = int(line.replace("RATING:", "").strip().split("/")[0])
+                star_rating = max(1, min(5, star_rating))
+            except:
+                star_rating = 3
+        else:
+            if line.strip():
+                review_lines.append(line.strip())
+ 
+    review_text = " ".join(review_lines)
+ 
+    # Determine sentiment
+    if star_rating >= 4:
+        sentiment = "POSITIVE"
+    elif star_rating <= 2:
+        sentiment = "NEGATIVE"
+    else:
+        sentiment = "NEUTRAL"
+ 
+    # Save to database
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO generated_reviews
+        (session_id, commodity, star_rating, review_text, sentiment, price_at_review, generated_at, triggered_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (session_id, commodity, star_rating, review_text, sentiment,
+          latest_price, datetime.now().isoformat(), "manual"))
+    conn.commit()
+    review_id = c.lastrowid
+    conn.close()
+ 
+    return {
+        "id": review_id,
+        "commodity": commodity,
+        "star_rating": star_rating,
+        "review_text": review_text,
+        "sentiment": sentiment,
+        "price_at_review": latest_price,
+        "role": role,
+        "user_state": user_state
+    }

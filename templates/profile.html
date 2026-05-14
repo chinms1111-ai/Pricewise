@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PriceWise — Seller Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --gold: #f0a500;
+            --gold-bright: #ffbb33;
+            --gold-dim: #a87200;
+            --gold-glow: rgba(240, 165, 0, 0.18);
+            --gold-glow-strong: rgba(240, 165, 0, 0.35);
+            --obsidian: #080a0c;
+            --surface-1: #0e1015;
+            --surface-2: #131720;
+            --surface-3: #1a1f2e;
+            --surface-hover: #1e2535;
+            --border: #1e2535;
+            --border-glow: rgba(240, 165, 0, 0.5);
+            --text-primary: #eef0f4;
+            --text-secondary: #7a8499;
+            --text-muted: #3d4557;
+            --green: #00e676;
+            --red: #ff4f4f;
+            --blue: #00c2ff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--obsidian);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(240,165,0,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(240,165,0,0.025) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Top bar ── */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--surface-1);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            height: 48px;
+        }
+        .top-bar-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 4px;
+            color: transparent;
+            background: linear-gradient(135deg, #a87200, #f0a500, #ffdd80, #f0a500, #a87200);
+            -webkit-background-clip: text;
+            background-clip: text;
+            text-decoration: none;
+        }
+        .top-bar-back {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+        .top-bar-back:hover { color: var(--gold); }
+
+        /* ── Container ── */
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 32px 20px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Profile Hero ── */
+        .profile-hero {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 32px 28px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.4s forwards;
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(240,165,0,0.06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .profile-hero-top {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        /* ── Avatar ── */
+        .avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(240,165,0,0.25), rgba(240,165,0,0.06));
+            border: 1px solid var(--gold-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            color: var(--gold);
+            flex-shrink: 0;
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        .profile-info { flex: 1; min-width: 0; }
+        .profile-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 4px;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .profile-business {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            color: var(--gold);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .profile-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .profile-badge {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            border-radius: 2px;
+            text-transform: uppercase;
+        }
+        .badge-type-wholesaler {
+            background: rgba(0,194,255,0.08);
+            color: var(--blue);
+            border: 1px solid rgba(0,194,255,0.2);
+        }
+        .badge-type-retailer {
+            background: rgba(240,165,0,0.08);
+            color: var(--gold);
+            border: 1px solid rgba(240,165,0,0.2);
+        }
+        .badge-type-individual {
+            background: rgba(0,230,118,0.08);
+            color: var(--green);
+            border: 1px solid rgba(0,230,118,0.2);
+        }
+        .badge-location {
+            background: var(--surface-1);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .badge-joined {
+            background: var(--surface-1);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        /* ── Authenticity score ── */
+        .auth-score {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        .auth-score-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .auth-bar-wrap {
+            flex: 1;
+            min-width: 120px;
+            height: 6px;
+            background: var(--surface-1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .auth-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+            transition: width 1s ease;
+        }
+        .auth-score-num {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gold);
+            min-width: 36px;
+        }
+        .auth-stars {
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        /* ── Profile actions ── */
+        .profile-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #d49200, #f0a500, #d49200);
+            background-size: 200% 100%;
+            color: #0a0800;
+            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 3px;
+            border: none;
+            transition: background-position 0.3s, box-shadow 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary:hover {
+            background-position: 100% 0;
+            box-shadow: 0 0 16px var(--gold-glow-strong);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 10px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-ghost:hover {
+            border-color: var(--gold-dim);
+            color: var(--gold);
+            background: var(--gold-glow);
+        }
+        .btn-share {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 10px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-share:hover { border-color: var(--green); color: var(--green); }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 24px 28px;
+            margin-bottom: 16px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeUp 0.5s forwards;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(240,165,0,0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .card:hover {
+            border-color: rgba(240,165,0,0.2);
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+        .card:nth-child(4) { animation-delay: 0.3s; }
+        .card:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+        .card-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: 3px;
+            color: var(--gold);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title-icon {
+            width: 24px; height: 24px;
+            border: 1px solid var(--gold-dim);
+            border-radius: 2px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px;
+            color: var(--gold);
+            background: rgba(240,165,0,0.08);
+            flex-shrink: 0;
+        }
+
+        /* ── Listed prices ── */
+        .price-listing {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .price-listing:hover { border-color: var(--border-glow); background: var(--surface-hover); }
+        .price-listing-commodity {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: var(--gold);
+        }
+        .price-listing-sub {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .price-listing-val {
+            font-family: 'DM Mono', monospace;
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+        }
+        .price-listing-date {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            text-align: right;
+        }
+
+        /* ── Comments ── */
+        .comment-item {
+            padding: 14px 16px;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            margin-bottom: 8px;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+        .comment-item:hover { border-color: rgba(240,165,0,0.15); }
+        .comment-item.positive { border-left: 3px solid var(--green); }
+        .comment-item.negative { border-left: 3px solid var(--red); }
+        .comment-item.neutral { border-left: 3px solid var(--text-muted); }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .comment-author {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--gold);
+            letter-spacing: 1px;
+        }
+        .comment-date {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .comment-text {
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+        .comment-stars {
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        .agent-badge {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 1px;
+            padding: 2px 7px;
+            border-radius: 2px;
+            background: rgba(0,194,255,0.08);
+            color: var(--blue);
+            border: 1px solid rgba(0,194,255,0.2);
+            text-transform: uppercase;
+            margin-left: 6px;
+        }
+
+        /* ── Comment form ── */
+        .comment-form {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        .comment-form-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .star-selector {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .star-opt {
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.15s, transform 0.15s;
+            user-select: none;
+        }
+        .star-opt:hover { color: var(--gold); transform: scale(1.15); }
+        .star-opt.active { color: var(--gold); }
+
+        textarea {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--text-primary);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            padding: 10px 12px;
+            resize: vertical;
+            min-height: 80px;
+            outline: none;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        textarea:focus { border-color: var(--gold-dim); }
+        textarea::placeholder { color: var(--text-muted); }
+
+        .submit-comment-btn {
+            background: linear-gradient(135deg, #d49200, #f0a500, #d49200);
+            background-size: 200% 100%;
+            color: #0a0800;
+            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 3px;
+            border: none;
+            transition: background-position 0.3s, box-shadow 0.2s;
+        }
+        .submit-comment-btn:hover {
+            background-position: 100% 0;
+            box-shadow: 0 0 14px var(--gold-glow-strong);
+        }
+
+        /* ── Share toast ── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(60px);
+            background: var(--surface-3);
+            border: 1px solid var(--green);
+            color: var(--green);
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 1px;
+            padding: 10px 20px;
+            border-radius: 3px;
+            z-index: 999;
+            transition: transform 0.3s ease;
+            pointer-events: none;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ── Empty states ── */
+        .empty-state {
+            text-align: center;
+            padding: 32px 20px;
+            color: var(--text-muted);
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        .empty-state-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.4; }
+
+        /* ── Stats row ── */
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+        .stat-box {
+            flex: 1;
+            min-width: 80px;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 12px 16px;
+            text-align: center;
+        }
+        .stat-val {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            letter-spacing: 2px;
+            color: var(--gold);
+        }
+        .stat-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        /* ── Mobile ── */
+        @media (max-width: 600px) {
+            .container { padding: 20px 12px 60px; }
+            .profile-hero { padding: 20px 16px; }
+            .card { padding: 18px 14px; }
+            .profile-name { font-size: 26px; }
+            .avatar { width: 56px; height: 56px; font-size: 24px; }
+            .profile-actions { gap: 8px; }
+            .btn-primary, .btn-ghost, .btn-share { padding: 9px 14px; font-size: 12px; }
+            .top-bar { padding: 0 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Top bar ── -->
+    <div class="top-bar">
+        <a href="/" class="top-bar-logo">PriceWise</a>
+        <a href="/" class="top-bar-back">← Back to App</a>
+    </div>
+
+    <div class="container">
+
+        <!-- ── Profile Hero ── -->
+        <div class="profile-hero" id="profileHero">
+            <div style="color:var(--text-muted); font-family:'DM Mono',monospace; font-size:12px;">Loading profile...</div>
+        </div>
+
+        <!-- ── Stats ── -->
+        <div class="card" id="statsCard" style="display:none;">
+            <div class="card-title"><div class="card-title-icon">📊</div>Seller Stats</div>
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-val" id="statComments">0</div>
+                    <div class="stat-label">Reviews</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="statPositive">0%</div>
+                    <div class="stat-label">Positive</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="statListings">0</div>
+                    <div class="stat-label">Listings</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="statScore">—</div>
+                    <div class="stat-label">Auth Score</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Current Prices ── -->
+        <div class="card" id="pricesCard" style="display:none;">
+            <div class="card-title"><div class="card-title-icon">₦</div>Current Prices</div>
+            <div id="pricesList"></div>
+        </div>
+
+        <!-- ── Comments ── -->
+        <div class="card" id="commentsCard" style="display:none;">
+            <div class="card-title"><div class="card-title-icon">💬</div>Reviews & Comments</div>
+            <div id="commentsList"></div>
+
+            <!-- Comment Form -->
+            <div class="comment-form" id="commentForm">
+                <div class="comment-form-title">Leave a Review</div>
+                <div class="star-selector" id="starSelector">
+                    <span class="star-opt" onclick="setCommentStar(1)">☆</span>
+                    <span class="star-opt" onclick="setCommentStar(2)">☆</span>
+                    <span class="star-opt" onclick="setCommentStar(3)">☆</span>
+                    <span class="star-opt" onclick="setCommentStar(4)">☆</span>
+                    <span class="star-opt" onclick="setCommentStar(5)">☆</span>
+                </div>
+                <textarea id="commentText" placeholder="Was this seller legit? Were the prices accurate? Share your experience..."></textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <span id="commentMsg" style="font-family:'DM Mono',monospace; font-size:11px; color:var(--green); display:none;">✓ Review submitted</span>
+                    <button class="submit-comment-btn" onclick="submitComment()">Submit Review</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">🔗 Profile link copied!</div>
+
+    <script>
+        // Get seller ID from URL — /seller/profile/12
+        const pathParts = window.location.pathname.split("/");
+        const sellerId = pathParts[pathParts.length - 1];
+
+        let sellerData = null;
+        let commentStarRating = 0;
+
+        // ── Load seller profile ───────────────────────────────────
+        async function loadProfile() {
+            try {
+                const res = await fetch(`/api/seller/${sellerId}`);
+                
+                const data = await res.json();
+
+                if (data.error) {
+                    document.getElementById("profileHero").innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🔍</div>
+                            <p>Seller not found.</p>
+                        </div>`;
+                    return;
+                }
+
+                sellerData = data;
+                renderProfile(data);
+                renderStats(data);
+                renderPrices(data.prices || []);
+                renderComments(data.comments || []);
+
+                // Update page title
+                document.title = `PriceWise — ${data.seller.full_name}`;
+
+            } catch(e) {
+                document.getElementById("profileHero").innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <p>Could not load profile. Please try again.</p>
+                    </div>`;
+            }
+        }
+
+        function getInitials(name) {
+            return name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
+        }
+
+        function getTypeClass(sellerType) {
+            if (!sellerType) return "badge-type-individual";
+            const t = sellerType.toLowerCase();
+            if (t.includes("wholesale")) return "badge-type-wholesaler";
+            if (t.includes("retail")) return "badge-type-retailer";
+            return "badge-type-individual";
+        }
+
+        function renderProfile(data) {
+            const s = data.seller;
+            const comments = data.comments || [];
+            const authScore = calcAuthScore(comments);
+            const authPct = Math.min(100, authScore * 10);
+
+            const stars = authScore >= 8 ? "⭐⭐⭐⭐⭐" :
+                          authScore >= 6 ? "⭐⭐⭐⭐" :
+                          authScore >= 4 ? "⭐⭐⭐" :
+                          authScore >= 2 ? "⭐⭐" : "⭐";
+
+            const joined = s.date_registered ? s.date_registered.slice(0,10) : "Recently";
+            const typeClass = getTypeClass(s.seller_type);
+            const commodities = (() => {
+                try { return JSON.parse(s.commodities || "[]"); } catch { return []; }
+            })();
+            const commodityEmoji = { "Rice (50kg bag)": "🌾", "Bread (sliced loaf)": "🍞", "Fuel (per litre)": "⛽" };
+
+            document.getElementById("profileHero").innerHTML = `
+                <div class="profile-hero-top">
+                    <div class="avatar">${getInitials(s.full_name)}</div>
+                    <div class="profile-info">
+                        <div class="profile-name">${s.full_name}</div>
+                        ${s.business_name ? `<div class="profile-business">🏪 ${s.business_name}</div>` : ""}
+                        <div class="profile-meta">
+                            <span class="profile-badge ${typeClass}">${s.seller_type}</span>
+                            <span class="profile-badge badge-location">📍 ${s.location}, ${s.state}</span>
+                            <span class="profile-badge badge-joined">Joined ${joined}</span>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+                            ${commodities.map(c => `<span style="font-family:'DM Mono',monospace;font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:2px;color:var(--text-muted);">${commodityEmoji[c] || "📦"} ${c}</span>`).join("")}
+                        </div>
+                        ${s.phone ? `<div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted);">📞 ${s.phone}</div>` : ""}
+                    </div>
+                </div>
+
+                <div class="auth-score">
+                    <span class="auth-score-label">Authenticity</span>
+                    <div class="auth-bar-wrap">
+                        <div class="auth-bar-fill" id="authBarFill" style="width:0%"></div>
+                    </div>
+                    <span class="auth-score-num">${authScore}/10</span>
+                    <span class="auth-stars">${stars}</span>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="btn-primary" onclick="openChat()">💬 Message Seller</button>
+                    <button class="btn-ghost" onclick="scrollToComments()">⭐ Leave Review</button>
+                    <button class="btn-share" onclick="shareProfile()">🔗 Share Profile</button>
+                </div>
+            `;
+
+            // Animate auth bar after render
+            setTimeout(() => {
+                const fill = document.getElementById("authBarFill");
+                if (fill) fill.style.width = authPct + "%";
+            }, 300);
+        }
+
+        function calcAuthScore(comments) {
+            if (!comments.length) return 0;
+            const positive = comments.filter(c => c.sentiment === "POSITIVE").length;
+            const score = Math.round((positive / comments.length) * 10);
+            return Math.max(1, score);
+        }
+
+        function renderStats(data) {
+            const comments = data.comments || [];
+            const prices = data.prices || [];
+            const positive = comments.filter(c => c.sentiment === "POSITIVE").length;
+            const positivePct = comments.length ? Math.round((positive / comments.length) * 100) : 0;
+            const authScore = calcAuthScore(comments);
+
+            document.getElementById("statComments").textContent = comments.length;
+            document.getElementById("statPositive").textContent = positivePct + "%";
+            document.getElementById("statListings").textContent = prices.length;
+            document.getElementById("statScore").textContent = authScore + "/10";
+
+            document.getElementById("statsCard").style.display = "block";
+        }
+
+        function renderPrices(prices) {
+            const card = document.getElementById("pricesCard");
+            const list = document.getElementById("pricesList");
+
+            if (!prices.length) {
+                list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">₦</div><p>No prices listed yet.</p></div>`;
+            } else {
+                const emojis = { "Rice (50kg bag)": "🌾", "Bread (sliced loaf)": "🍞", "Fuel (per litre)": "⛽" };
+                list.innerHTML = prices.map(p => `
+                    <div class="price-listing">
+                        <div>
+                            <div class="price-listing-commodity">${emojis[p.commodity] || "📦"} ${p.commodity}</div>
+                            <div class="price-listing-sub">${p.platform} · ${p.unit}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="price-listing-val">₦${Number(p.price).toLocaleString()}</div>
+                            <div class="price-listing-date">${p.date ? p.date.slice(0,10) : ""}</div>
+                             
+                        </div>
+                    </div>
+                `).join("");
+            }
+            card.style.display = "block";
+        }
+
+        function renderComments(comments) {
+            const card = document.getElementById("commentsCard");
+            const list = document.getElementById("commentsList");
+
+            if (!comments.length) {
+                list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💬</div><p>No reviews yet. Be the first to review this seller.</p></div>`;
+            } else {
+                list.innerHTML = comments.map(c => {
+                    const sentimentClass = c.sentiment === "POSITIVE" ? "positive" : c.sentiment === "NEGATIVE" ? "negative" : "neutral";
+                    const stars = c.star_rating ? "⭐".repeat(c.star_rating) + "☆".repeat(5 - c.star_rating) : "";
+                    const agentTag = c.sent_by === "agent" ? `<span class="agent-badge">🧬 Clone</span>` : "";
+                    const date = c.timestamp ? c.timestamp.slice(0,10) : "";
+                    return `
+                    <div class="comment-item ${sentimentClass}">
+                        <div class="comment-header">
+                            <span class="comment-author">Anonymous Buyer ${agentTag}</span>
+                            <span class="comment-date">${date}</span>
+                        </div>
+                        <div class="comment-text">${c.comment}</div>
+                        ${stars ? `<div class="comment-stars">${stars} ${c.star_rating}/5</div>` : ""}
+                    </div>`;
+                }).join("");
+            }
+            card.style.display = "block";
+        }
+
+        // ── Comment star selector ─────────────────────────────────
+        function setCommentStar(n) {
+            commentStarRating = n;
+            document.querySelectorAll(".star-opt").forEach((el, i) => {
+                el.textContent = i < n ? "⭐" : "☆";
+                el.classList.toggle("active", i < n);
+            });
+        }
+
+        // ── Submit comment ────────────────────────────────────────
+        async function submitComment() {
+            const text = document.getElementById("commentText").value.trim();
+            if (!text) { alert("Please write a comment first."); return; }
+            if (commentStarRating === 0) { alert("Please give a star rating."); return; }
+
+            let sessionId = localStorage.getItem("pricewise_session");
+            if (!sessionId) {
+                sessionId = "user_" + Date.now();
+                localStorage.setItem("pricewise_session", sessionId);
+            }
+
+            try {
+                const res = await fetch("/add_comment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        seller_id: sellerId,
+                        session_id: sessionId,
+                        comment: text,
+                        star_rating: commentStarRating,
+                        commodity: sellerData?.prices?.[0]?.commodity || "general"
+                    })
+                });
+                const data = await res.json();
+
+                if (data.message) {
+                    document.getElementById("commentMsg").style.display = "inline";
+                    document.getElementById("commentText").value = "";
+                    commentStarRating = 0;
+                    document.querySelectorAll(".star-opt").forEach(el => { el.textContent = "☆"; el.classList.remove("active"); });
+                    setTimeout(() => {
+                        document.getElementById("commentMsg").style.display = "none";
+                        loadProfile(); // reload to show new comment
+                    }, 2000);
+                }
+            } catch(e) {
+                alert("Could not submit review. Please try again.");
+            }
+        }
+
+        // ── Share profile ─────────────────────────────────────────
+        function shareProfile() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                const toast = document.getElementById("toast");
+                toast.classList.add("show");
+                setTimeout(() => toast.classList.remove("show"), 2500);
+            });
+        }
+
+        // ── Message seller (placeholder for private chat) ─────────
+        function openChat() {
+            alert("Private messaging coming soon. For now, contact this seller directly at: " + (sellerData?.seller?.phone || "number not listed"));
+        }
+
+        // ── Scroll to comments ────────────────────────────────────
+        function scrollToComments() {
+            document.getElementById("commentsCard").scrollIntoView({ behavior: "smooth" });
+            setTimeout(() => document.getElementById("commentText").focus(), 500);
+        }
+
+        // ── Init ──────────────────────────────────────────────────
+        loadProfile();
+    </script>
+</body>
+</html>

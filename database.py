@@ -71,6 +71,51 @@ def init_db():
         )
     ''')
  
+    # User profiles — built from onboarding + behavior
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS user_profiles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT UNIQUE NOT NULL,
+            role TEXT,
+            primary_commodity TEXT,
+            state TEXT,
+            bulk_frequency TEXT,
+            priority TEXT,
+            behavior_type TEXT,
+            total_sessions INTEGER DEFAULT 1,
+            created_at TEXT,
+            updated_at TEXT
+        )
+    ''')
+ 
+    # User behavior log — every interaction tracked
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS user_behavior_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            action_type TEXT NOT NULL,
+            commodity TEXT,
+            question_type TEXT,
+            state_mentioned TEXT,
+            timestamp TEXT NOT NULL
+        )
+    ''')
+ 
+    # Generated reviews — auto-created by user clone
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS generated_reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            commodity TEXT NOT NULL,
+            star_rating INTEGER NOT NULL,
+            review_text TEXT NOT NULL,
+            sentiment TEXT,
+            price_at_review REAL,
+            generated_at TEXT NOT NULL,
+            triggered_by TEXT DEFAULT 'manual'
+        )
+    ''')
+ 
     # State prices table — for arbitrage detection
     c.execute('''
         CREATE TABLE IF NOT EXISTS state_prices (
@@ -82,6 +127,22 @@ def init_db():
             date TEXT,
             source TEXT DEFAULT 'seeded',
             FOREIGN KEY (product_id) REFERENCES products (id)
+        )
+    ''')
+    
+        # Comments on seller profiles
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS commodity_comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            seller_id INTEGER NOT NULL,
+            commodity TEXT NOT NULL,
+            session_id TEXT NOT NULL,
+            comment TEXT NOT NULL,
+            star_rating INTEGER DEFAULT 0,
+            sentiment TEXT DEFAULT 'NEUTRAL',
+            sent_by TEXT DEFAULT 'user',
+            timestamp TEXT NOT NULL,
+            FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
         )
     ''')
  
@@ -140,4 +201,3 @@ def migrate_community_tables():
  
  
 init_db()
- 

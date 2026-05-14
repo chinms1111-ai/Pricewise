@@ -40,7 +40,6 @@
             overflow-x: hidden;
         }
 
-        /* ── Grid texture overlay ── */
         body::before {
             content: '';
             position: fixed;
@@ -125,7 +124,6 @@
             background: linear-gradient(135deg, #a87200 0%, #f0a500 40%, #ffdd80 60%, #f0a500 80%, #a87200 100%);
             -webkit-background-clip: text;
             background-clip: text;
-            text-shadow: none;
             filter: drop-shadow(0 0 30px rgba(240,165,0,0.4));
         }
         .header-subtitle {
@@ -161,7 +159,6 @@
             50% { opacity: 0.4; transform: scale(0.8); }
         }
 
-        /* ── Layout ── */
         .container {
             max-width: 900px;
             margin: 0 auto;
@@ -170,7 +167,7 @@
             z-index: 1;
         }
 
-        /* ── Glass Cards ── */
+        /* ── Cards ── */
         .card {
             background: var(--surface-2);
             border: 1px solid var(--border);
@@ -196,17 +193,15 @@
             background: linear-gradient(135deg, rgba(240,165,0,0.04) 0%, transparent 60%);
             pointer-events: none;
         }
-        @keyframes fadeUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
         .card:nth-child(1) { animation-delay: 0.1s; }
         .card:nth-child(2) { animation-delay: 0.2s; }
         .card:nth-child(3) { animation-delay: 0.3s; }
         .card:nth-child(4) { animation-delay: 0.4s; }
         .card:nth-child(5) { animation-delay: 0.5s; }
         .card:nth-child(6) { animation-delay: 0.6s; }
+        .card:nth-child(7) { animation-delay: 0.7s; }
 
-        /* ── Card Headers ── */
         .card-title {
             font-family: 'Bebas Neue', sans-serif;
             font-size: 22px;
@@ -236,10 +231,7 @@
         }
 
         /* ── Inputs ── */
-        input[type="text"],
-        input[type="number"],
-        input[type="tel"],
-        select {
+        input[type="text"], input[type="number"], input[type="tel"], select {
             padding: 11px 14px;
             margin: 5px 4px;
             border-radius: 3px;
@@ -276,10 +268,7 @@
             border: none;
             transition: background-position 0.3s, box-shadow 0.2s, transform 0.1s;
         }
-        .btn:hover {
-            background-position: 100% 0;
-            box-shadow: 0 0 16px var(--gold-glow-strong);
-        }
+        .btn:hover { background-position: 100% 0; box-shadow: 0 0 16px var(--gold-glow-strong); }
         .btn:active { transform: scale(0.98); }
 
         .btn-ghost {
@@ -295,19 +284,10 @@
             transition: all 0.2s;
             font-weight: 400;
         }
-        .btn-ghost:hover {
-            border-color: var(--gold-dim);
-            color: var(--gold);
-            background: var(--gold-glow);
-        }
-        .btn-ghost.active {
-            background: var(--gold);
-            color: #0a0800;
-            border-color: var(--gold);
-            font-weight: 700;
-        }
+        .btn-ghost:hover { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-glow); }
+        .btn-ghost.active { background: var(--gold); color: #0a0800; border-color: var(--gold); font-weight: 700; }
 
-        /* ── Product list items ── */
+        /* ── Product items ── */
         .product-item {
             display: flex;
             align-items: center;
@@ -320,29 +300,12 @@
             transition: border-color 0.2s, background 0.2s;
         }
         .product-item:hover { border-color: var(--gold-dim); background: var(--surface-hover); }
-        .product-item-name {
-            font-family: 'DM Mono', monospace;
-            font-size: 13px;
-            color: var(--text-primary);
-        }
-        .product-item-id {
-            font-family: 'DM Mono', monospace;
-            font-size: 11px;
-            color: var(--text-muted);
-            border: 1px solid var(--text-muted);
-            padding: 2px 8px;
-            border-radius: 2px;
-        }
+        .product-item-name { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text-primary); }
+        .product-item-id { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); border: 1px solid var(--text-muted); padding: 2px 8px; border-radius: 2px; }
 
         /* ── Charts ── */
-        .chart-wrapper {
-            position: relative;
-            width: 100%;
-            margin-top: 8px;
-        }
-        .chart-wrapper canvas {
-            max-width: 100%;
-        }
+        .chart-wrapper { position: relative; width: 100%; margin-top: 8px; }
+        .chart-wrapper canvas { max-width: 100%; }
 
         #buyInsight {
             background: var(--surface-1);
@@ -356,12 +319,7 @@
             line-height: 1.8;
             color: var(--text-secondary);
         }
-
-        .divider {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 24px 0;
-        }
+        .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 
         /* ── Community prices ── */
         .community-price-row {
@@ -377,29 +335,10 @@
             gap: 8px;
             transition: border-color 0.2s, background 0.2s;
         }
-        .community-price-row:hover {
-            border-color: var(--border-glow);
-            background: var(--surface-hover);
-        }
-        .community-commodity {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 16px;
-            letter-spacing: 2px;
-            color: var(--gold);
-        }
-        .community-price-val {
-            font-family: 'DM Mono', monospace;
-            font-size: 18px;
-            font-weight: 500;
-            color: var(--text-primary);
-            letter-spacing: 1px;
-        }
-        .community-meta {
-            font-family: 'DM Mono', monospace;
-            font-size: 11px;
-            color: var(--text-muted);
-            text-align: right;
-        }
+        .community-price-row:hover { border-color: var(--border-glow); background: var(--surface-hover); }
+        .community-commodity { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--gold); }
+        .community-price-val { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--text-primary); letter-spacing: 1px; }
+        .community-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); text-align: right; }
         .community-badge {
             font-family: 'DM Mono', monospace;
             font-size: 10px;
@@ -411,47 +350,14 @@
             border: 1px solid rgba(0,230,118,0.2);
             text-transform: uppercase;
         }
-        .community-badge.seller-type-wholesaler {
-            background: rgba(0,194,255,0.08);
-            color: var(--blue);
-            border-color: rgba(0,194,255,0.2);
-        }
-        .community-badge.seller-type-retailer {
-            background: rgba(240,165,0,0.08);
-            color: var(--gold);
-            border-color: rgba(240,165,0,0.2);
-        }
-        .community-sub {
-            font-family: 'DM Mono', monospace;
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 3px;
-        }
-
-        .no-community-msg {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-            font-family: 'DM Mono', monospace;
-            font-size: 13px;
-        }
-        .cta-link {
-            color: var(--gold);
-            text-decoration: none;
-            font-weight: 500;
-            border-bottom: 1px solid var(--gold-dim);
-        }
+        .community-badge.seller-type-wholesaler { background: rgba(0,194,255,0.08); color: var(--blue); border-color: rgba(0,194,255,0.2); }
+        .community-badge.seller-type-retailer { background: rgba(240,165,0,0.08); color: var(--gold); border-color: rgba(240,165,0,0.2); }
+        .community-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+        .no-community-msg { text-align: center; padding: 40px 20px; color: var(--text-muted); font-family: 'DM Mono', monospace; font-size: 13px; }
+        .cta-link { color: var(--gold); text-decoration: none; font-weight: 500; border-bottom: 1px solid var(--gold-dim); }
         .cta-link:hover { color: var(--gold-bright); }
+        .filter-tabs { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
 
-        /* ── Filter tabs ── */
-        .filter-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-        }
-
-        /* ── Seller CTA Banner ── */
         .seller-cta {
             background: linear-gradient(135deg, rgba(240,165,0,0.06) 0%, rgba(10,8,0,0) 100%);
             border: 1px solid rgba(240,165,0,0.25);
@@ -480,9 +386,7 @@
         }
         .seller-cta a:hover { box-shadow: 0 0 14px var(--gold-glow-strong); }
 
-        /* ══════════════════════════════
-           AGENT CHAT UI
-           ══════════════════════════════ */
+        /* ── Chat ── */
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -492,7 +396,6 @@
             border-radius: 3px;
             overflow: hidden;
         }
-
         .chat-header {
             display: flex;
             align-items: center;
@@ -502,385 +405,123 @@
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
         }
-        .chat-header-avatar {
-            width: 32px; height: 32px;
-            border-radius: 3px;
-            background: linear-gradient(135deg, rgba(240,165,0,0.2), rgba(240,165,0,0.06));
-            border: 1px solid var(--gold-dim);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px;
-        }
-        .chat-header-name {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 16px;
-            letter-spacing: 2px;
-            color: var(--gold);
-        }
-        .chat-header-status {
-            font-family: 'DM Mono', monospace;
-            font-size: 10px;
-            color: var(--green);
-            letter-spacing: 1px;
-        }
-        .chat-header-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: var(--green);
-            box-shadow: 0 0 6px var(--green);
-            animation: pulse 2s infinite;
-        }
-        .chat-header-role {
-            margin-left: auto;
-            display: flex;
-            gap: 6px;
-        }
-        .role-btn {
-            background: var(--surface-1);
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-            font-family: 'DM Mono', monospace;
-            font-size: 10px;
-            letter-spacing: 1px;
-            padding: 5px 10px;
-            border-radius: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-transform: uppercase;
-        }
+        .chat-header-avatar { width: 32px; height: 32px; border-radius: 3px; background: linear-gradient(135deg, rgba(240,165,0,0.2), rgba(240,165,0,0.06)); border: 1px solid var(--gold-dim); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .chat-header-name { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--gold); }
+        .chat-header-status { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green); letter-spacing: 1px; }
+        .chat-header-role { margin-left: auto; display: flex; gap: 6px; }
+        .role-btn { background: var(--surface-1); color: var(--text-muted); border: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 5px 10px; border-radius: 2px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
         .role-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
-        .role-btn.active {
-            background: var(--gold);
-            color: #0a0800;
-            border-color: var(--gold);
-            font-weight: 700;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border) transparent;
-        }
+        .role-btn.active { background: var(--gold); color: #0a0800; border-color: var(--gold); font-weight: 700; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
         .chat-messages::-webkit-scrollbar { width: 4px; }
         .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-        .chat-msg {
-            display: flex;
-            gap: 10px;
-            max-width: 85%;
-        }
+        .chat-msg { display: flex; gap: 10px; max-width: 85%; }
         .chat-msg.user { align-self: flex-end; flex-direction: row-reverse; }
         .chat-msg.agent { align-self: flex-start; }
-
-        .chat-msg-bubble {
-            padding: 10px 14px;
-            border-radius: 3px;
-            font-size: 13px;
-            line-height: 1.7;
-        }
-        .chat-msg.user .chat-msg-bubble {
-            background: var(--gold);
-            color: #0a0800;
-            font-weight: 500;
-        }
-        .chat-msg.agent .chat-msg-bubble {
-            background: var(--surface-3);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-        }
-        .chat-msg-avatar {
-            width: 28px; height: 28px;
-            border-radius: 2px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 12px;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-        .chat-msg.user .chat-msg-avatar {
-            background: rgba(240,165,0,0.15);
-            border: 1px solid var(--gold-dim);
-            color: var(--gold);
-        }
-        .chat-msg.agent .chat-msg-avatar {
-            background: var(--surface-3);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-        }
-
-        .chat-thinking {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-            padding: 10px 14px;
-            background: var(--surface-3);
-            border: 1px solid var(--border);
-            border-radius: 3px;
-        }
-        .chat-thinking span {
-            width: 5px; height: 5px;
-            border-radius: 50%;
-            background: var(--gold-dim);
-            animation: bounce 1.2s infinite;
-        }
+        .chat-msg-bubble { padding: 10px 14px; border-radius: 3px; font-size: 13px; line-height: 1.7; }
+        .chat-msg.user .chat-msg-bubble { background: var(--gold); color: #0a0800; font-weight: 500; }
+        .chat-msg.agent .chat-msg-bubble { background: var(--surface-3); border: 1px solid var(--border); color: var(--text-primary); }
+        .chat-msg-avatar { width: 28px; height: 28px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+        .chat-msg.user .chat-msg-avatar { background: rgba(240,165,0,0.15); border: 1px solid var(--gold-dim); color: var(--gold); }
+        .chat-msg.agent .chat-msg-avatar { background: var(--surface-3); border: 1px solid var(--border); color: var(--text-secondary); }
+        .chat-thinking { display: flex; gap: 4px; align-items: center; padding: 10px 14px; background: var(--surface-3); border: 1px solid var(--border); border-radius: 3px; }
+        .chat-thinking span { width: 5px; height: 5px; border-radius: 50%; background: var(--gold-dim); animation: bounce 1.2s infinite; }
         .chat-thinking span:nth-child(2) { animation-delay: 0.2s; }
         .chat-thinking span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes bounce {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-5px); opacity: 1; }
-        }
-
-        .chat-empty {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            gap: 8px;
-            color: var(--text-muted);
-        }
-        .chat-empty-icon {
-            font-size: 28px;
-            opacity: 0.4;
-        }
-        .chat-empty-text {
-            font-family: 'DM Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-        .chat-suggested {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 10px;
-        }
-        .chat-suggestion {
-            font-family: 'DM Mono', monospace;
-            font-size: 11px;
-            color: var(--gold-dim);
-            border: 1px solid rgba(240,165,0,0.2);
-            padding: 5px 12px;
-            border-radius: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(240,165,0,0.04);
-        }
-        .chat-suggestion:hover {
-            border-color: var(--gold);
-            color: var(--gold);
-            background: var(--gold-glow);
-        }
-
-        .chat-input-area {
-            display: flex;
-            gap: 0;
-            padding: 12px 14px;
-            background: var(--surface-2);
-            border-top: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-        #agentQuestion {
-            flex: 1;
-            padding: 10px 14px;
-            background: var(--surface-1);
-            border: 1px solid var(--border);
-            border-right: none;
-            border-radius: 3px 0 0 3px;
-            color: var(--text-primary);
-            font-family: 'DM Mono', monospace;
-            font-size: 13px;
-            outline: none;
-            transition: border-color 0.2s;
-            width: auto;
-            margin: 0;
-        }
+        @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-5px); opacity: 1; } }
+        .chat-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 8px; color: var(--text-muted); }
+        .chat-empty-icon { font-size: 28px; opacity: 0.4; }
+        .chat-empty-text { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+        .chat-suggested { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .chat-suggestion { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold-dim); border: 1px solid rgba(240,165,0,0.2); padding: 5px 12px; border-radius: 2px; cursor: pointer; transition: all 0.2s; background: rgba(240,165,0,0.04); }
+        .chat-suggestion:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+        .chat-input-area { display: flex; gap: 0; padding: 12px 14px; background: var(--surface-2); border-top: 1px solid var(--border); flex-shrink: 0; }
+        #agentQuestion { flex: 1; padding: 10px 14px; background: var(--surface-1); border: 1px solid var(--border); border-right: none; border-radius: 3px 0 0 3px; color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px; outline: none; transition: border-color 0.2s; width: auto; margin: 0; }
         #agentQuestion:focus { border-color: var(--gold-dim); }
         #agentQuestion::placeholder { color: var(--text-muted); }
-        .chat-send-btn {
-            background: var(--gold);
-            color: #0a0800;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 0 3px 3px 0;
-            cursor: pointer;
-            font-family: 'Bebas Neue', sans-serif;
-            letter-spacing: 2px;
-            font-size: 14px;
-            font-weight: 700;
-            transition: box-shadow 0.2s;
-            flex-shrink: 0;
-        }
+        .chat-send-btn { background: var(--gold); color: #0a0800; border: none; padding: 10px 20px; border-radius: 0 3px 3px 0; cursor: pointer; font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: 14px; font-weight: 700; transition: box-shadow 0.2s; flex-shrink: 0; }
         .chat-send-btn:hover { box-shadow: 0 0 14px var(--gold-glow-strong); }
 
-        /* ── Welcome Modal ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(4,5,8,0.92);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(4px);
-        }
-        .modal-box {
-            background: var(--surface-2);
-            border: 1px solid var(--gold-dim);
-            border-radius: 4px;
-            padding: 48px 40px;
-            max-width: 480px;
-            width: 90%;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 0 60px rgba(240,165,0,0.15);
-        }
-        .modal-box::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 4px;
-            background: linear-gradient(135deg, rgba(240,165,0,0.06) 0%, transparent 60%);
-            pointer-events: none;
-        }
-        .modal-logo {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 52px;
-            letter-spacing: 8px;
-            color: transparent;
-            background: linear-gradient(135deg, #a87200, #f0a500, #ffdd80, #f0a500, #a87200);
-            -webkit-background-clip: text;
-            background-clip: text;
-            filter: drop-shadow(0 0 20px rgba(240,165,0,0.4));
-            margin-bottom: 8px;
-        }
-        .modal-tagline {
-            font-family: 'DM Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 3px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 24px;
-        }
-        .modal-desc {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.8;
-            margin-bottom: 12px;
-        }
-        .modal-commodities {
+        /* ── Onboarding Modal ── */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(4,5,8,0.92); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+
+        /* ── Clone Card Styles ── */
+        .alert-item {
             display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-        }
-        .modal-commodity-badge {
-            font-family: 'DM Mono', monospace;
-            font-size: 11px;
-            padding: 5px 14px;
+            gap: 14px;
+            align-items: flex-start;
+            padding: 14px 16px;
+            background: var(--surface-1);
             border: 1px solid var(--border);
-            border-radius: 2px;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-        }
-        .modal-enter-btn {
-            width: 100%;
-            padding: 16px;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 18px;
-            letter-spacing: 4px;
-            background: linear-gradient(135deg, #d49200, #f0a500, #d49200);
-            background-size: 200% 100%;
-            color: #0a0800;
-            border: none;
             border-radius: 3px;
-            cursor: pointer;
-            transition: background-position 0.3s, box-shadow 0.3s;
+            margin-bottom: 10px;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+            overflow: hidden;
         }
-        .modal-enter-btn:hover {
-            background-position: 100% 0;
-            box-shadow: 0 0 30px var(--gold-glow-strong);
-        }
-        .modal-seller-link {
-            margin-top: 18px;
-            font-size: 12px;
-            color: var(--text-muted);
-            font-family: 'DM Mono', monospace;
-        }
-        .modal-seller-link a { color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--gold-dim); }
+        .alert-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+        .alert-item.alert-urgent::before { background: var(--red); }
+        .alert-item.alert-watch::before { background: var(--gold); }
+        .alert-item.alert-good::before { background: var(--green); }
+        .alert-item.alert-stable::before { background: var(--blue); }
+        .alert-item:hover { border-color: var(--border-glow); background: var(--surface-hover); }
+        .alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+        .alert-body { flex: 1; min-width: 0; }
+        .alert-headline { font-size: 13px; color: var(--text-primary); line-height: 1.5; margin-bottom: 4px; font-weight: 500; }
+        .alert-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); display: flex; gap: 12px; flex-wrap: wrap; }
+        .alert-tag { font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 2px; letter-spacing: 1px; text-transform: uppercase; }
+        .alert-tag.urgent { background: rgba(255,79,79,0.1); color: var(--red); border: 1px solid rgba(255,79,79,0.2); }
+        .alert-tag.watch { background: rgba(240,165,0,0.1); color: var(--gold); border: 1px solid rgba(240,165,0,0.2); }
+        .alert-tag.good { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+        .alert-tag.stable { background: rgba(0,194,255,0.1); color: var(--blue); border: 1px solid rgba(0,194,255,0.2); }
+        .star-rating-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .star-group { display: flex; gap: 3px; }
+        .star-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); transition: color 0.15s, transform 0.15s; padding: 2px; line-height: 1; }
+        .star-btn:hover { color: var(--gold); transform: scale(1.2); }
+        .star-btn.active { color: var(--gold); }
+        .rating-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
+        .rating-submitted { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--green); letter-spacing: 1px; display: none; }
+        .clone-offline-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,194,255,0.08); border: 1px solid rgba(0,194,255,0.2); border-radius: 2px; padding: 4px 12px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--blue); letter-spacing: 1px; margin-bottom: 16px; }
+        .clone-offline-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 6px var(--blue); animation: pulse 2s infinite; }
+        .clone-section-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin: 20px 0 12px; display: flex; align-items: center; gap: 10px; }
+        .clone-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .manual-review-form { background: var(--surface-1); border: 1px solid var(--border); border-radius: 3px; padding: 16px; margin-top: 12px; }
+        .manual-review-form textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 3px; color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px; padding: 10px 12px; resize: vertical; min-height: 80px; outline: none; margin-top: 10px; transition: border-color 0.2s; box-sizing: border-box; }
+        .manual-review-form textarea:focus { border-color: var(--gold-dim); }
+        .manual-review-form textarea::placeholder { color: var(--text-muted); }
+        .manual-star-group { display: flex; gap: 6px; margin: 10px 0; }
+        .manual-star { font-size: 24px; cursor: pointer; color: var(--text-muted); transition: color 0.15s, transform 0.15s; user-select: none; }
+        .manual-star:hover { color: var(--gold); transform: scale(1.15); }
+        .manual-star.active { color: var(--gold); }
 
-        /* ══════════════════════════════
-           MOBILE RESPONSIVE
-           ══════════════════════════════ */
+        /* ── Mobile ── */
         @media (max-width: 600px) {
-
-            /* Header */
             .header { padding: 28px 16px 16px; }
             .header-logo { font-size: 48px; letter-spacing: 4px; }
             .header-subtitle { font-size: 10px; letter-spacing: 2px; }
             .header-tagline { font-size: 10px; letter-spacing: 1px; padding: 4px 12px; }
-
-            /* Container & cards */
             .container { padding: 0 12px 60px; }
             .card { padding: 20px 16px; }
             .card-title { font-size: 18px; letter-spacing: 2px; }
-
-            /* Inputs — full width stacked on mobile */
-            input[type="text"],
-            input[type="number"],
-            input[type="tel"],
-            select {
-                width: 100%;
-                max-width: 100%;
-                margin: 5px 0;
-                display: block;
-            }
+            input[type="text"], input[type="number"], input[type="tel"], select { width: 100%; max-width: 100%; margin: 5px 0; display: block; }
             .btn { width: 100%; margin: 8px 0 0; }
-
-            /* Product item */
             .product-item { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .product-item > div:last-child { width: 100%; justify-content: space-between; }
             .product-item .btn { width: auto; }
-
-            /* Community price rows */
             .community-price-row { flex-direction: column; align-items: flex-start; }
-            .community-price-row > div:last-child { text-align: left; width: 100%; }
             .community-meta { text-align: left; }
-
-            /* Seller CTA */
             .seller-cta { flex-direction: column; align-items: flex-start; }
             .seller-cta a { width: 100%; text-align: center; display: block; }
-
-            /* Chat container — taller on mobile so it's usable */
             .chat-container { height: 480px; }
-
-            /* Chat header — stack role buttons below name on mobile */
             .chat-header { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
             .chat-header-role { margin-left: 0; width: 100%; justify-content: flex-start; }
             .role-btn { font-size: 10px; padding: 4px 8px; }
-
-            /* Chat suggestions */
             .chat-suggestion { font-size: 10px; padding: 4px 10px; }
-
-            /* Ticker — smaller text on mobile */
             .ticker-item { padding: 0 16px; gap: 6px; font-size: 11px; }
-            .ticker-item .name { font-size: 10px; }
-
-            /* Modal */
-            .modal-box { padding: 32px 20px; }
-            .modal-logo { font-size: 40px; }
-
-            /* Buy insight */
             #buyInsight { font-size: 12px; padding: 12px; }
         }
-
         @media (max-width: 400px) {
             .header-logo { font-size: 38px; letter-spacing: 3px; }
             .card { padding: 16px 12px; }
-            .chat-header-role { gap: 4px; }
             .role-btn { padding: 4px 6px; font-size: 9px; }
         }
     </style>
@@ -888,19 +529,61 @@
 
 <body>
 
-    <!-- ── Welcome Modal ── -->
-    <div id="welcomeModal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-logo">PriceWise</div>
-            <div class="modal-tagline">Nigeria Market Intelligence</div>
-            <p class="modal-desc">Real-time commodity prices across Nigeria. AI advice on when to buy, where to buy, and how to profit.</p>
-            <div class="modal-commodities">
-                <span class="modal-commodity-badge">🌾 RICE</span>
-                <span class="modal-commodity-badge">🍞 BREAD</span>
-                <span class="modal-commodity-badge">⛽ FUEL</span>
+    <!-- ── ONBOARDING MODAL ── -->
+    <div id="onboardingModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:1000; justify-content:center; align-items:center; backdrop-filter:blur(8px);">
+        <div style="background:#141414; border:1px solid #f0a500; border-radius:20px; padding:40px; max-width:480px; width:90%; text-align:center;">
+            <div id="ob-step1">
+                <div style="font-size:40px; margin-bottom:12px;">👋</div>
+                <h2 style="color:#f0a500; font-size:22px; margin-bottom:8px;">Welcome to PriceWise</h2>
+                <p style="color:#888; font-size:13px; margin-bottom:24px;">Answer 4 quick questions so I can personalise your experience</p>
+                <p style="color:#aaa; font-weight:bold; margin-bottom:12px;">What do you mainly use the market for?</p>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button onclick="obAnswer('role','consumer', 2)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">🛒 Buying for my home / family</button>
+                    <button onclick="obAnswer('role','trader', 2)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">📦 Trading / reselling for profit</button>
+                    <button onclick="obAnswer('role','small_business', 2)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">🏪 Running a small business</button>
+                </div>
             </div>
-            <button class="modal-enter-btn" onclick="enterApp()">Enter PriceWise →</button>
-            <p class="modal-seller-link">Are you a seller? <a href="/seller">Register here to list your prices</a></p>
+            <div id="ob-step2" style="display:none;">
+                <p style="color:#aaa; font-weight:bold; margin-bottom:12px;">Which commodity do you deal with most?</p>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button onclick="obAnswer('primary_commodity','Rice (50kg bag)', 3)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">🌾 Rice</button>
+                    <button onclick="obAnswer('primary_commodity','Bread (sliced loaf)', 3)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">🍞 Bread</button>
+                    <button onclick="obAnswer('primary_commodity','Fuel (per litre)', 3)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">⛽ Fuel</button>
+                    <button onclick="obAnswer('primary_commodity','All', 3)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">📦 All of them</button>
+                </div>
+            </div>
+            <div id="ob-step3" style="display:none;">
+                <p style="color:#aaa; font-weight:bold; margin-bottom:12px;">How often do you buy in bulk?</p>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button onclick="obAnswer('bulk_frequency','Daily', 4)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">📅 Daily</button>
+                    <button onclick="obAnswer('bulk_frequency','Weekly', 4)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">📅 Weekly</button>
+                    <button onclick="obAnswer('bulk_frequency','Monthly', 4)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">📅 Monthly</button>
+                    <button onclick="obAnswer('bulk_frequency','Rarely', 4)" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">🔄 Rarely</button>
+                </div>
+            </div>
+            <div id="ob-step4" style="display:none;">
+                <p style="color:#aaa; font-weight:bold; margin-bottom:12px;">What matters most to you?</p>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button onclick="obAnswer('priority','Cheapest price', 'done')" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">💰 Cheapest price</button>
+                    <button onclick="obAnswer('priority','Profit margin', 'done')" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">📈 Profit margin</button>
+                    <button onclick="obAnswer('priority','Consistent supply', 'done')" style="background:#1a1a1a; color:white; border:1px solid #333; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">🔁 Consistent supply</button>
+                    <button onclick="obAnswer('priority','All three', 'done')" style="background:#1a1a1a; color:white; border:1px solid #f0a500; padding:14px; border-radius:10px; cursor:pointer; font-size:14px; text-align:left;">✅ All three</button>
+                </div>
+            </div>
+            <div id="ob-done" style="display:none;">
+                <div style="font-size:40px; margin-bottom:12px;">🎯</div>
+                <h3 style="color:#f0a500; margin-bottom:10px;">Profile Ready!</h3>
+                <p id="ob-summary" style="color:#aaa; font-size:13px; line-height:1.7; margin-bottom:20px;"></p>
+                <button onclick="finishOnboarding()" style="width:100%; padding:14px; background:#f0a500; color:black; font-weight:bold; border:none; border-radius:10px; font-size:16px; cursor:pointer;">Enter PriceWise →</button>
+            </div>
+            <div style="margin-top:16px;">
+                <div style="display:flex; justify-content:center; gap:6px;">
+                    <div id="dot1" style="width:8px;height:8px;border-radius:50%;background:#f0a500;"></div>
+                    <div id="dot2" style="width:8px;height:8px;border-radius:50%;background:#333;"></div>
+                    <div id="dot3" style="width:8px;height:8px;border-radius:50%;background:#333;"></div>
+                    <div id="dot4" style="width:8px;height:8px;border-radius:50%;background:#333;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -915,7 +598,6 @@
             <div class="ticker-item"><span class="name">LAGOS INDEX</span><span class="price">₦84,100</span><span class="up">▲ 3.1%</span></div>
             <div class="ticker-item"><span class="name">ABUJA INDEX</span><span class="price">₦87,500</span><span class="up">▲ 1.9%</span></div>
             <div class="ticker-item"><span class="name">KANO RICE</span><span class="price">₦76,000</span><span class="down">▼ 0.4%</span></div>
-            <!-- duplicated for seamless loop -->
             <div class="ticker-item"><span class="name">RICE 50KG</span><span class="price">₦82,500</span><span class="up">▲ 2.3%</span></div>
             <div class="ticker-item"><span class="name">BREAD LOAF</span><span class="price">₦1,200</span><span class="down">▼ 0.8%</span></div>
             <div class="ticker-item"><span class="name">FUEL/L</span><span class="price">₦968</span><span class="up">▲ 1.1%</span></div>
@@ -941,10 +623,7 @@
 
         <!-- ── Add Product ── -->
         <div class="card">
-            <div class="card-title">
-                <div class="card-title-icon">+</div>
-                Add Product
-            </div>
+            <div class="card-title"><div class="card-title-icon">+</div>Add Product</div>
             <input type="text" id="productName" placeholder="Product e.g Nike Shoes">
             <input type="text" id="productUrl" placeholder="URL (optional)">
             <button class="btn" onclick="addProduct()">Add Product</button>
@@ -952,10 +631,7 @@
 
         <!-- ── Log Price ── -->
         <div class="card">
-            <div class="card-title">
-                <div class="card-title-icon">₦</div>
-                Log a Price
-            </div>
+            <div class="card-title"><div class="card-title-icon">₦</div>Log a Price</div>
             <input type="number" id="productId" placeholder="Product ID">
             <input type="number" id="priceInput" placeholder="Price e.g 30000">
             <select id="platformSelect">
@@ -969,56 +645,38 @@
 
         <!-- ── Tracked Products ── -->
         <div class="card">
-            <div class="card-title">
-                <div class="card-title-icon">◈</div>
-                Tracked Products
-            </div>
+            <div class="card-title"><div class="card-title-icon">◈</div>Tracked Products</div>
             <div id="productsList" style="font-family:'DM Mono',monospace; font-size:13px; color:var(--text-muted);">Loading...</div>
         </div>
 
         <!-- ── Price History Graph ── -->
         <div class="card">
-            <div class="card-title">
-                <div class="card-title-icon">↗</div>
-                <span id="graphTitle">Price History Graph</span>
-            </div>
-            <div class="chart-wrapper">
-                <canvas id="priceChart"></canvas>
-            </div>
+            <div class="card-title"><div class="card-title-icon">↗</div><span id="graphTitle">Price History Graph</span></div>
+            <div class="chart-wrapper"><canvas id="priceChart"></canvas></div>
             <div id="buyInsight" style="display:none;"></div>
-
             <hr class="divider">
-
             <div class="card-title" style="font-size:18px; margin-bottom:6px;">
                 <div class="card-title-icon" style="width:24px;height:24px;font-size:11px;">≡</div>
                 <span id="barTitle">Platform Price Comparison</span>
             </div>
             <p class="card-desc">Latest price per platform — see where it's cheapest today</p>
-            <div class="chart-wrapper">
-                <canvas id="barChart"></canvas>
-            </div>
+            <div class="chart-wrapper"><canvas id="barChart"></canvas></div>
         </div>
 
         <!-- ── Community Prices ── -->
         <div class="card">
-            <div class="card-title">
-                <div class="card-title-icon">📍</div>
-                Live Community Prices
-            </div>
+            <div class="card-title"><div class="card-title-icon">📍</div>Live Community Prices</div>
             <p class="card-desc">Real prices from sellers on the ground — updated today</p>
-
             <div class="seller-cta">
                 <p>🏪 <strong style="color:var(--text-primary);">Are you a seller?</strong> List your prices so buyers can find you</p>
                 <a href="/seller">Register as Seller →</a>
             </div>
-
             <div class="filter-tabs">
                 <button class="btn-ghost active" onclick="filterCommunity('all', this)">All</button>
                 <button class="btn-ghost" onclick="filterCommunity('Rice (50kg bag)', this)">🌾 Rice</button>
                 <button class="btn-ghost" onclick="filterCommunity('Bread (sliced loaf)', this)">🍞 Bread</button>
                 <button class="btn-ghost" onclick="filterCommunity('Fuel (per litre)', this)">⛽ Fuel</button>
             </div>
-
             <div id="communityPricesList">
                 <div class="no-community-msg">
                     <div style="font-size:28px; margin-bottom:10px; opacity:0.4;">⏳</div>
@@ -1027,16 +685,96 @@
             </div>
         </div>
 
+        <!-- ── My Market Clone ── -->
+        <div class="card" id="cloneCard">
+            <div class="card-title"><div class="card-title-icon">🧬</div>My Market Clone</div>
+            <p class="card-desc">Rate market alerts yourself. Your clone learns your pattern and rates them for you when you're offline.</p>
+
+            <div class="clone-offline-badge">
+                <span class="dot"></span>
+                <span id="cloneBadgeText">CLONE ACTIVE — LEARNING YOUR PATTERNS</span>
+            </div>
+
+            <!-- Section 1: Market Alerts -->
+            <div class="clone-section-title">Market Alerts — Rate These</div>
+            <p style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); margin-bottom:14px;">
+                Generated from real NBS price data. Rate each one — your clone learns from every rating.
+            </p>
+            <div id="marketAlertsList">
+                <div style="color:var(--text-muted); font-family:'DM Mono',monospace; font-size:13px; padding:20px 0; text-align:center;">Loading market alerts...</div>
+            </div>
+
+            <!-- Section 2: Your Own Review -->
+            <div class="clone-section-title">Your Own Review</div>
+            <p style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); margin-bottom:14px;">
+                Rate the market yourself. Your clone compares this with what it generated for you.
+            </p>
+            <div class="manual-review-form">
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                    <select id="manualCommodity" style="width:auto; padding:8px 12px; font-size:12px; margin:0;">
+                        <option value="Rice (50kg bag)">🌾 Rice</option>
+                        <option value="Bread (sliced loaf)">🍞 Bread</option>
+                        <option value="Fuel (per litre)">⛽ Fuel</option>
+                    </select>
+                </div>
+                <div style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); margin-bottom:6px;">YOUR RATING:</div>
+                <div class="manual-star-group" id="manualStars">
+                    <span class="manual-star" onclick="setManualStar(1)">☆</span>
+                    <span class="manual-star" onclick="setManualStar(2)">☆</span>
+                    <span class="manual-star" onclick="setManualStar(3)">☆</span>
+                    <span class="manual-star" onclick="setManualStar(4)">☆</span>
+                    <span class="manual-star" onclick="setManualStar(5)">☆</span>
+                </div>
+                <textarea id="manualReviewText" placeholder="Write what you think about the market right now... (optional)" style="width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:3px; color:var(--text-primary); font-family:'DM Mono',monospace; font-size:13px; padding:10px 12px; resize:vertical; min-height:80px; outline:none; margin-top:10px; transition:border-color 0.2s; box-sizing:border-box;"></textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; flex-wrap:wrap; gap:8px;">
+                    <span id="manualSubmitMsg" style="font-family:'DM Mono',monospace; font-size:11px; color:var(--green); display:none;">✓ Review saved</span>
+                    <button class="btn" onclick="submitManualReview()" style="margin:0; padding:9px 20px; font-size:13px;">Submit My Rating</button>
+                </div>
+            </div>
+
+            <!-- Section 3: Clone's Take -->
+            <div class="clone-section-title">Clone's Take</div>
+            <p style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); margin-bottom:14px;">
+                What your clone would say — generated from your profile and behavior.
+            </p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+                <button class="btn-ghost" onclick="generateReview('Rice (50kg bag)')">🌾 Rice</button>
+                <button class="btn-ghost" onclick="generateReview('Bread (sliced loaf)')">🍞 Bread</button>
+                <button class="btn-ghost" onclick="generateReview('Fuel (per litre)')">⛽ Fuel</button>
+            </div>
+            <div id="reviewResult" style="display:none;">
+                <div id="reviewLoading" style="color:var(--text-muted); font-family:'DM Mono',monospace; font-size:13px; display:none; padding:10px 0;">🧬 Your clone is analyzing the market...</div>
+                <div id="reviewCard" style="display:none; background:var(--surface-1); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:3px; padding:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <span id="reviewCommodity" style="font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; color:var(--gold);"></span>
+                            <span id="reviewSentiment" style="font-family:'DM Mono',monospace; font-size:11px; padding:3px 8px; border-radius:2px; margin-left:10px;"></span>
+                        </div>
+                        <div id="reviewStars" style="font-size:22px;"></div>
+                    </div>
+                    <p id="reviewText" style="font-size:14px; line-height:1.8; color:var(--text-primary); font-style:italic;"></p>
+                    <p id="reviewMeta" style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); margin-top:12px;"></p>
+                    <div id="cloneCompare" style="display:none; margin-top:14px; padding:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:3px;">
+                        <div style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); letter-spacing:1px; margin-bottom:6px;">CLONE vs YOU</div>
+                        <div id="cloneCompareText" style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-secondary);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: While You Were Away -->
+            <div class="clone-section-title">While You Were Away</div>
+            <div id="offlineCloneActivity">
+                <div style="color:var(--text-muted); font-family:'DM Mono',monospace; font-size:12px; padding:16px; background:var(--surface-1); border:1px solid var(--border); border-radius:3px; text-align:center;">
+                    Your clone hasn't run yet today. It fires every morning at 8AM and rates the market on your behalf.
+                </div>
+            </div>
+        </div>
+
         <!-- ── Agent Chat ── -->
         <div class="card">
-            <div class="card-title">
-                <div class="card-title-icon">🤖</div>
-                PriceWise Agent
-            </div>
+            <div class="card-title"><div class="card-title-icon">🤖</div>PriceWise Agent</div>
             <p class="card-desc">Ask anything about commodity prices in Nigeria</p>
-
             <div class="chat-container">
-                <!-- Chat header with role selector -->
                 <div class="chat-header">
                     <div class="chat-header-avatar">🤖</div>
                     <div>
@@ -1049,8 +787,6 @@
                         <button class="role-btn" id="roleSmallBiz" onclick="setRole('small_business')">🏪 Biz</button>
                     </div>
                 </div>
-
-                <!-- Messages area -->
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-empty" id="chatEmpty">
                         <div class="chat-empty-icon">💬</div>
@@ -1062,8 +798,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Input area -->
                 <div class="chat-input-area">
                     <input type="text" id="agentQuestion" placeholder="e.g Should I buy rice now or wait?">
                     <button class="chat-send-btn" onclick="askAgent()">Send</button>
@@ -1074,36 +808,60 @@
     </div><!-- /container -->
 
     <script>
-        const PLATFORM_COLORS = {
-            "Jumia": "#f0a500",
-            "Konga": "#00c2ff",
-            "Jiji": "#ff4f4f",
-            "Unknown": "#7a8499"
-        };
+        const PLATFORM_COLORS = { "Jumia": "#f0a500", "Konga": "#00c2ff", "Jiji": "#ff4f4f", "Unknown": "#7a8499" };
 
-        // ─── Welcome modal ───────────────────────────────────────────
-        function enterApp() {
-            localStorage.setItem("pricewise_visited", "true");
-            document.getElementById("welcomeModal").style.display = "none";
+        // ── Onboarding ────────────────────────────────────────────────
+        let obProfile = {};
+
+        function obAnswer(key, value, nextStep) {
+            obProfile[key] = value;
+            document.querySelectorAll('[id^="ob-step"]').forEach(el => el.style.display = 'none');
+            if (nextStep === 'done') {
+                ['dot1','dot2','dot3','dot4'].forEach(d => document.getElementById(d).style.background = '#f0a500');
+                document.getElementById('ob-done').style.display = 'block';
+                const roleLabel = { consumer:'Consumer', trader:'Trader', small_business:'Small Business' };
+                document.getElementById('ob-summary').innerHTML =
+                    `I've got you as a <strong style="color:#f0a500">${roleLabel[obProfile.role]}</strong> based in your area, focused on <strong style="color:#f0a500">${obProfile.primary_commodity}</strong>, buying <strong style="color:#f0a500">${obProfile.bulk_frequency}</strong>, and prioritizing <strong style="color:#f0a500">${obProfile.priority}</strong>.<br><br>Every recommendation I give you from now is built around this profile.`;
+            } else {
+                document.getElementById('ob-step' + nextStep).style.display = 'block';
+                ['dot1','dot2','dot3','dot4'].forEach((d,i) => {
+                    document.getElementById(d).style.background = i < nextStep ? '#f0a500' : '#333';
+                });
+            }
         }
 
+        async function finishOnboarding() {
+            let sessionId = localStorage.getItem("pricewise_session");
+            if (!sessionId) { sessionId = "user_" + Date.now(); localStorage.setItem("pricewise_session", sessionId); }
+            obProfile.session_id = sessionId;
+            await fetch("/save_profile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(obProfile)
+            });
+            localStorage.setItem("pricewise_visited", "true");
+            localStorage.setItem("pricewise_role", obProfile.role);
+            document.getElementById("onboardingModal").style.display = "none";
+            if (typeof setRole === 'function') setRole(obProfile.role);
+        }
+
+        // ── Init ──────────────────────────────────────────────────────
         window.onload = function() {
             if (!localStorage.getItem("pricewise_visited")) {
-                document.getElementById("welcomeModal").style.display = "flex";
+                document.getElementById("onboardingModal").style.display = "flex";
             }
             loadProducts();
             loadCommunityPrices();
+            setRole(localStorage.getItem("pricewise_role") || "consumer");
+            renderMarketAlerts();
+            loadOfflineCloneActivity();
         };
 
-        // ─── Products ────────────────────────────────────────────────
+        // ── Products ──────────────────────────────────────────────────
         async function addProduct() {
             const name = document.getElementById("productName").value;
             const url = document.getElementById("productUrl").value;
-            await fetch("/add_product", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, url })
-            });
+            await fetch("/add_product", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, url }) });
             document.getElementById("productName").value = "";
             document.getElementById("productUrl").value = "";
             loadProducts();
@@ -1113,15 +871,8 @@
             const product_id = document.getElementById("productId").value;
             const price = document.getElementById("priceInput").value;
             const platform = document.getElementById("platformSelect").value;
-            if (!product_id || !price || !platform) {
-                alert("Please fill in Product ID, Price, and Platform.");
-                return;
-            }
-            await fetch("/log_price", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ product_id, price, platform })
-            });
+            if (!product_id || !price || !platform) { alert("Please fill in Product ID, Price, and Platform."); return; }
+            await fetch("/log_price", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ product_id, price, platform }) });
             document.getElementById("priceInput").value = "";
             document.getElementById("platformSelect").selectedIndex = 0;
             alert("Price logged successfully!");
@@ -1131,122 +882,48 @@
             const response = await fetch("/products");
             const products = await response.json();
             const div = document.getElementById("productsList");
-            if (products.length === 0) {
-                div.innerHTML = `<p style="color:var(--text-muted); font-size:13px;">No products yet. Add one above.</p>`;
-                return;
-            }
+            if (products.length === 0) { div.innerHTML = `<p style="color:var(--text-muted); font-size:13px;">No products yet. Add one above.</p>`; return; }
             div.innerHTML = products.map(p => `
                 <div class="product-item">
-                    <div>
-                        <div class="product-item-name">${p.name}</div>
-                    </div>
+                    <div><div class="product-item-name">${p.name}</div></div>
                     <div style="display:flex;align-items:center;gap:10px;">
                         <span class="product-item-id">ID: ${p.id}</span>
                         <button class="btn" onclick="loadChart(${p.id}, '${p.name}')" style="padding:7px 14px;font-size:12px;margin:0;">View Chart</button>
                     </div>
-                </div>
-            `).join("");
+                </div>`).join("");
         }
 
-        // ─── Charts ──────────────────────────────────────────────────
-        // Safely destroy a chart AND replace its canvas element entirely.
-        // Simply calling .destroy() can leave a dangling ResizeObserver on
-        // the old canvas, which causes "Canvas already in use" or silent
-        // resize errors when the chart is re-created. Swapping the element
-        // guarantees a clean slate every time.
+        // ── Charts ────────────────────────────────────────────────────
         function safeDestroyChart(canvasId) {
             const existing = Chart.getChart(canvasId);
             if (existing) existing.destroy();
             const old = document.getElementById(canvasId);
-            if (old) {
-                const fresh = document.createElement("canvas");
-                fresh.id = canvasId;
-                old.parentNode.replaceChild(fresh, old);
-            }
+            if (old) { const fresh = document.createElement("canvas"); fresh.id = canvasId; old.parentNode.replaceChild(fresh, old); }
         }
 
         async function loadChart(productId, productName) {
             safeDestroyChart("priceChart");
             safeDestroyChart("barChart");
-
             const response = await fetch(`/history/${productId}`);
             const history = await response.json();
-
             if (history.length === 0) {
                 document.getElementById("graphTitle").innerHTML = "Price History — " + productName;
                 document.getElementById("buyInsight").style.display = "block";
                 document.getElementById("buyInsight").innerHTML = "<p style='color:var(--text-muted)'>No price history yet.</p>";
                 return;
             }
-
             const platforms = {};
-            history.forEach((entry) => {
-                const p = entry.platform || "Unknown";
-                if (!platforms[p]) platforms[p] = [];
-                platforms[p].push({ x: entry.date, y: Number(entry.price) });
-            });
-
+            history.forEach(entry => { const p = entry.platform || "Unknown"; if (!platforms[p]) platforms[p] = []; platforms[p].push({ x: entry.date, y: Number(entry.price) }); });
             const allLabels = [...new Set(history.map(e => e.date))].sort();
-
             const datasets = Object.entries(platforms).map(([platformName, points]) => {
                 const color = PLATFORM_COLORS[platformName] || "#ffffff";
-                const data = allLabels.map(label => {
-                    const found = points.find(p => p.x === label);
-                    return found ? found.y : null;
-                });
-                return {
-                    label: platformName,
-                    data,
-                    borderColor: color,
-                    backgroundColor: color + "18",
-                    tension: 0.4,
-                    pointBackgroundColor: color,
-                    pointRadius: 6,
-                    borderWidth: 2,
-                    fill: false,
-                    spanGaps: false
-                };
+                const data = allLabels.map(label => { const found = points.find(p => p.x === label); return found ? found.y : null; });
+                return { label: platformName, data, borderColor: color, backgroundColor: color + "18", tension: 0.4, pointBackgroundColor: color, pointRadius: 6, borderWidth: 2, fill: false, spanGaps: false };
             });
-
             document.getElementById("graphTitle").innerHTML = "Price History — " + productName;
-
             const ctx = document.getElementById("priceChart").getContext("2d");
-            new Chart(ctx, {
-                type: "line",
-                data: { labels: allLabels, datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: window.innerWidth < 600 ? 1.4 : 2,
-                    plugins: {
-                        legend: { labels: { color: "#7a8499", font: { family: "'DM Mono'", size: window.innerWidth < 600 ? 10 : 12 } } },
-                        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ₦${ctx.parsed.y.toLocaleString()}` } }
-                    },
-                    scales: {
-                        x: {
-                            ticks: {
-                                color: "#f0a500",
-                                font: { family: "'DM Mono'", size: window.innerWidth < 600 ? 9 : 11 },
-                                maxRotation: 45,
-                                maxTicksLimit: window.innerWidth < 600 ? 5 : 10
-                            },
-                            grid: { color: "#1a1f2e" }
-                        },
-                        y: {
-                            ticks: {
-                                color: "#f0a500",
-                                font: { family: "'DM Mono'", size: window.innerWidth < 600 ? 9 : 11 },
-                                callback: val => "₦" + val.toLocaleString(),
-                                maxTicksLimit: 6
-                            },
-                            grid: { color: "#1a1f2e" }
-                        }
-                    }
-                }
-            });
-
+            new Chart(ctx, { type: "line", data: { labels: allLabels, datasets }, options: { responsive: true, maintainAspectRatio: true, aspectRatio: window.innerWidth < 600 ? 1.4 : 2, plugins: { legend: { labels: { color: "#7a8499", font: { family: "'DM Mono'", size: window.innerWidth < 600 ? 10 : 12 } } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ₦${ctx.parsed.y.toLocaleString()}` } } }, scales: { x: { ticks: { color: "#f0a500", font: { family: "'DM Mono'", size: window.innerWidth < 600 ? 9 : 11 }, maxRotation: 45, maxTicksLimit: window.innerWidth < 600 ? 5 : 10 }, grid: { color: "#1a1f2e" } }, y: { ticks: { color: "#f0a500", font: { family: "'DM Mono'", size: window.innerWidth < 600 ? 9 : 11 }, callback: val => "₦" + val.toLocaleString(), maxTicksLimit: 6 }, grid: { color: "#1a1f2e" } } } } });
             analyzeBestTime(history);
-
             const latestByPlatform = {};
             history.forEach(entry => { latestByPlatform[entry.platform || "Unknown"] = Number(entry.price); });
             const barLabels = Object.keys(latestByPlatform);
@@ -1255,51 +932,9 @@
             const minPrice = Math.min(...barData);
             const borderWidths = barData.map(price => price === minPrice ? 2 : 1);
             const barBorderColors = barData.map((price, i) => price === minPrice ? "#ffffff" : barColors[i]);
-
             document.getElementById("barTitle").innerHTML = "Platform Comparison — " + productName;
-
             const barCtx = document.getElementById("barChart").getContext("2d");
-            new Chart(barCtx, {
-                type: "bar",
-                data: {
-                    labels: barLabels,
-                    datasets: [{
-                        label: "Latest Price",
-                        data: barData,
-                        backgroundColor: barColors.map(c => c + "99"),
-                        borderColor: barBorderColors,
-                        borderWidth: borderWidths,
-                        borderRadius: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: window.innerWidth < 600 ? 1.5 : 2.5,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: ctx => `₦${ctx.parsed.y.toLocaleString()}` } }
-                    },
-                    scales: {
-                        x: {
-                            ticks: {
-                                color: "#f0a500",
-                                font: { family: "'DM Mono'", size: window.innerWidth < 600 ? 11 : 13, weight: "500" }
-                            },
-                            grid: { color: "#1a1f2e" }
-                        },
-                        y: {
-                            ticks: {
-                                color: "#f0a500",
-                                font: { family: "'DM Mono'", size: window.innerWidth < 600 ? 9 : 11 },
-                                callback: val => "₦" + val.toLocaleString(),
-                                maxTicksLimit: 6
-                            },
-                            grid: { color: "#1a1f2e" }
-                        }
-                    }
-                }
-            });
+            new Chart(barCtx, { type: "bar", data: { labels: barLabels, datasets: [{ label: "Latest Price", data: barData, backgroundColor: barColors.map(c => c + "99"), borderColor: barBorderColors, borderWidth: borderWidths, borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: true, aspectRatio: window.innerWidth < 600 ? 1.5 : 2.5, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `₦${ctx.parsed.y.toLocaleString()}` } } }, scales: { x: { ticks: { color: "#f0a500", font: { family: "'DM Mono'", size: window.innerWidth < 600 ? 11 : 13, weight: "500" } }, grid: { color: "#1a1f2e" } }, y: { ticks: { color: "#f0a500", font: { family: "'DM Mono'", size: window.innerWidth < 600 ? 9 : 11 }, callback: val => "₦" + val.toLocaleString(), maxTicksLimit: 6 }, grid: { color: "#1a1f2e" } } } } });
         }
 
         function analyzeBestTime(history) {
@@ -1311,24 +946,15 @@
             const allPrices = history.map(h => Number(h.price));
             const lowest = Math.min(...allPrices);
             const current = allPrices[allPrices.length - 1];
-
             let message = `💰 Cheapest now: <strong style="color:var(--gold)">${cheapest[0]}</strong> at ₦${cheapest[1].toLocaleString()}`;
-            if (entries.length > 1) {
-                const sorted = [...entries].sort((a, b) => a[1] - b[1]);
-                message += `<br><br>` + sorted.map(([p, price]) =>
-                    `<span style="color:${PLATFORM_COLORS[p] || '#fff'}">${p}</span>: ₦${price.toLocaleString()}`
-                ).join("  ·  ");
-            }
-            message += current <= lowest
-                ? `<br><br><span style="color:var(--green)">▲ Price is at its lowest — great time to buy.</span>`
-                : `<br><br><span style="color:var(--gold)">◈ Compare platforms above to get the best deal.</span>`;
-
+            if (entries.length > 1) { const sorted = [...entries].sort((a, b) => a[1] - b[1]); message += `<br><br>` + sorted.map(([p, price]) => `<span style="color:${PLATFORM_COLORS[p] || '#fff'}">${p}</span>: ₦${price.toLocaleString()}`).join("  ·  "); }
+            message += current <= lowest ? `<br><br><span style="color:var(--green)">▲ Price is at its lowest — great time to buy.</span>` : `<br><br><span style="color:var(--gold)">◈ Compare platforms above to get the best deal.</span>`;
             const insight = document.getElementById("buyInsight");
             insight.style.display = "block";
             insight.innerHTML = message;
         }
 
-        // ─── Community Prices ─────────────────────────────────────────
+        // ── Community Prices ──────────────────────────────────────────
         let allCommunityPrices = [];
         let activeCommodityFilter = "all";
 
@@ -1338,8 +964,7 @@
                 allCommunityPrices = await response.json();
                 renderCommunityPrices(allCommunityPrices);
             } catch (e) {
-                document.getElementById("communityPricesList").innerHTML =
-                    `<div class="no-community-msg"><p>Could not load community prices.</p></div>`;
+                document.getElementById("communityPricesList").innerHTML = `<div class="no-community-msg"><p>Could not load community prices.</p></div>`;
             }
         }
 
@@ -1355,19 +980,13 @@
             const listEl = document.getElementById("communityPricesList");
             if (!prices || prices.length === 0) {
                 const msg = activeCommodityFilter === "all"
-                    ? `<div class="no-community-msg">
-                            <div style="font-size:28px;margin-bottom:10px;opacity:0.4">🏪</div>
-                            <p style="margin-bottom:12px;">No community prices yet. Be the first seller.</p>
-                            <a class="cta-link" href="/seller">Register as a Seller →</a>
-                       </div>`
+                    ? `<div class="no-community-msg"><div style="font-size:28px;margin-bottom:10px;opacity:0.4">🏪</div><p style="margin-bottom:12px;">No community prices yet. Be the first seller.</p><a class="cta-link" href="/seller">Register as a Seller →</a></div>`
                     : `<div class="no-community-msg"><p>No community prices for this commodity yet.</p></div>`;
                 listEl.innerHTML = msg;
                 return;
             }
-
             const commodityEmoji = { "Rice (50kg bag)": "🌾", "Bread (sliced loaf)": "🍞", "Fuel (per litre)": "⛽" };
             const typeClass = { "Wholesaler": "seller-type-wholesaler", "Retailer": "seller-type-retailer", "Individual Seller": "" };
-
             listEl.innerHTML = prices.map(p => {
                 const emoji = commodityEmoji[p.commodity] || "📦";
                 const badgeClass = typeClass[p.seller_type] || "";
@@ -1375,11 +994,15 @@
                 const verifiedStr = p.verified_count > 0
                     ? `<span style="color:var(--green);font-family:'DM Mono',monospace;font-size:11px;">✓ ${p.verified_count} confirmed</span>`
                     : `<span style="color:var(--text-muted);font-family:'DM Mono',monospace;font-size:11px;">Unverified</span>`;
+                const profileLink = p.seller_id
+                    ? `<a href="/seller/profile/${p.seller_id}" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);margin-top:4px;display:inline-block;">View Profile →</a>`
+                    : "";
                 return `
                     <div class="community-price-row">
                         <div>
                             <div class="community-commodity">${emoji} ${p.commodity}</div>
                             <div class="community-sub">${p.seller_name} · ${p.location}, ${p.state}</div>
+                            ${profileLink}
                         </div>
                         <div style="text-align:right;">
                             <div class="community-price-val">₦${Number(p.price).toLocaleString()}</div>
@@ -1389,15 +1012,13 @@
                                 ${verifiedStr}
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }).join("");
         }
 
-        // ─── Agent Chat ───────────────────────────────────────────────
+        // ── Agent Chat ────────────────────────────────────────────────
         let userRole = "consumer";
         let chatHistory = [];
-        let chatHasMessages = false;
 
         function setRole(role) {
             userRole = role;
@@ -1406,67 +1027,207 @@
             document.getElementById(map[role]).classList.add("active");
         }
 
-        function fillSuggestion(text) {
-            document.getElementById("agentQuestion").value = text;
-            askAgent();
-        }
+        function fillSuggestion(text) { document.getElementById("agentQuestion").value = text; askAgent(); }
 
         async function askAgent() {
             const question = document.getElementById("agentQuestion").value.trim();
             if (!question) return;
             document.getElementById("agentQuestion").value = "";
-
             chatHistory.push({ role: "user", content: question });
-
             const messagesEl = document.getElementById("chatMessages");
             const emptyEl = document.getElementById("chatEmpty");
             if (emptyEl) emptyEl.remove();
-
-            messagesEl.innerHTML += `
-                <div class="chat-msg user">
-                    <div class="chat-msg-avatar">U</div>
-                    <div class="chat-msg-bubble">${question}</div>
-                </div>
-            `;
-
+            messagesEl.innerHTML += `<div class="chat-msg user"><div class="chat-msg-avatar">U</div><div class="chat-msg-bubble">${question}</div></div>`;
             const thinkingId = "thinking_" + Date.now();
-            messagesEl.innerHTML += `
-                <div class="chat-msg agent" id="${thinkingId}">
-                    <div class="chat-msg-avatar">🤖</div>
-                    <div class="chat-thinking"><span></span><span></span><span></span></div>
-                </div>
-            `;
+            messagesEl.innerHTML += `<div class="chat-msg agent" id="${thinkingId}"><div class="chat-msg-avatar">🤖</div><div class="chat-thinking"><span></span><span></span><span></span></div></div>`;
             messagesEl.scrollTop = messagesEl.scrollHeight;
 
             let sessionId = localStorage.getItem("pricewise_session");
-            if (!sessionId) {
-                sessionId = "user_" + Date.now();
-                localStorage.setItem("pricewise_session", sessionId);
-            }
+            if (!sessionId) { sessionId = "user_" + Date.now(); localStorage.setItem("pricewise_session", sessionId); }
 
-            const response = await fetch("/ask", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question, role: userRole, session_id: sessionId, history: chatHistory })
-            });
+            const response = await fetch("/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, role: userRole, session_id: sessionId, history: chatHistory }) });
             const data = await response.json();
             chatHistory.push({ role: "assistant", content: data.answer });
-
             document.getElementById(thinkingId).remove();
-
-            messagesEl.innerHTML += `
-                <div class="chat-msg agent">
-                    <div class="chat-msg-avatar">🤖</div>
-                    <div class="chat-msg-bubble">${data.answer.replace(/\n/g, "<br>")}</div>
-                </div>
-            `;
+            messagesEl.innerHTML += `<div class="chat-msg agent"><div class="chat-msg-avatar">🤖</div><div class="chat-msg-bubble">${data.answer.replace(/\n/g, "<br>")}</div></div>`;
             messagesEl.scrollTop = messagesEl.scrollHeight;
+
+            // Log behavior after every agent question
+            fetch("/log_behavior", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ session_id: sessionId, action_type: "agent_question", commodity: detectCommodityFromText(question), question_type: detectQuestionType(question), state_mentioned: null })
+            }).catch(() => {});
+        }
+
+        function detectCommodityFromText(text) {
+            const t = text.toLowerCase();
+            if (t.includes("rice")) return "Rice (50kg bag)";
+            if (t.includes("bread")) return "Bread (sliced loaf)";
+            if (t.includes("fuel") || t.includes("petrol")) return "Fuel (per litre)";
+            return "general";
+        }
+
+        function detectQuestionType(text) {
+            const t = text.toLowerCase();
+            if (["buy","sell","profit","arbitrage","trade"].some(w => t.includes(w))) return "arbitrage";
+            if (["trend","rising","falling","going up","going down"].some(w => t.includes(w))) return "trend";
+            if (["cheap","cheapest","best price","where","lowest"].some(w => t.includes(w))) return "sourcing";
+            if (["how much","price","cost","rate"].some(w => t.includes(w))) return "price_check";
+            return "general";
         }
 
         document.addEventListener("DOMContentLoaded", function() {
             const input = document.getElementById("agentQuestion");
             if (input) input.addEventListener("keydown", e => { if (e.key === "Enter") askAgent(); });
         });
+
+        // ── Clone: Market Alerts ──────────────────────────────────────
+        let manualStarRating = 0;
+        let userRatings = {};
+
+        const MARKET_ALERTS = [
+            { id: "alert_rice_kano", commodity: "Rice (50kg bag)", headline: "Rice prices in Kano are ₦8,000 cheaper than Lagos right now — arbitrage window open", detail: "Kano open market: ~₦76,000 vs Lagos: ~₦84,000. After ₦8,000 transport, net gap still positive.", level: "watch", icon: "📦", tag: "ARBITRAGE", date: "May 2026" },
+            { id: "alert_fuel_rise", commodity: "Fuel (per litre)", headline: "Fuel price has risen consistently over the last 3 months — trend shows no sign of stopping", detail: "NBS data shows fuel climbing from ₦850/L to ₦968/L since Feb 2026. Budget accordingly.", level: "urgent", icon: "⛽", tag: "URGENT", date: "May 2026" },
+            { id: "alert_bread_stable", commodity: "Bread (sliced loaf)", headline: "Bread prices have been stable for 6 weeks — good window to lock in supplier contracts", detail: "Wholesale bread sitting at ₦1,100–₦1,200 range consistently. Stability window for small businesses.", level: "stable", icon: "🍞", tag: "STABLE", date: "May 2026" },
+            { id: "alert_rice_drop", commodity: "Rice (50kg bag)", headline: "Rice wholesale price dropped 4.2% this month — best buying window in 3 months", detail: "Wholesale channel now at ₦78,000 vs ₦81,500 last month. Consumers and traders should move now.", level: "good", icon: "🌾", tag: "BUY NOW", date: "May 2026" },
+            { id: "alert_fuel_online", commodity: "Fuel (per litre)", headline: "Online platform fuel prices are 12% above open market — avoid online for fuel purchases", detail: "Online: ₦1,080/L vs Open Market: ₦968/L. Significant gap — source from market directly.", level: "watch", icon: "💡", tag: "TIP", date: "May 2026" }
+        ];
+
+        function renderMarketAlerts() {
+            const savedRatings = JSON.parse(localStorage.getItem("pricewise_alert_ratings") || "{}");
+            userRatings = savedRatings;
+            const levelClass = { urgent: "alert-urgent", watch: "alert-watch", good: "alert-good", stable: "alert-stable" };
+            const tagClass = { urgent: "urgent", watch: "watch", good: "good", stable: "stable" };
+            document.getElementById("marketAlertsList").innerHTML = MARKET_ALERTS.map(alert => {
+                const existingRating = savedRatings[alert.id] || 0;
+                const starsHtml = [1,2,3,4,5].map(n => `<button class="star-btn ${n <= existingRating ? 'active' : ''}" onclick="rateAlert('${alert.id}', ${n}, this)" data-alert="${alert.id}" data-val="${n}">★</button>`).join("");
+                const submittedStyle = existingRating > 0 ? "display:inline;" : "display:none;";
+                const ratingLabelStyle = existingRating > 0 ? "display:none;" : "";
+                return `
+                <div class="alert-item ${levelClass[alert.level]}" id="alertItem_${alert.id}">
+                    <div class="alert-icon">${alert.icon}</div>
+                    <div class="alert-body">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
+                            <span class="alert-tag ${tagClass[alert.level]}">${alert.tag}</span>
+                            <span style="font-family:'DM Mono',monospace; font-size:10px; color:var(--text-muted);">${alert.commodity} · ${alert.date}</span>
+                        </div>
+                        <div class="alert-headline">${alert.headline}</div>
+                        <div class="alert-meta" style="margin-top:6px;">${alert.detail}</div>
+                        <div class="star-rating-row">
+                            <span class="rating-label" style="${ratingLabelStyle}">WAS THIS USEFUL?</span>
+                            <div class="star-group">${starsHtml}</div>
+                            <span class="rating-submitted" id="rated_${alert.id}" style="${submittedStyle}">✓ RATED ${existingRating}/5</span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join("");
+        }
+
+        function rateAlert(alertId, rating, btn) {
+            userRatings[alertId] = rating;
+            localStorage.setItem("pricewise_alert_ratings", JSON.stringify(userRatings));
+            document.querySelectorAll(`[data-alert="${alertId}"]`).forEach(b => { b.classList.toggle("active", parseInt(b.dataset.val) <= rating); });
+            const ratedEl = document.getElementById(`rated_${alertId}`);
+            if (ratedEl) { ratedEl.textContent = `✓ RATED ${rating}/5`; ratedEl.style.display = "inline"; }
+            const alertItem = document.getElementById(`alertItem_${alertId}`);
+            if (alertItem) { const label = alertItem.querySelector(".rating-label"); if (label) label.style.display = "none"; }
+            let sessionId = localStorage.getItem("pricewise_session");
+            if (sessionId) {
+                const alert = MARKET_ALERTS.find(a => a.id === alertId);
+                fetch("/log_behavior", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session_id: sessionId, action_type: "alert_rating", commodity: alert ? alert.commodity : "general", question_type: "alert_feedback", state_mentioned: null }) }).catch(() => {});
+            }
+        }
+
+        function setManualStar(n) {
+            manualStarRating = n;
+            document.querySelectorAll(".manual-star").forEach((el, i) => { el.textContent = i < n ? "⭐" : "☆"; el.classList.toggle("active", i < n); });
+        }
+
+        async function submitManualReview() {
+            const commodity = document.getElementById("manualCommodity").value;
+            const reviewText = document.getElementById("manualReviewText").value.trim();
+            const rating = manualStarRating;
+            if (rating === 0) { alert("Please give a star rating first."); return; }
+            let sessionId = localStorage.getItem("pricewise_session");
+            if (!sessionId) { alert("Please complete onboarding first."); return; }
+            const userReviews = JSON.parse(localStorage.getItem("pricewise_user_reviews") || "[]");
+            userReviews.unshift({ commodity, rating, text: reviewText || null, date: new Date().toISOString(), type: "user" });
+            localStorage.setItem("pricewise_user_reviews", JSON.stringify(userReviews.slice(0, 20)));
+            fetch("/log_behavior", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session_id: sessionId, action_type: "manual_review", commodity, question_type: "user_rating", state_mentioned: null }) }).catch(() => {});
+            document.getElementById("manualSubmitMsg").style.display = "inline";
+            document.getElementById("manualReviewText").value = "";
+            manualStarRating = 0;
+            document.querySelectorAll(".manual-star").forEach(el => { el.textContent = "☆"; el.classList.remove("active"); });
+            setTimeout(() => { document.getElementById("manualSubmitMsg").style.display = "none"; }, 3000);
+            showCloneComparison(commodity, rating);
+        }
+
+        function showCloneComparison(commodity, userRating) {
+            const reviewCommodityEl = document.getElementById("reviewCommodity");
+            const reviewCard = document.getElementById("reviewCard");
+            if (!reviewCard || reviewCard.style.display === "none") return;
+            if (reviewCommodityEl && reviewCommodityEl.textContent !== commodity) return;
+            const starsText = document.getElementById("reviewStars").textContent;
+            const cloneRating = (starsText.match(/(\d)\/5/) || [])[1];
+            if (!cloneRating) return;
+            const diff = Math.abs(userRating - parseInt(cloneRating));
+            let compareText = diff === 0 ? `✅ Perfect match — you and your clone both gave ${userRating}/5. The clone knows you well.` : diff === 1 ? `🟡 Close — you gave ${userRating}/5, clone gave ${cloneRating}/5. One star apart.` : `🔴 Gap — you gave ${userRating}/5 but clone gave ${cloneRating}/5. Clone is still learning your pattern.`;
+            document.getElementById("cloneCompareText").textContent = compareText;
+            document.getElementById("cloneCompare").style.display = "block";
+        }
+
+        async function loadOfflineCloneActivity() {
+            let sessionId = localStorage.getItem("pricewise_session");
+            if (!sessionId) return;
+            try {
+                const res = await fetch(`/my_reviews/${sessionId}`);
+                const data = await res.json();
+                const autoReviews = (Array.isArray(data) ? data : (data.reviews || [])).filter(r => r.triggered_by === "auto");
+                const el = document.getElementById("offlineCloneActivity");
+                if (!autoReviews.length) return;
+                el.innerHTML = autoReviews.slice(0, 3).map(r => {
+                    const stars = "⭐".repeat(r.star_rating) + "☆".repeat(5 - r.star_rating);
+                    const date = r.generated_at ? r.generated_at.slice(0, 10) : "";
+                    return `<div style="background:var(--surface-1); border:1px solid var(--border); border-left:3px solid var(--blue); border-radius:3px; padding:14px; margin-bottom:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                            <span style="font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:2px; color:var(--gold);">${r.commodity}</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:16px;">${stars}</span>
+                                <span style="font-family:'DM Mono',monospace; font-size:10px; color:var(--blue); letter-spacing:1px;">AUTO · ${date}</span>
+                            </div>
+                        </div>
+                        <p style="font-size:13px; line-height:1.7; color:var(--text-secondary); font-style:italic;">${r.review_text}</p>
+                    </div>`;
+                }).join("");
+            } catch(e) {}
+        }
+
+        // ── Clone: Generate Review ────────────────────────────────────
+        async function generateReview(commodity) {
+            let sessionId = localStorage.getItem("pricewise_session");
+            if (!sessionId) { alert("Please complete onboarding first."); return; }
+            document.getElementById("reviewResult").style.display = "block";
+            document.getElementById("reviewLoading").style.display = "block";
+            document.getElementById("reviewCard").style.display = "none";
+            const res = await fetch("/generate_review", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session_id: sessionId, commodity }) });
+            const data = await res.json();
+            document.getElementById("reviewLoading").style.display = "none";
+            if (data.error) { alert(data.error); return; }
+            const stars = "⭐".repeat(data.star_rating) + "☆".repeat(5 - data.star_rating);
+            const sentimentColor = { POSITIVE: "var(--green)", NEGATIVE: "var(--red)", NEUTRAL: "var(--gold)" };
+            const sentimentBg = { POSITIVE: "rgba(0,230,118,0.1)", NEGATIVE: "rgba(255,79,79,0.1)", NEUTRAL: "rgba(240,165,0,0.1)" };
+            document.getElementById("reviewCommodity").textContent = commodity;
+            document.getElementById("reviewStars").textContent = stars + " " + data.star_rating + "/5";
+            document.getElementById("reviewText").textContent = data.review_text;
+            document.getElementById("reviewSentiment").textContent = data.sentiment;
+            document.getElementById("reviewSentiment").style.color = sentimentColor[data.sentiment];
+            document.getElementById("reviewSentiment").style.background = sentimentBg[data.sentiment];
+            document.getElementById("reviewSentiment").style.border = `1px solid ${sentimentColor[data.sentiment]}`;
+            document.getElementById("reviewMeta").textContent = `₦${Number(data.price_at_review).toLocaleString()} at time of review · ${data.role} · ${data.user_state}`;
+            document.getElementById("reviewCard").style.display = "block";
+            document.getElementById("cloneCompare").style.display = "none";
+        }
     </script>
 </body>
 </html>

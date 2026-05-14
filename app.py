@@ -3,10 +3,20 @@ from flask_cors import CORS
 import sqlite3
 from datetime import date
 from agent import ask_agent
- 
- 
+
+
 app = Flask(__name__)
 CORS(app)
+
+
+from apscheduler.schedulers.background import BackgroundScheduler
+from clone_job import run_clone_job
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(run_clone_job, trigger='cron', hour=8, minute=0)
+scheduler.start()
+ 
+
  
  
 @app.route('/favicon.ico')
@@ -266,19 +276,17 @@ def submit_price():
     conn.close()
  
     return jsonify({"message": f"{inserted} price(s) submitted successfully", "inserted": inserted})
- 
- 
+
+
+
 @app.route("/community_prices")
 def community_prices():
-    """
-    Returns recent community-submitted prices for display on the main page.
-    Groups by commodity, shows seller location, price, date.
-    """
     conn = get_db()
     c = conn.cursor()
- 
     c.execute("""
         SELECT
+            cp.id,
+            cp.seller_id,
             cp.commodity,
             cp.price,
             cp.unit,
@@ -297,23 +305,266 @@ def community_prices():
     """)
     rows = c.fetchall()
     conn.close()
+    return jsonify([{
+        "id": r["id"],
+        "seller_id": r["seller_id"],
+        "commodity": r["commodity"],
+        "price": r["price"],
+        "unit": r["unit"],
+        "platform": r["platform"],
+        "state": r["state"],
+        "date": r["date_submitted"],
+        "verified_count": r["verified_count"],
+        "seller_name": r["business_name"] if r["business_name"] else r["full_name"],
+        "location": r["location"],
+        "seller_type": r["seller_type"]
+    } for r in rows])
  
-    result = []
-    for r in rows:
-        result.append({
-            "commodity": r["commodity"],
-            "price": r["price"],
-            "unit": r["unit"],
-            "platform": r["platform"],
-            "state": r["state"],
-            "date": r["date_submitted"],
-            "verified_count": r["verified_count"],
-            "seller_name": r["business_name"] if r["business_name"] else r["full_name"],
-            "location": r["location"],
-            "seller_type": r["seller_type"]
-        })
+ 
+ 
+ 
+@app.route("/save_profile", methods=["POST"])
+def save_profile():
+    data = request.get_json()
+    session_id = data.get("session_id")
+    today = str(date.today())
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT id FROM user_profiles WHERE session_id = ?", (session_id,))
+    existing = c.fetchone()
+    if existing:
+        c.execute("""
+            UPDATE user_profiles SET role=?, primary_commodity=?, state=?,
+            bulk_frequency=?, priority=?, updated_at=?, total_sessions=total_sessions+1
+            WHERE session_id=?
+        """, (data.get("role"), data.get("primary_commodity"), data.get("state"),
+              data.get("bulk_frequency"), data.get("priority"), today, session_id))
+    else:
+        c.execute("""
+            INSERT INTO user_profiles
+            (session_id, role, primary_commodity, state, bulk_frequency, priority, created_at, updated_at)
+            VALUES (?,?,?,?,?,?,?,?)
+        """, (session_id, data.get("role"), data.get("primary_commodity"),
+              data.get("state"), data.get("bulk_frequency"), data.get("priority"), today, today))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Profile saved"})
+ 
+ 
+@app.route("/get_profile/<session_id>")
+def get_profile(session_id):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT * FROM user_profiles WHERE session_id = ?", (session_id,))
+    row = c.fetchone()
+    conn.close()
+    if not row:
+        return jsonify(None)
+    return jsonify({
+        "role": row["role"],
+        "primary_commodity": row["primary_commodity"],
+        "state": row["state"],
+        "bulk_frequency": row["bulk_frequency"],
+        "priority": row["priority"],
+        "behavior_type": row["behavior_type"],
+        "total_sessions": row["total_sessions"]
+    })
+ 
+ 
+@app.route("/log_behavior", methods=["POST"])
+def log_behavior():
+    data = request.get_json()
+    from datetime import datetime
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO user_behavior_log
+        (session_id, action_type, commodity, question_type, state_mentioned, timestamp)
+        VALUES (?,?,?,?,?,?)
+    """, (data.get("session_id"), data.get("action_type"), data.get("commodity"),
+          data.get("question_type"), data.get("state_mentioned"),
+          datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Logged"})
+ 
+ 
+@app.route("/generate_review", methods=["POST"])
+def generate_review():
+    from agent import generate_user_review
+    data = request.get_json()
+    session_id = data.get("session_id")
+    commodity = data.get("commodity")
+ 
+    if not session_id or not commodity:
+        return jsonify({"error": "Missing session_id or commodity"}), 400
+ 
+    result = generate_user_review(session_id, commodity)
+    if not result:
+        return jsonify({"error": "No price data for this commodity yet"}), 404
  
     return jsonify(result)
+ 
+ 
+@app.route("/my_reviews/<session_id>")
+def my_reviews(session_id):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        SELECT * FROM generated_reviews
+        WHERE session_id = ?
+        ORDER BY generated_at DESC LIMIT 20
+    """, (session_id,))
+    rows = c.fetchall()
+    conn.close()
+    return jsonify([{
+        "commodity": r["commodity"],
+        "star_rating": r["star_rating"],
+        "review_text": r["review_text"],
+        "sentiment": r["sentiment"],
+        "price_at_review": r["price_at_review"],
+        "generated_at": r["generated_at"]
+    } for r in rows])
+    
+    
+    
+    
+    
+    
+    
+    
+@app.route("/seller/profile/<int:seller_id>")
+def seller_profile_page(seller_id):
+    return render_template("profile.html")
+ 
+ 
+@app.route("/api/seller/<int:seller_id>")
+def get_seller_profile(seller_id):
+    conn = get_db()
+    c = conn.cursor()
+ 
+    c.execute("SELECT * FROM community_sellers WHERE id = ?", (seller_id,))
+    seller = c.fetchone()
+    if not seller:
+        conn.close()
+        return jsonify({"error": "Seller not found"}), 404
+ 
+    c.execute("""
+        SELECT commodity, price, unit, platform, date_submitted, verified_count
+        FROM community_prices
+        WHERE seller_id = ?
+        ORDER BY date_submitted DESC
+        LIMIT 20
+    """, (seller_id,))
+    prices = c.fetchall()
+ 
+    c.execute("""
+        SELECT comment, star_rating, sentiment, sent_by, timestamp
+        FROM commodity_comments
+        WHERE seller_id = ?
+        ORDER BY timestamp DESC
+        LIMIT 30
+    """, (seller_id,))
+    comments = c.fetchall()
+ 
+    conn.close()
+ 
+    return jsonify({
+        "seller": {
+            "id": seller["id"],
+            "full_name": seller["full_name"],
+            "business_name": seller["business_name"],
+            "location": seller["location"],
+            "area": seller["area"],
+            "lga": seller["lga"],
+            "state": seller["state"],
+            "seller_type": seller["seller_type"],
+            "commodities": seller["commodities"],
+            "date_registered": seller["date_registered"],
+            "verified": seller["verified"]
+        },
+        "prices": [{
+            "commodity": p["commodity"],
+            "price": p["price"],
+            "unit": p["unit"],
+            "platform": p["platform"],
+            "date": p["date_submitted"],
+            "verified_count": p["verified_count"]
+        } for p in prices],
+        "comments": [{
+            "comment": c["comment"],
+            "star_rating": c["star_rating"],
+            "sentiment": c["sentiment"],
+            "sent_by": c["sent_by"],
+            "timestamp": c["timestamp"]
+        } for c in comments]
+    })
+ 
+ 
+@app.route("/add_comment", methods=["POST"])
+def add_comment():
+    data = request.get_json()
+    seller_id = data.get("seller_id")
+    commodity = data.get("commodity")
+    comment = data.get("comment", "").strip()
+    star_rating = data.get("star_rating", 0)
+    session_id = data.get("session_id", "anonymous")
+    sent_by = data.get("sent_by", "user")
+ 
+    if not seller_id or not commodity or not comment:
+        return jsonify({"error": "Missing seller_id, commodity, or comment"}), 400
+ 
+    from datetime import datetime
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO commodity_comments
+        (seller_id, commodity, session_id, comment, star_rating, sentiment, sent_by, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        seller_id, commodity, session_id, comment, star_rating,
+        "POSITIVE" if star_rating >= 4 else ("NEGATIVE" if star_rating <= 2 else "NEUTRAL"),
+        sent_by, datetime.now().isoformat()
+    ))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Comment saved"})
+ 
+ 
+@app.route("/sellers_board")
+def sellers_board():
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        SELECT
+            cs.id, cs.full_name, cs.business_name, cs.location,
+            cs.area, cs.lga, cs.state, cs.seller_type,
+            cs.commodities, cs.date_registered, cs.verified,
+            COUNT(cp.id) as price_count,
+            MAX(cp.date_submitted) as last_active
+        FROM community_sellers cs
+        LEFT JOIN community_prices cp ON cs.id = cp.seller_id
+        GROUP BY cs.id
+        ORDER BY last_active DESC
+        LIMIT 50
+    """)
+    rows = c.fetchall()
+    conn.close()
+    return jsonify([{
+        "id": r["id"],
+        "name": r["business_name"] if r["business_name"] else r["full_name"],
+        "location": r["location"],
+        "state": r["state"],
+        "seller_type": r["seller_type"],
+        "commodities": r["commodities"],
+        "verified": r["verified"],
+        "price_count": r["price_count"],
+        "last_active": r["last_active"]
+    } for r in rows])
+    
+    
+
+
  
  
 if __name__ == "__main__":
