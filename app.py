@@ -64,7 +64,6 @@ def init_db():
         )
     ''')
  
-    # community_sellers — canonical schema (full registration detail)
     c.execute('''
         CREATE TABLE IF NOT EXISTS community_sellers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,7 +81,6 @@ def init_db():
         )
     ''')
  
-    # community_prices — prices submitted by registered sellers
     c.execute('''
         CREATE TABLE IF NOT EXISTS community_prices (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,8 +95,24 @@ def init_db():
             FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
         )
     ''')
+
+    # Seller products — live listings
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS seller_products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            seller_id INTEGER NOT NULL,
+            commodity TEXT NOT NULL,
+            price REAL NOT NULL,
+            unit TEXT NOT NULL,
+            platform TEXT DEFAULT 'Open Market',
+            quantity TEXT DEFAULT '',
+            availability TEXT DEFAULT 'In Stock',
+            date_added TEXT NOT NULL,
+            date_updated TEXT NOT NULL,
+            FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
+        )
+    ''')
  
-    # state_prices — seeded NBS state-level data for arbitrage
     c.execute('''
         CREATE TABLE IF NOT EXISTS state_prices (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -233,13 +247,13 @@ def register_seller():
 @app.route("/submit_price", methods=["POST"])
 def submit_price():
     """
-    Seller submits their current prices after registration.
-    Expects: seller_id, state, prices (list of {commodity, price, unit, platform})
+    Legacy route — still logs to community_prices for agent/history use.
+    Also mirrors into seller_products as initial listings.
     """
     data = request.get_json()
     seller_id = data.get("seller_id")
     state = data.get("state")
-    prices = data.get("prices", [])  # list of {commodity, price, unit, platform}
+    prices = data.get("prices", [])
     today = str(date.today())
  
     if not seller_id or not state or not prices:
@@ -248,7 +262,6 @@ def submit_price():
     conn = get_db()
     c = conn.cursor()
  
-    # Verify seller exists
     c.execute("SELECT id FROM community_sellers WHERE id = ?", (seller_id,))
     seller = c.fetchone()
     if not seller:
@@ -265,11 +278,34 @@ def submit_price():
         if not commodity or not price:
             continue
  
+        # Log to community_prices (history)
         c.execute("""
             INSERT INTO community_prices
             (seller_id, commodity, price, unit, platform, state, date_submitted)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (seller_id, commodity, float(price), unit, platform, state, today))
+
+        # Also upsert into seller_products (live listing)
+        # If product already exists for this seller+commodity, update it
+        c.execute("""
+            SELECT id FROM seller_products
+            WHERE seller_id = ? AND commodity = ?
+        """, (seller_id, commodity))
+        existing = c.fetchone()
+
+        if existing:
+            c.execute("""
+                UPDATE seller_products
+                SET price = ?, unit = ?, platform = ?, date_updated = ?
+                WHERE seller_id = ? AND commodity = ?
+            """, (float(price), unit, platform, today, seller_id, commodity))
+        else:
+            c.execute("""
+                INSERT INTO seller_products
+                (seller_id, commodity, price, unit, platform, quantity, availability, date_added, date_updated)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (seller_id, commodity, float(price), unit, platform, '', 'In Stock', today, today))
+
         inserted += 1
  
     conn.commit()
@@ -277,6 +313,197 @@ def submit_price():
  
     return jsonify({"message": f"{inserted} price(s) submitted successfully", "inserted": inserted})
 
+
+# ══════════════════════════════════════════════════════════
+#  SELLER PRODUCT MANAGEMENT — new routes
+# ══════════════════════════════════════════════════════════
+
+@app.route("/seller/products/<int:seller_id>")
+def get_seller_products(seller_id):
+    """Returns all live product listings for a seller."""
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute("SELECT id FROM community_sellers WHERE id = ?", (seller_id,))
+    if not c.fetchone():
+        conn.close()
+        return jsonify({"error": "Seller not found"}), 404
+
+    c.execute("""
+        SELECT id, commodity, price, unit, platform, quantity, availability,
+               date_added, date_updated
+        FROM seller_products
+        WHERE seller_id = ?
+        ORDER BY date_updated DESC
+    """, (seller_id,))
+    rows = c.fetchall()
+    conn.close()
+
+    return jsonify([{
+        "id": r["id"],
+        "commodity": r["commodity"],
+        "price": r["price"],
+        "unit": r["unit"],
+        "platform": r["platform"],
+        "quantity": r["quantity"],
+        "availability": r["availability"],
+        "date_added": r["date_added"],
+        "date_updated": r["date_updated"]
+    } for r in rows])
+
+
+@app.route("/seller/add_product", methods=["POST"])
+def seller_add_product():
+    """Seller adds a new product listing to their profile."""
+    data = request.get_json()
+    seller_id = data.get("seller_id")
+    commodity = data.get("commodity", "").strip()
+    price = data.get("price")
+    unit = data.get("unit", "").strip()
+    platform = data.get("platform", "Open Market")
+    quantity = data.get("quantity", "").strip()
+    availability = data.get("availability", "In Stock")
+    today = str(date.today())
+
+    if not seller_id or not commodity or not price or not unit:
+        return jsonify({"error": "Missing required fields: seller_id, commodity, price, unit"}), 400
+
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute("SELECT id, state FROM community_sellers WHERE id = ?", (seller_id,))
+    seller = c.fetchone()
+    if not seller:
+        conn.close()
+        return jsonify({"error": "Seller not found"}), 404
+
+    # Check for duplicate commodity for this seller
+    c.execute("""
+        SELECT id FROM seller_products
+        WHERE seller_id = ? AND LOWER(commodity) = LOWER(?)
+    """, (seller_id, commodity))
+    if c.fetchone():
+        conn.close()
+        return jsonify({"error": f"You already have a listing for '{commodity}'. Edit it instead."}), 409
+
+    c.execute("""
+        INSERT INTO seller_products
+        (seller_id, commodity, price, unit, platform, quantity, availability, date_added, date_updated)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (seller_id, commodity, float(price), unit, platform, quantity, availability, today, today))
+
+    # Also log to community_prices for agent use
+    c.execute("""
+        INSERT INTO community_prices
+        (seller_id, commodity, price, unit, platform, state, date_submitted)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (seller_id, commodity, float(price), unit, platform, seller["state"], today))
+
+    conn.commit()
+    new_id = c.lastrowid
+    conn.close()
+
+    return jsonify({"message": "Product added", "id": new_id})
+
+
+@app.route("/seller/update_product", methods=["PUT"])
+def seller_update_product():
+    """Seller edits an existing product listing."""
+    data = request.get_json()
+    product_id = data.get("product_id")
+    seller_id = data.get("seller_id")
+    today = str(date.today())
+
+    if not product_id or not seller_id:
+        return jsonify({"error": "Missing product_id or seller_id"}), 400
+
+    conn = get_db()
+    c = conn.cursor()
+
+    # Verify this product belongs to this seller
+    c.execute("""
+        SELECT id FROM seller_products
+        WHERE id = ? AND seller_id = ?
+    """, (product_id, seller_id))
+    if not c.fetchone():
+        conn.close()
+        return jsonify({"error": "Product not found or not yours"}), 404
+
+    # Build dynamic update — only update fields that were sent
+    fields = []
+    values = []
+    for field in ["commodity", "unit", "platform", "quantity", "availability"]:
+        if field in data:
+            fields.append(f"{field} = ?")
+            values.append(data[field])
+    if "price" in data:
+        fields.append("price = ?")
+        values.append(float(data["price"]))
+
+    fields.append("date_updated = ?")
+    values.append(today)
+    values.extend([product_id, seller_id])
+
+    c.execute(f"""
+        UPDATE seller_products
+        SET {', '.join(fields)}
+        WHERE id = ? AND seller_id = ?
+    """, values)
+
+    # Log price change to community_prices if price was updated
+    if "price" in data:
+        c.execute("""
+            SELECT commodity, unit, platform, seller_id FROM seller_products
+            WHERE id = ?
+        """, (product_id,))
+        prod = c.fetchone()
+        c.execute("SELECT state FROM community_sellers WHERE id = ?", (seller_id,))
+        seller = c.fetchone()
+        if prod and seller:
+            c.execute("""
+                INSERT INTO community_prices
+                (seller_id, commodity, price, unit, platform, state, date_submitted)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (seller_id, prod["commodity"], float(data["price"]),
+                  prod["unit"], prod["platform"], seller["state"], today))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Product updated"})
+
+
+@app.route("/seller/delete_product", methods=["DELETE"])
+def seller_delete_product():
+    """Seller removes a product listing."""
+    data = request.get_json()
+    product_id = data.get("product_id")
+    seller_id = data.get("seller_id")
+
+    if not product_id or not seller_id:
+        return jsonify({"error": "Missing product_id or seller_id"}), 400
+
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute("""
+        SELECT id FROM seller_products
+        WHERE id = ? AND seller_id = ?
+    """, (product_id, seller_id))
+    if not c.fetchone():
+        conn.close()
+        return jsonify({"error": "Product not found or not yours"}), 404
+
+    c.execute("DELETE FROM seller_products WHERE id = ? AND seller_id = ?", (product_id, seller_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Product deleted"})
+
+
+# ══════════════════════════════════════════════════════════
+#  END SELLER PRODUCT MANAGEMENT
+# ══════════════════════════════════════════════════════════
 
 
 @app.route("/community_prices")
@@ -449,14 +676,28 @@ def get_seller_profile(seller_id):
         conn.close()
         return jsonify({"error": "Seller not found"}), 404
  
+    # Use seller_products for live listings
     c.execute("""
-        SELECT commodity, price, unit, platform, date_submitted, verified_count
-        FROM community_prices
+        SELECT id, commodity, price, unit, platform, quantity, availability,
+               date_added, date_updated
+        FROM seller_products
         WHERE seller_id = ?
-        ORDER BY date_submitted DESC
-        LIMIT 20
+        ORDER BY date_updated DESC
     """, (seller_id,))
-    prices = c.fetchall()
+    products = c.fetchall()
+
+    # Fall back to community_prices if no seller_products yet
+    if not products:
+        c.execute("""
+            SELECT commodity, price, unit, platform, date_submitted, verified_count
+            FROM community_prices
+            WHERE seller_id = ?
+            ORDER BY date_submitted DESC
+            LIMIT 20
+        """, (seller_id,))
+        legacy_prices = c.fetchall()
+    else:
+        legacy_prices = []
  
     c.execute("""
         SELECT comment, star_rating, sentiment, sent_by, timestamp
@@ -483,6 +724,17 @@ def get_seller_profile(seller_id):
             "date_registered": seller["date_registered"],
             "verified": seller["verified"]
         },
+        "products": [{
+            "id": p["id"],
+            "commodity": p["commodity"],
+            "price": p["price"],
+            "unit": p["unit"],
+            "platform": p["platform"],
+            "quantity": p["quantity"],
+            "availability": p["availability"],
+            "date_updated": p["date_updated"]
+        } for p in products],
+        # Legacy fallback for old sellers who haven't migrated
         "prices": [{
             "commodity": p["commodity"],
             "price": p["price"],
@@ -490,7 +742,7 @@ def get_seller_profile(seller_id):
             "platform": p["platform"],
             "date": p["date_submitted"],
             "verified_count": p["verified_count"]
-        } for p in prices],
+        } for p in legacy_prices],
         "comments": [{
             "comment": c["comment"],
             "star_rating": c["star_rating"],
@@ -540,10 +792,10 @@ def sellers_board():
             cs.id, cs.full_name, cs.business_name, cs.location,
             cs.area, cs.lga, cs.state, cs.seller_type,
             cs.commodities, cs.date_registered, cs.verified,
-            COUNT(cp.id) as price_count,
-            MAX(cp.date_submitted) as last_active
+            COUNT(sp.id) as product_count,
+            MAX(sp.date_updated) as last_active
         FROM community_sellers cs
-        LEFT JOIN community_prices cp ON cs.id = cp.seller_id
+        LEFT JOIN seller_products sp ON cs.id = sp.seller_id
         GROUP BY cs.id
         ORDER BY last_active DESC
         LIMIT 50
@@ -558,7 +810,7 @@ def sellers_board():
         "seller_type": r["seller_type"],
         "commodities": r["commodities"],
         "verified": r["verified"],
-        "price_count": r["price_count"],
+        "product_count": r["product_count"],
         "last_active": r["last_active"]
     } for r in rows])
     
@@ -572,8 +824,8 @@ def send_message():
     seller_id = data.get("seller_id")
     buyer_session_id = data.get("buyer_session_id")
     message = data.get("message", "").strip()
-    sent_by = data.get("sent_by", "buyer")      # 'buyer', 'seller', 'clone'
-    chat_mode = data.get("chat_mode", "human")  # 'human' or 'clone'
+    sent_by = data.get("sent_by", "buyer")
+    chat_mode = data.get("chat_mode", "human")
  
     if not seller_id or not buyer_session_id or not message:
         return jsonify({"error": "Missing fields"}), 400
@@ -604,7 +856,6 @@ def get_messages(seller_id, buyer_session_id):
     """, (seller_id, buyer_session_id))
     rows = c.fetchall()
  
-    # Mark buyer messages as read
     c.execute("""
         UPDATE seller_messages SET is_read = 1
         WHERE seller_id = ? AND buyer_session_id = ? AND sent_by = 'buyer'
@@ -625,7 +876,6 @@ def get_messages(seller_id, buyer_session_id):
  
 @app.route("/get_seller_inbox/<int:seller_id>")
 def get_seller_inbox(seller_id):
-    """Returns all conversations for a seller grouped by buyer session"""
     conn = get_db()
     c = conn.cursor()
     c.execute("""
@@ -654,7 +904,6 @@ def get_seller_inbox(seller_id):
  
 @app.route("/clear_chat", methods=["POST"])
 def clear_chat():
-    """Buyer marks their chat with a seller as cleared (saved=0)"""
     data = request.get_json()
     seller_id = data.get("seller_id")
     buyer_session_id = data.get("buyer_session_id")
@@ -672,10 +921,6 @@ def clear_chat():
  
 @app.route("/clone_negotiate", methods=["POST"])
 def clone_negotiate():
-    """
-    Called by clone_job or manually — clone sends a message to a seller
-    on behalf of a buyer whose profile matches the deal.
-    """
     from datetime import datetime
     from agent import clone_negotiate_message
  
@@ -688,7 +933,6 @@ def clone_negotiate():
     if not all([seller_id, buyer_session_id, commodity, price]):
         return jsonify({"error": "Missing fields"}), 400
  
-    # Get buyer's chat history with this seller for tone matching
     conn = get_db()
     c = conn.cursor()
     c.execute("""
@@ -698,7 +942,6 @@ def clone_negotiate():
     """, (seller_id, buyer_session_id))
     history = c.fetchall()
  
-    # Get buyer profile
     c.execute("SELECT * FROM user_profiles WHERE session_id = ?", (buyer_session_id,))
     profile = c.fetchone()
     conn.close()
@@ -706,12 +949,10 @@ def clone_negotiate():
     profile_dict = dict(profile) if profile else {}
     history_list = [{"message": h["message"], "sent_by": h["sent_by"]} for h in history]
  
-    # Generate clone message
     clone_msg = clone_negotiate_message(commodity, price, profile_dict, history_list)
     if not clone_msg:
         return jsonify({"error": "Clone could not generate message"}), 500
  
-    # Save clone message
     conn = get_db()
     c = conn.cursor()
     c.execute("""

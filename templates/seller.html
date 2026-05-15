@@ -942,6 +942,7 @@
             document.getElementById("step1Section").style.display = "none";
             document.getElementById("step2Section").style.display = "block";
             document.getElementById("sellerIdDisplay").textContent = "PW-" + sellerId;
+            localStorage.setItem("pricewise_seller_id", sellerId);
             buildPriceFields();
             window.scrollTo(0, 0);
             // Auto-load inbox for new seller

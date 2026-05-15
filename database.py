@@ -13,7 +13,7 @@ def init_db():
         )
     ''')
  
-    # Price history table — platform column included
+    # Price history table
     c.execute('''
         CREATE TABLE IF NOT EXISTS price_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +37,7 @@ def init_db():
         )
     ''')
  
-    # Community sellers table — correct schema
+    # Community sellers table
     c.execute('''
         CREATE TABLE IF NOT EXISTS community_sellers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,7 +55,7 @@ def init_db():
         )
     ''')
  
-    # Community prices table — correct schema
+    # Community prices table — kept for price history & agent
     c.execute('''
         CREATE TABLE IF NOT EXISTS community_prices (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,8 +70,26 @@ def init_db():
             FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
         )
     ''')
+
+    # ── NEW: Seller products — live listings managed by seller ──
+    # One seller can have many products. Seller edits these themselves.
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS seller_products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            seller_id INTEGER NOT NULL,
+            commodity TEXT NOT NULL,
+            price REAL NOT NULL,
+            unit TEXT NOT NULL,
+            platform TEXT DEFAULT 'Open Market',
+            quantity TEXT DEFAULT '',
+            availability TEXT DEFAULT 'In Stock',
+            date_added TEXT NOT NULL,
+            date_updated TEXT NOT NULL,
+            FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
+        )
+    ''')
  
-    # User profiles — built from onboarding + behavior
+    # User profiles
     c.execute('''
         CREATE TABLE IF NOT EXISTS user_profiles (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -88,7 +106,7 @@ def init_db():
         )
     ''')
  
-    # User behavior log — every interaction tracked
+    # User behavior log
     c.execute('''
         CREATE TABLE IF NOT EXISTS user_behavior_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -101,7 +119,7 @@ def init_db():
         )
     ''')
  
-    # Generated reviews — auto-created by user clone
+    # Generated reviews
     c.execute('''
         CREATE TABLE IF NOT EXISTS generated_reviews (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -116,7 +134,7 @@ def init_db():
         )
     ''')
  
-    # State prices table — for arbitrage detection
+    # State prices table
     c.execute('''
         CREATE TABLE IF NOT EXISTS state_prices (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -130,7 +148,7 @@ def init_db():
         )
     ''')
     
-        # Comments on seller profiles
+    # Comments on seller profiles
     c.execute('''
         CREATE TABLE IF NOT EXISTS commodity_comments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -146,9 +164,7 @@ def init_db():
         )
     ''')
     
-    
-    
-    
+    # Seller messages (private chat)
     c.execute('''
         CREATE TABLE IF NOT EXISTS seller_messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -171,68 +187,32 @@ def init_db():
  
 def migrate_community_tables():
     """
-    Drops and recreates community_sellers and community_prices
-    with the correct schema. Safe to run on Render — only touches
-    these two tables, all other data is preserved.
+    Safe migration — only touches community tables.
+    Adds seller_products if it doesn't exist.
     """
     conn = sqlite3.connect('pricewise.db')
     c = conn.cursor()
- 
-    c.execute("DROP TABLE IF EXISTS community_prices")
-    c.execute("DROP TABLE IF EXISTS community_sellers")
- 
+
+    # Add seller_products if missing (safe on existing DB)
     c.execute('''
-        CREATE TABLE community_sellers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            full_name TEXT NOT NULL,
-            business_name TEXT,
-            phone TEXT,
-            location TEXT NOT NULL,
-            area TEXT NOT NULL,
-            lga TEXT NOT NULL,
-            state TEXT NOT NULL,
-            seller_type TEXT NOT NULL,
-            commodities TEXT NOT NULL,
-            date_registered TEXT,
-            verified INTEGER DEFAULT 0
-        )
-    ''')
- 
-    c.execute('''
-        CREATE TABLE community_prices (
+        CREATE TABLE IF NOT EXISTS seller_products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             seller_id INTEGER NOT NULL,
             commodity TEXT NOT NULL,
             price REAL NOT NULL,
             unit TEXT NOT NULL,
             platform TEXT DEFAULT 'Open Market',
-            state TEXT NOT NULL,
-            date_submitted TEXT NOT NULL,
-            verified_count INTEGER DEFAULT 0,
+            quantity TEXT DEFAULT '',
+            availability TEXT DEFAULT 'In Stock',
+            date_added TEXT NOT NULL,
+            date_updated TEXT NOT NULL,
             FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
         )
     ''')
-    
-    
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS seller_messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            seller_id INTEGER NOT NULL,
-            buyer_session_id TEXT NOT NULL,
-            message TEXT NOT NULL,
-            sent_by TEXT DEFAULT 'buyer',        -- 'buyer', 'seller', 'clone'
-            chat_mode TEXT DEFAULT 'human',      -- 'human' or 'clone'
-            is_read INTEGER DEFAULT 0,
-            saved INTEGER DEFAULT 1,             -- 0 = marked for deletion
-            timestamp TEXT NOT NULL,
-            FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
-        )
-    ''')
- 
- 
+
     conn.commit()
     conn.close()
-    print("Migration done. community_sellers and community_prices recreated.")
+    print("Migration done. seller_products table ready.")
  
  
 init_db()

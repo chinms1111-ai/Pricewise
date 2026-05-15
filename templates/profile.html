@@ -915,7 +915,9 @@
                 sellerData = data;
                 renderProfile(data);
                 renderStats(data);
-                renderPrices(data.prices || []);
+
+                renderPrices(data);
+                 
                 renderComments(data.comments || []);
 
                 // Update page title
@@ -1017,36 +1019,61 @@
 
             document.getElementById("statComments").textContent = comments.length;
             document.getElementById("statPositive").textContent = positivePct + "%";
-            document.getElementById("statListings").textContent = prices.length;
+
+            document.getElementById("statListings").textContent = (data.products||data.prices||[]).length;
+             
             document.getElementById("statScore").textContent = authScore + "/10";
 
             document.getElementById("statsCard").style.display = "block";
         }
 
-        function renderPrices(prices) {
+
+        function renderPrices(data) {
             const card = document.getElementById("pricesCard");
             const list = document.getElementById("pricesList");
+            const products = data.products || data.prices || [];
 
-            if (!prices.length) {
-                list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">₦</div><p>No prices listed yet.</p></div>`;
+            const isOwner = localStorage.getItem("pricewise_seller_id") == sellerId;
+
+            const addBtn = isOwner ? `
+                <button class="btn-ghost" style="margin-bottom:12px;width:100%;" onclick="showAddForm()">+ Add Commodity</button>
+                <div id="addForm" style="display:none;background:var(--surface-1);border:1px solid var(--border);border-radius:3px;padding:14px;margin-bottom:12px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                        <input id="af_commodity" placeholder="Commodity" style="padding:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;color:var(--text-primary);font-family:'DM Mono',monospace;font-size:12px;">
+                        <input id="af_price" placeholder="Price (₦)" type="number" style="padding:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;color:var(--text-primary);font-family:'DM Mono',monospace;font-size:12px;">
+                        <input id="af_unit" placeholder="Unit (e.g. per kg)" style="padding:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;color:var(--text-primary);font-family:'DM Mono',monospace;font-size:12px;">
+                        <input id="af_qty" placeholder="Quantity (optional)" style="padding:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;color:var(--text-primary);font-family:'DM Mono',monospace;font-size:12px;">
+                    </div>
+                    <button class="btn-primary" onclick="addProduct()">Save</button>
+                    <button class="btn-ghost" style="margin-left:8px;" onclick="document.getElementById('addForm').style.display='none'">Cancel</button>
+                    <span id="addMsg" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--green);margin-left:10px;display:none;">✓ Added</span>
+                </div>` : "";
+
+            if (!products.length) {
+                list.innerHTML = addBtn + `<div class="empty-state"><div class="empty-state-icon">₦</div><p>No prices listed yet.</p></div>`;
             } else {
-                const emojis = { "Rice (50kg bag)": "🌾", "Bread (sliced loaf)": "🍞", "Fuel (per litre)": "⛽" };
-                list.innerHTML = prices.map(p => `
-                    <div class="price-listing">
+                list.innerHTML = addBtn + products.map(p => `
+                    <div class="price-listing" id="pl_${p.id}">
                         <div>
-                            <div class="price-listing-commodity">${emojis[p.commodity] || "📦"} ${p.commodity}</div>
-                            <div class="price-listing-sub">${p.platform} · ${p.unit}</div>
+                            <div class="price-listing-commodity">📦 ${p.commodity}</div>
+                            <div class="price-listing-sub">${p.platform || 'Open Market'} · ${p.unit}</div>
+                            ${p.quantity ? `<div class="price-listing-sub">Qty: ${p.quantity}</div>` : ''}
                         </div>
                         <div style="text-align:right;">
-                            <div class="price-listing-val">₦${Number(p.price).toLocaleString()}</div>
-                            <div class="price-listing-date">${p.date ? p.date.slice(0,10) : ""}</div>
-                             
+                            <div class="price-listing-val" id="val_${p.id}">₦${Number(p.price).toLocaleString()}</div>
+                            <div class="price-listing-date">${(p.date_updated||p.date||'').slice(0,10)}</div>
+                            ${isOwner ? `
+                            <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
+                                <button class="btn-ghost" style="padding:4px 10px;font-size:10px;" onclick="editProduct(${p.id},'${p.commodity}',${p.price},'${p.unit}','${p.quantity||''}')">Edit</button>
+                                <button class="btn-ghost" style="padding:4px 10px;font-size:10px;border-color:var(--red);color:var(--red);" onclick="deleteProduct(${p.id})">Del</button>
+                            </div>` : ''}
                         </div>
-                    </div>
-                `).join("");
+                    </div>`).join("");
             }
             card.style.display = "block";
         }
+
+         
 
         function renderComments(comments) {
             const card = document.getElementById("commentsCard");
@@ -1253,6 +1280,49 @@
         function scrollToComments() {
             document.getElementById("commentsCard").scrollIntoView({ behavior: "smooth" });
             setTimeout(() => document.getElementById("commentText").focus(), 500);
+        }
+
+
+
+        function showAddForm() {
+            const f = document.getElementById("addForm");
+            f.style.display = f.style.display === "none" ? "block" : "none";
+        }
+
+        async function addProduct() {
+            const commodity = document.getElementById("af_commodity").value.trim();
+            const price = document.getElementById("af_price").value;
+            const unit = document.getElementById("af_unit").value.trim();
+            const qty = document.getElementById("af_qty").value.trim();
+            if (!commodity || !price || !unit) { alert("Commodity, price and unit are required."); return; }
+            const res = await fetch("/seller/add_product", {
+                method: "POST", headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({ seller_id: parseInt(sellerId), commodity, price: parseFloat(price), unit, quantity: qty })
+            });
+            const d = await res.json();
+            if (d.error) { alert(d.error); return; }
+            document.getElementById("addMsg").style.display = "inline";
+            setTimeout(() => { document.getElementById("addMsg").style.display = "none"; loadProfile(); }, 1500);
+        }
+
+        async function editProduct(id, commodity, price, unit, qty) {
+            const newPrice = prompt(`New price for ${commodity}?`, price);
+            if (!newPrice) return;
+            const newQty = prompt("Quantity available? (leave blank to keep)", qty);
+            await fetch("/seller/update_product", {
+                method: "PUT", headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({ product_id: id, seller_id: parseInt(sellerId), price: parseFloat(newPrice), quantity: newQty !== null ? newQty : qty })
+            });
+            loadProfile();
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm("Remove this listing?")) return;
+            await fetch("/seller/delete_product", {
+                method: "DELETE", headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({ product_id: id, seller_id: parseInt(sellerId) })
+            });
+            loadProfile();
         }
 
         // ── Init ──────────────────────────────────────────────────
