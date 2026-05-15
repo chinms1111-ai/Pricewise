@@ -1139,6 +1139,45 @@
                 console.error("Reply failed", e);
             }
         }
+
+
+
+
+        // Real-time SSE listener
+        const evtSource = new EventSource('/stream');
+
+        evtSource.addEventListener('product_added', (e) => {
+            const data = JSON.parse(e.data);
+            // Re-fetch and re-render products for this seller
+            if (typeof loadSellerProducts === 'function') loadSellerProducts(data.seller_id);
+            if (typeof renderCommunityPrices === 'function') renderCommunityPrices();
+        });
+
+        evtSource.addEventListener('product_updated', (e) => {
+            const data = JSON.parse(e.data);
+            if (typeof loadSellerProducts === 'function') loadSellerProducts(data.seller_id);
+            if (typeof renderCommunityPrices === 'function') renderCommunityPrices();
+        });
+
+        evtSource.addEventListener('product_deleted', (e) => {
+            const data = JSON.parse(e.data);
+            if (typeof loadSellerProducts === 'function') loadSellerProducts(data.seller_id);
+            if (typeof renderCommunityPrices === 'function') renderCommunityPrices();
+        });
+
+        evtSource.addEventListener('comment_added', (e) => {
+            const data = JSON.parse(e.data);
+            if (typeof loadComments === 'function') loadComments(data.seller_id);
+        });
+
+        evtSource.addEventListener('price_updated', (e) => {
+            if (typeof renderCommunityPrices === 'function') renderCommunityPrices();
+        });
+
+        // Reconnect if connection drops
+        evtSource.onerror = () => {
+            console.log('SSE reconnecting...');
+        };
     </script>
 </body>
 </html>

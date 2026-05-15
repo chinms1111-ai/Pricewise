@@ -1228,6 +1228,32 @@
             document.getElementById("reviewCard").style.display = "block";
             document.getElementById("cloneCompare").style.display = "none";
         }
+
+
+
+        // Real-time SSE listener
+        const evtSource = new EventSource('/stream');
+
+
+
+        evtSource.addEventListener('product_added', (e) => {
+            loadCommunityPrices();
+        });
+
+        evtSource.addEventListener('product_updated', (e) => {
+            loadCommunityPrices();
+        });
+
+        evtSource.addEventListener('product_deleted', (e) => {
+            loadCommunityPrices();
+        });
+
+        evtSource.addEventListener('price_updated', (e) => {
+            loadCommunityPrices();
+        });
+
+
+         
     </script>
 </body>
 </html>

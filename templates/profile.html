@@ -1327,6 +1327,50 @@
 
         // ── Init ──────────────────────────────────────────────────
         loadProfile();
+
+
+
+        // Real-time SSE listener
+        const evtSource = new EventSource('/stream');
+
+        evtSource.addEventListener('product_added', (e) => {
+            const data = JSON.parse(e.data);
+            if (data.seller_id == sellerId) loadProfile();
+        });
+
+        evtSource.addEventListener('product_updated', (e) => {
+            const data = JSON.parse(e.data);
+            if (data.seller_id == sellerId) loadProfile();
+        });
+
+        evtSource.addEventListener('product_deleted', (e) => {
+            const data = JSON.parse(e.data);
+            if (data.seller_id == sellerId) loadProfile();
+        });
+
+        evtSource.addEventListener('comment_added', (e) => {
+            const data = JSON.parse(e.data);
+            if (data.seller_id == sellerId) loadProfile();
+        });
+
+        evtSource.addEventListener('price_updated', (e) => {
+            loadProfile();
+        });
+
+
+        evtSource.addEventListener('message_sent', (e) => {
+            const data = JSON.parse(e.data);
+            if (data.seller_id == sellerId && chatOpen) {
+                loadChatMessages();
+            }
+        });
+
+        evtSource.onerror = () => {
+            console.log('SSE reconnecting...');
+        };
+
+
+      
     </script>
 
 

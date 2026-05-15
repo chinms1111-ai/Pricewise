@@ -1,8 +1,28 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template, send_from_directory , Response
 from flask_cors import CORS
 import sqlite3
 from datetime import date
 from agent import ask_agent
+import queue
+import threading
+
+# SSE client registry
+sse_clients = []
+sse_lock = threading.Lock()
+
+def broadcast(event_type, data):
+    """Push an event to all connected SSE clients."""
+    import json
+    msg = f"event: {event_type}\ndata: {json.dumps(data)}\n\n"
+    with sse_lock:
+        dead = []
+        for q in sse_clients:
+            try:
+                q.put_nowait(msg)
+            except:
+                dead.append(q)
+        for q in dead:
+            sse_clients.remove(q)
 
 
 app = Flask(__name__)
@@ -310,6 +330,9 @@ def submit_price():
  
     conn.commit()
     conn.close()
+    
+    
+    broadcast('price_updated', {'seller_id': seller_id})
  
     return jsonify({"message": f"{inserted} price(s) submitted successfully", "inserted": inserted})
 
@@ -402,6 +425,8 @@ def seller_add_product():
     conn.commit()
     new_id = c.lastrowid
     conn.close()
+    
+    broadcast('product_added', {'seller_id': seller_id, 'commodity': commodity})
 
     return jsonify({"message": "Product added", "id": new_id})
 
@@ -469,6 +494,8 @@ def seller_update_product():
 
     conn.commit()
     conn.close()
+    
+    broadcast('product_updated', {'seller_id': seller_id})
 
     return jsonify({"message": "Product updated"})
 
@@ -497,6 +524,8 @@ def seller_delete_product():
     c.execute("DELETE FROM seller_products WHERE id = ? AND seller_id = ?", (product_id, seller_id))
     conn.commit()
     conn.close()
+    
+    broadcast('product_deleted', {'seller_id': seller_id})
 
     return jsonify({"message": "Product deleted"})
 
@@ -780,6 +809,7 @@ def add_comment():
     ))
     conn.commit()
     conn.close()
+    broadcast('comment_added', {'seller_id': seller_id})
     return jsonify({"message": "Comment saved"})
  
  
@@ -840,6 +870,10 @@ def send_message():
     conn.commit()
     msg_id = c.lastrowid
     conn.close()
+    
+    
+    
+    broadcast('message_sent', {'seller_id': seller_id, 'buyer_session_id': buyer_session_id})
  
     return jsonify({"message": "Sent", "id": msg_id})
  
@@ -964,6 +998,36 @@ def clone_negotiate():
     conn.close()
  
     return jsonify({"message": clone_msg, "sent_by": "clone"})
+
+
+
+@app.route('/stream')
+def stream():
+    def event_stream(q):
+        try:
+            while True:
+                try:
+                    msg = q.get(timeout=25)
+                    yield msg
+                except queue.Empty:
+                    yield ": heartbeat\n\n"
+        except GeneratorExit:
+            with sse_lock:
+                if q in sse_clients:
+                    sse_clients.remove(q)
+
+    q = queue.Queue(maxsize=10)
+    with sse_lock:
+        sse_clients.append(q)
+
+    return Response(
+        event_stream(q),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        }
+    )
     
 
 
@@ -971,4 +1035,4 @@ def clone_negotiate():
  
 if __name__ == "__main__":
     import os
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)) , threaded=True)
