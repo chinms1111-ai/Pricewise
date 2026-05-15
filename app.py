@@ -565,6 +565,167 @@ def sellers_board():
     
 
 
+@app.route("/send_message", methods=["POST"])
+def send_message():
+    from datetime import datetime
+    data = request.get_json()
+    seller_id = data.get("seller_id")
+    buyer_session_id = data.get("buyer_session_id")
+    message = data.get("message", "").strip()
+    sent_by = data.get("sent_by", "buyer")      # 'buyer', 'seller', 'clone'
+    chat_mode = data.get("chat_mode", "human")  # 'human' or 'clone'
+ 
+    if not seller_id or not buyer_session_id or not message:
+        return jsonify({"error": "Missing fields"}), 400
+ 
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO seller_messages
+        (seller_id, buyer_session_id, message, sent_by, chat_mode, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (seller_id, buyer_session_id, message, sent_by, chat_mode, datetime.now().isoformat()))
+    conn.commit()
+    msg_id = c.lastrowid
+    conn.close()
+ 
+    return jsonify({"message": "Sent", "id": msg_id})
+ 
+ 
+@app.route("/get_messages/<int:seller_id>/<buyer_session_id>")
+def get_messages(seller_id, buyer_session_id):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        SELECT id, message, sent_by, chat_mode, is_read, saved, timestamp
+        FROM seller_messages
+        WHERE seller_id = ? AND buyer_session_id = ? AND saved = 1
+        ORDER BY timestamp ASC
+    """, (seller_id, buyer_session_id))
+    rows = c.fetchall()
+ 
+    # Mark buyer messages as read
+    c.execute("""
+        UPDATE seller_messages SET is_read = 1
+        WHERE seller_id = ? AND buyer_session_id = ? AND sent_by = 'buyer'
+    """, (seller_id, buyer_session_id))
+    conn.commit()
+    conn.close()
+ 
+    return jsonify([{
+        "id": r["id"],
+        "message": r["message"],
+        "sent_by": r["sent_by"],
+        "chat_mode": r["chat_mode"],
+        "is_read": r["is_read"],
+        "saved": r["saved"],
+        "timestamp": r["timestamp"]
+    } for r in rows])
+ 
+ 
+@app.route("/get_seller_inbox/<int:seller_id>")
+def get_seller_inbox(seller_id):
+    """Returns all conversations for a seller grouped by buyer session"""
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        SELECT
+            buyer_session_id,
+            COUNT(*) as message_count,
+            SUM(CASE WHEN is_read = 0 AND sent_by = 'buyer' THEN 1 ELSE 0 END) as unread,
+            MAX(timestamp) as last_message,
+            MAX(CASE WHEN sent_by IN ('buyer','clone') THEN message END) as last_buyer_msg
+        FROM seller_messages
+        WHERE seller_id = ? AND saved = 1
+        GROUP BY buyer_session_id
+        ORDER BY last_message DESC
+    """, (seller_id,))
+    rows = c.fetchall()
+    conn.close()
+ 
+    return jsonify([{
+        "buyer_session_id": r["buyer_session_id"],
+        "message_count": r["message_count"],
+        "unread": r["unread"],
+        "last_message": r["last_message"],
+        "last_buyer_msg": r["last_buyer_msg"]
+    } for r in rows])
+ 
+ 
+@app.route("/clear_chat", methods=["POST"])
+def clear_chat():
+    """Buyer marks their chat with a seller as cleared (saved=0)"""
+    data = request.get_json()
+    seller_id = data.get("seller_id")
+    buyer_session_id = data.get("buyer_session_id")
+ 
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        UPDATE seller_messages SET saved = 0
+        WHERE seller_id = ? AND buyer_session_id = ?
+    """, (seller_id, buyer_session_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Chat cleared"})
+ 
+ 
+@app.route("/clone_negotiate", methods=["POST"])
+def clone_negotiate():
+    """
+    Called by clone_job or manually — clone sends a message to a seller
+    on behalf of a buyer whose profile matches the deal.
+    """
+    from datetime import datetime
+    from agent import clone_negotiate_message
+ 
+    data = request.get_json()
+    seller_id = data.get("seller_id")
+    buyer_session_id = data.get("buyer_session_id")
+    commodity = data.get("commodity")
+    price = data.get("price")
+ 
+    if not all([seller_id, buyer_session_id, commodity, price]):
+        return jsonify({"error": "Missing fields"}), 400
+ 
+    # Get buyer's chat history with this seller for tone matching
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        SELECT message, sent_by FROM seller_messages
+        WHERE seller_id = ? AND buyer_session_id = ? AND saved = 1
+        ORDER BY timestamp DESC LIMIT 10
+    """, (seller_id, buyer_session_id))
+    history = c.fetchall()
+ 
+    # Get buyer profile
+    c.execute("SELECT * FROM user_profiles WHERE session_id = ?", (buyer_session_id,))
+    profile = c.fetchone()
+    conn.close()
+ 
+    profile_dict = dict(profile) if profile else {}
+    history_list = [{"message": h["message"], "sent_by": h["sent_by"]} for h in history]
+ 
+    # Generate clone message
+    clone_msg = clone_negotiate_message(commodity, price, profile_dict, history_list)
+    if not clone_msg:
+        return jsonify({"error": "Clone could not generate message"}), 500
+ 
+    # Save clone message
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO seller_messages
+        (seller_id, buyer_session_id, message, sent_by, chat_mode, timestamp)
+        VALUES (?, ?, ?, 'clone', 'clone', ?)
+    """, (seller_id, buyer_session_id, clone_msg, datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+ 
+    return jsonify({"message": clone_msg, "sent_by": "clone"})
+    
+
+
  
  
 if __name__ == "__main__":

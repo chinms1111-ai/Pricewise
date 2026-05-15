@@ -145,6 +145,24 @@ def init_db():
             FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
         )
     ''')
+    
+    
+    
+    
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS seller_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            seller_id INTEGER NOT NULL,
+            buyer_session_id TEXT NOT NULL,
+            message TEXT NOT NULL,
+            sent_by TEXT DEFAULT 'buyer',
+            chat_mode TEXT DEFAULT 'human',
+            is_read INTEGER DEFAULT 0,
+            saved INTEGER DEFAULT 1,
+            timestamp TEXT NOT NULL,
+            FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
+        )
+    ''')
  
     conn.commit()
     conn.close()
@@ -194,6 +212,23 @@ def migrate_community_tables():
             FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
         )
     ''')
+    
+    
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS seller_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            seller_id INTEGER NOT NULL,
+            buyer_session_id TEXT NOT NULL,
+            message TEXT NOT NULL,
+            sent_by TEXT DEFAULT 'buyer',        -- 'buyer', 'seller', 'clone'
+            chat_mode TEXT DEFAULT 'human',      -- 'human' or 'clone'
+            is_read INTEGER DEFAULT 0,
+            saved INTEGER DEFAULT 1,             -- 0 = marked for deletion
+            timestamp TEXT NOT NULL,
+            FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
+        )
+    ''')
+ 
  
     conn.commit()
     conn.close()

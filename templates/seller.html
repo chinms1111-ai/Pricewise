@@ -50,7 +50,6 @@
             z-index: 0;
         }
 
-        /* ── Header bar ── */
         .top-bar {
             position: sticky;
             top: 0;
@@ -83,7 +82,6 @@
         }
         .top-bar-back:hover { color: var(--gold); }
 
-        /* ── Header ── */
         .header {
             text-align: center;
             padding: 48px 20px 24px;
@@ -109,7 +107,6 @@
             text-transform: uppercase;
         }
 
-        /* ── Container ── */
         .container {
             max-width: 640px;
             margin: 0 auto;
@@ -118,7 +115,6 @@
             z-index: 1;
         }
 
-        /* ── Step Indicator ── */
         .steps {
             display: flex;
             justify-content: center;
@@ -167,7 +163,6 @@
             margin: 0 12px;
         }
 
-        /* ── Cards ── */
         .card {
             background: var(--surface-2);
             border: 1px solid var(--border);
@@ -219,7 +214,6 @@
             flex-shrink: 0;
         }
 
-        /* ── Form elements ── */
         label {
             display: block;
             font-family: 'DM Mono', monospace;
@@ -254,12 +248,7 @@
         input::placeholder { color: var(--text-muted); }
         select option { background: var(--surface-2); color: var(--text-primary); }
 
-        /* ── Type buttons ── */
-        .type-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+        .type-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .type-btn {
             flex: 1;
             min-width: 120px;
@@ -284,12 +273,7 @@
             box-shadow: 0 0 12px var(--gold-glow-strong);
         }
 
-        /* ── Checkboxes ── */
-        .checkbox-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+        .checkbox-group { display: flex; gap: 10px; flex-wrap: wrap; }
         .checkbox-item {
             display: flex;
             align-items: center;
@@ -307,16 +291,14 @@
         }
         .checkbox-item:hover { border-color: var(--gold-dim); color: var(--gold); }
         .checkbox-item input[type="checkbox"] {
-            width: auto;
-            accent-color: var(--gold);
             width: 14px; height: 14px;
+            accent-color: var(--gold);
             padding: 0;
             border: none;
             background: none;
             box-shadow: none;
         }
 
-        /* ── Submit button ── */
         .btn-submit {
             width: 100%;
             padding: 16px;
@@ -332,13 +314,9 @@
             margin-top: 8px;
             transition: background-position 0.3s, box-shadow 0.3s, transform 0.1s;
         }
-        .btn-submit:hover {
-            background-position: 100% 0;
-            box-shadow: 0 0 24px var(--gold-glow-strong);
-        }
+        .btn-submit:hover { background-position: 100% 0; box-shadow: 0 0 24px var(--gold-glow-strong); }
         .btn-submit:active { transform: scale(0.99); }
 
-        /* ── Price rows ── */
         .price-row {
             background: var(--surface-1);
             border: 1px solid var(--border);
@@ -363,7 +341,6 @@
             letter-spacing: 1px;
         }
 
-        /* ── Success state ── */
         .success-box {
             display: none;
             background: rgba(0,230,118,0.06);
@@ -373,10 +350,7 @@
             text-align: center;
             margin-top: 16px;
         }
-        .success-box-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
+        .success-box-icon { font-size: 32px; margin-bottom: 12px; }
         .success-box h3 {
             font-family: 'Bebas Neue', sans-serif;
             font-size: 24px;
@@ -420,7 +394,6 @@
         }
         .success-link-secondary:hover { color: var(--text-secondary); }
 
-        /* ── Seller ID display ── */
         .seller-id-badge {
             display: inline-flex;
             align-items: center;
@@ -446,76 +419,283 @@
             letter-spacing: 2px;
         }
 
-        /* ══════════════════════════════
-           MOBILE RESPONSIVE
-           ══════════════════════════════ */
-        @media (max-width: 600px) {
+        /* ── Inbox styles ── */
+        .inbox-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .unread-badge {
+            background: var(--red);
+            color: white;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 12px;
+            letter-spacing: 1px;
+            animation: pulse-badge 2s infinite;
+            display: none;
+        }
+        @keyframes pulse-badge {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,79,79,0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(255,79,79,0); }
+        }
+        .inbox-thread {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+        .inbox-thread:hover { border-color: var(--gold-dim); background: var(--surface-hover); }
+        .inbox-thread.has-unread { border-left: 3px solid var(--red); }
+        .inbox-thread-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .inbox-buyer {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--gold);
+            letter-spacing: 1px;
+        }
+        .inbox-time {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .inbox-preview {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .inbox-unread-count {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: var(--red);
+            color: white;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-            /* Header */
+        /* ── Thread chat view ── */
+        .thread-view {
+            display: none;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .thread-view-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border);
+        }
+        .thread-view-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--gold);
+            letter-spacing: 1px;
+        }
+        .thread-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+        .thread-close:hover { color: var(--red); }
+        .thread-messages {
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .thread-bubble-wrap {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
+        .thread-bubble-wrap.buyer { align-self: flex-start; }
+        .thread-bubble-wrap.seller-reply { align-self: flex-end; align-items: flex-end; }
+        .thread-bubble-wrap.clone { align-self: flex-start; }
+        .thread-bubble {
+            padding: 10px 14px;
+            border-radius: 3px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        .thread-bubble-wrap.buyer .thread-bubble {
+            background: var(--surface-3);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        .thread-bubble-wrap.clone .thread-bubble {
+            background: rgba(0,194,255,0.08);
+            border: 1px solid rgba(0,194,255,0.2);
+            color: var(--text-primary);
+        }
+        .thread-bubble-wrap.seller-reply .thread-bubble {
+            background: var(--gold);
+            color: #0a0800;
+            font-weight: 500;
+        }
+        .thread-bubble-meta {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .clone-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            padding: 1px 6px;
+            border-radius: 2px;
+            background: rgba(0,194,255,0.1);
+            color: var(--blue);
+            border: 1px solid rgba(0,194,255,0.2);
+            letter-spacing: 1px;
+        }
+        .thread-reply-area {
+            display: flex;
+            gap: 0;
+            padding: 12px;
+            border-top: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+        .thread-reply-input {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-right: none;
+            border-radius: 3px 0 0 3px;
+            color: var(--text-primary);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+            width: auto;
+            margin: 0;
+        }
+        .thread-reply-input:focus { border-color: var(--gold-dim); }
+        .thread-reply-input::placeholder { color: var(--text-muted); }
+        .thread-reply-btn {
+            background: var(--gold);
+            color: #0a0800;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 0 3px 3px 0;
+            cursor: pointer;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            font-size: 13px;
+            font-weight: 700;
+            transition: box-shadow 0.2s;
+            flex-shrink: 0;
+        }
+        .thread-reply-btn:hover { box-shadow: 0 0 12px var(--gold-glow-strong); }
+
+        /* ── Seller ID input for inbox ── */
+        .seller-login {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .seller-login input {
+            flex: 1;
+            min-width: 140px;
+            padding: 9px 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--text-primary);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            outline: none;
+            margin: 0;
+            width: auto;
+        }
+        .seller-login input:focus { border-color: var(--gold-dim); }
+        .seller-login-btn {
+            background: var(--gold);
+            color: #0a0800;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: box-shadow 0.2s;
+        }
+        .seller-login-btn:hover { box-shadow: 0 0 12px var(--gold-glow-strong); }
+
+        @media (max-width: 600px) {
             .header { padding: 24px 16px 16px; }
             .header-title { font-size: 38px; letter-spacing: 3px; }
-            .header-sub { font-size: 10px; letter-spacing: 2px; }
-
-            /* Top bar */
-            .top-bar { padding: 0 16px; }
-            .top-bar-logo { font-size: 18px; letter-spacing: 2px; }
-
-            /* Container & cards */
             .container { padding: 0 12px 60px; }
             .card { padding: 20px 14px; }
-            .card-title { font-size: 17px; letter-spacing: 2px; margin-bottom: 16px; }
-
-            /* Steps */
             .steps { gap: 0; }
             .step { font-size: 10px; gap: 6px; }
             .step-line { width: 24px; margin: 0 6px; }
-
-            /* Inputs — full width on mobile */
-            input[type="text"],
-            input[type="tel"],
-            input[type="number"],
-            select {
-                width: 100%;
-                margin: 0;
-            }
-
-            /* Type buttons */
+            input[type="text"], input[type="tel"], input[type="number"], select { width: 100%; margin: 0; }
             .type-group { gap: 6px; }
             .type-btn { padding: 10px 10px; font-size: 11px; min-width: 90px; }
-
-            /* Checkbox group */
             .checkbox-group { gap: 8px; }
             .checkbox-item { padding: 8px 12px; font-size: 11px; }
-
-            /* Submit button */
             .btn-submit { font-size: 16px; letter-spacing: 2px; padding: 14px; }
-
-            /* Price row fields */
             .price-row { padding: 14px 12px; }
-
-            /* Success links */
             .success-box-links { flex-direction: column; align-items: center; gap: 12px; }
-            .success-link-primary { text-align: center; }
-
-            /* Seller ID badge */
             .seller-id-badge { width: 100%; justify-content: space-between; }
-        }
-
-        @media (max-width: 380px) {
-            .type-btn { font-size: 10px; padding: 8px 8px; min-width: 80px; }
-            .header-title { font-size: 32px; }
+            .top-bar { padding: 0 16px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ── Top bar ── -->
     <div class="top-bar">
         <div class="top-bar-logo">PriceWise</div>
         <a href="/" class="top-bar-back">← Back to App</a>
     </div>
 
-    <!-- ── Header ── -->
     <div class="header">
         <div class="header-title">Seller Portal</div>
         <div class="header-sub">List your prices · Reach more buyers</div>
@@ -523,7 +703,6 @@
 
     <div class="container">
 
-        <!-- ── Step indicators ── -->
         <div class="steps">
             <div class="step active" id="stepIndicator1">
                 <div class="step-num">1</div>
@@ -540,29 +719,22 @@
         <div id="step1Section">
             <div class="card">
                 <div class="card-title"><div class="card-title-icon">👤</div>Personal Information</div>
-
                 <label>Full Name *</label>
                 <input type="text" id="fullName" placeholder="e.g Emeka Okonkwo">
-
                 <label>Business Name (optional)</label>
                 <input type="text" id="businessName" placeholder="e.g Emeka Rice Depot">
-
                 <label>Phone Number *</label>
                 <input type="tel" id="phone" placeholder="e.g 08012345678">
             </div>
 
             <div class="card">
                 <div class="card-title"><div class="card-title-icon">📍</div>Location</div>
-
                 <label>Market / Street Name *</label>
                 <input type="text" id="location" placeholder="e.g Mile 12 Market">
-
                 <label>Area *</label>
                 <input type="text" id="area" placeholder="e.g Kosofe">
-
                 <label>LGA *</label>
                 <input type="text" id="lga" placeholder="e.g Kosofe LGA">
-
                 <label>State *</label>
                 <select id="state">
                     <option value="" disabled selected>Select State</option>
@@ -608,11 +780,42 @@
             </div>
 
             <button class="btn-submit" onclick="registerSeller()">Continue — List My Prices →</button>
+
+            <!-- ── Returning seller inbox access ── -->
+            <div class="card" style="margin-top:24px;">
+                <div class="card-title"><div class="card-title-icon">📬</div>Already Registered? Check Your Inbox</div>
+                <p style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:16px;letter-spacing:1px;">
+                    Enter your Seller ID to see messages from buyers.
+                </p>
+                <div class="seller-login">
+                    <input type="number" id="inboxSellerIdInput" placeholder="e.g 3">
+                    <button class="seller-login-btn" onclick="loadInbox()">View Inbox →</button>
+                </div>
+                <div id="inboxSection" style="display:none;">
+                    <div class="inbox-header">
+                        <span style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;">Messages from Buyers</span>
+                        <span class="unread-badge" id="totalUnreadBadge">0 NEW</span>
+                    </div>
+                    <div id="inboxList">
+                        <div style="text-align:center;padding:24px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px;">Loading messages...</div>
+                    </div>
+                    <div class="thread-view" id="threadView">
+                        <div class="thread-view-header">
+                            <span class="thread-view-title" id="threadViewTitle">Conversation</span>
+                            <button class="thread-close" onclick="closeThread()">✕</button>
+                        </div>
+                        <div class="thread-messages" id="threadMessages"></div>
+                        <div class="thread-reply-area">
+                            <input type="text" class="thread-reply-input" id="threadReplyInput" placeholder="Reply to buyer...">
+                            <button class="thread-reply-btn" onclick="sendSellerReply()">Reply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ═══════ STEP 2 ═══════ -->
         <div id="step2Section" style="display:none;">
-
             <div class="card">
                 <div class="card-title"><div class="card-title-icon">✓</div>Registration Complete</div>
                 <div class="seller-id-badge">
@@ -630,7 +833,6 @@
                     Fill in the price for each commodity you sell. Leave blank if you don't sell it.
                 </p>
                 <div id="priceFields"></div>
-
                 <label>Platform / Market Type</label>
                 <select id="pricePlatform">
                     <option value="Open Market">Open Market</option>
@@ -651,6 +853,27 @@
                     <a href="/seller" class="success-link-secondary">Register another seller</a>
                 </div>
             </div>
+
+            <!-- Inbox also shows after registration -->
+            <div class="card" id="postRegInbox" style="display:none; margin-top:16px;">
+                <div class="card-title"><div class="card-title-icon">📬</div>Your Inbox
+                    <span class="unread-badge" id="postRegUnreadBadge" style="margin-left:8px;">0 NEW</span>
+                </div>
+                <div id="postRegInboxList">
+                    <div style="text-align:center;padding:24px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px;">No messages yet. Buyers will appear here when they message you.</div>
+                </div>
+                <div class="thread-view" id="threadView2">
+                    <div class="thread-view-header">
+                        <span class="thread-view-title" id="threadViewTitle2">Conversation</span>
+                        <button class="thread-close" onclick="closeThread2()">✕</button>
+                    </div>
+                    <div class="thread-messages" id="threadMessages2"></div>
+                    <div class="thread-reply-area">
+                        <input type="text" class="thread-reply-input" id="threadReplyInput2" placeholder="Reply to buyer...">
+                        <button class="thread-reply-btn" onclick="sendSellerReply2()">Reply</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -660,6 +883,8 @@
         let registeredSellerId = null;
         let registeredState = "";
         let selectedCommodities = [];
+        let activeThreadSessionId = null;
+        let activeThreadSessionId2 = null;
 
         const COMMODITY_UNITS = {
             "Rice (50kg bag)": "50kg bag",
@@ -687,7 +912,6 @@
             const lga = document.getElementById("lga").value.trim();
             const state = document.getElementById("state").value;
             const sellerType = document.getElementById("sellerType").value;
-
             const checkboxes = document.querySelectorAll(".checkbox-group input[type='checkbox']:checked");
             selectedCommodities = Array.from(checkboxes).map(cb => cb.value);
 
@@ -697,21 +921,12 @@
             }
 
             registeredState = state;
-
             const response = await fetch("/register_seller", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    full_name: fullName,
-                    business_name: businessName,
-                    phone, location, area, lga, state,
-                    seller_type: sellerType,
-                    commodities: JSON.stringify(selectedCommodities)
-                })
+                body: JSON.stringify({ full_name: fullName, business_name: businessName, phone, location, area, lga, state, seller_type: sellerType, commodities: JSON.stringify(selectedCommodities) })
             });
-
             const data = await response.json();
-
             if (data.seller_id) {
                 registeredSellerId = data.seller_id;
                 goToStep2(data.seller_id);
@@ -729,6 +944,8 @@
             document.getElementById("sellerIdDisplay").textContent = "PW-" + sellerId;
             buildPriceFields();
             window.scrollTo(0, 0);
+            // Auto-load inbox for new seller
+            setTimeout(() => loadPostRegInbox(sellerId), 1000);
         }
 
         function buildPriceFields() {
@@ -740,15 +957,9 @@
                 container.innerHTML += `
                     <div class="price-row">
                         <div class="price-row-commodity">${emoji} ${commodity}</div>
-                        <input
-                            type="number"
-                            id="price_${commodity.replace(/[^a-z0-9]/gi, '_')}"
-                            placeholder="Your price in ₦"
-                            min="0"
-                        >
+                        <input type="number" id="price_${commodity.replace(/[^a-z0-9]/gi, '_')}" placeholder="Your price in ₦" min="0">
                         <div class="price-row-unit">Per ${unit}</div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
@@ -756,7 +967,6 @@
             if (!registeredSellerId) { alert("Seller ID missing. Please refresh and try again."); return; }
             const platform = document.getElementById("pricePlatform").value;
             const prices = [];
-
             for (const commodity of selectedCommodities) {
                 const inputId = "price_" + commodity.replace(/[^a-z0-9]/gi, '_');
                 const input = document.getElementById(inputId);
@@ -765,22 +975,167 @@
                     prices.push({ commodity, price: Number(price), unit: COMMODITY_UNITS[commodity] || "", platform });
                 }
             }
-
             if (prices.length === 0) { alert("Please enter at least one price before submitting."); return; }
-
             const response = await fetch("/submit_price", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ seller_id: registeredSellerId, state: registeredState, prices })
             });
             const data = await response.json();
-
             if (data.inserted > 0) {
-                document.querySelector(".btn-submit").style.display = "none";
+                document.querySelector("#step2Section .btn-submit").style.display = "none";
                 document.getElementById("priceSuccessMsg").style.display = "block";
                 window.scrollTo(0, document.body.scrollHeight);
             } else {
                 alert("Something went wrong submitting prices. Please try again.");
+            }
+        }
+
+        // ── INBOX (returning seller) ──────────────────────────────
+        async function loadInbox() {
+            const sellerIdInput = document.getElementById("inboxSellerIdInput").value.trim();
+            if (!sellerIdInput) { alert("Please enter your Seller ID."); return; }
+            const sellerId = parseInt(sellerIdInput);
+            document.getElementById("inboxSection").style.display = "block";
+            await renderInbox(sellerId, "inboxList", "totalUnreadBadge", "threadView", "threadViewTitle", "threadMessages", "threadReplyInput", 1);
+        }
+
+        // ── INBOX (post-registration) ─────────────────────────────
+        async function loadPostRegInbox(sellerId) {
+            document.getElementById("postRegInbox").style.display = "block";
+            await renderInbox(sellerId, "postRegInboxList", "postRegUnreadBadge", "threadView2", "threadViewTitle2", "threadMessages2", "threadReplyInput2", 2);
+        }
+
+        async function renderInbox(sellerId, listId, badgeId, threadViewId, threadTitleId, threadMsgId, replyInputId, version) {
+            const listEl = document.getElementById(listId);
+            listEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px;">Loading...</div>`;
+
+            try {
+                const res = await fetch(`/get_seller_inbox/${sellerId}`);
+                const threads = await res.json();
+
+                if (!threads.length) {
+                    listEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px;">No messages yet. Buyers will appear here when they message you.</div>`;
+                    return;
+                }
+
+                const totalUnread = threads.reduce((sum, t) => sum + (t.unread || 0), 0);
+                const badge = document.getElementById(badgeId);
+                if (totalUnread > 0) {
+                    badge.textContent = totalUnread + " NEW";
+                    badge.style.display = "inline-flex";
+                }
+
+                listEl.innerHTML = threads.map(t => {
+                    const buyerShort = t.buyer_session_id ? t.buyer_session_id.slice(-6).toUpperCase() : "BUYER";
+                    const time = t.last_message ? t.last_message.slice(0, 16).replace("T", " ") : "";
+                    const hasUnread = t.unread > 0;
+                    return `
+                    <div class="inbox-thread ${hasUnread ? 'has-unread' : ''}"
+                         onclick="openThread(${sellerId}, '${t.buyer_session_id}', '${buyerShort}', ${version})">
+                        <div class="inbox-thread-top">
+                            <span class="inbox-buyer">BUYER #${buyerShort}</span>
+                            <span class="inbox-time">${time}</span>
+                        </div>
+                        <div class="inbox-preview">${t.last_buyer_msg || "Started a conversation"}</div>
+                        ${hasUnread ? `<div class="inbox-unread-count">${t.unread}</div>` : ""}
+                    </div>`;
+                }).join("");
+
+                // Store seller id for replies
+                window[`_inboxSellerId_${version}`] = sellerId;
+
+            } catch(e) {
+                listEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--red);font-family:'DM Mono',monospace;font-size:12px;">Could not load inbox. Check your Seller ID.</div>`;
+            }
+        }
+
+        async function openThread(sellerId, buyerSessionId, buyerShort, version) {
+            const threadViewId = version === 1 ? "threadView" : "threadView2";
+            const threadTitleId = version === 1 ? "threadViewTitle" : "threadViewTitle2";
+            const threadMsgId = version === 1 ? "threadMessages" : "threadMessages2";
+
+            if (version === 1) activeThreadSessionId = buyerSessionId;
+            else activeThreadSessionId2 = buyerSessionId;
+
+            document.getElementById(threadTitleId).textContent = `Buyer #${buyerShort}`;
+            document.getElementById(threadViewId).style.display = "block";
+
+            const msgEl = document.getElementById(threadMsgId);
+            msgEl.innerHTML = `<div style="color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:20px;">Loading...</div>`;
+
+            try {
+                const res = await fetch(`/get_messages/${sellerId}/${buyerSessionId}`);
+                const messages = await res.json();
+
+                if (!messages.length) {
+                    msgEl.innerHTML = `<div style="color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:20px;">No messages yet.</div>`;
+                    return;
+                }
+
+                msgEl.innerHTML = messages.map(m => {
+                    const wrapClass = m.sent_by === "seller" ? "seller-reply" : m.chat_mode === "clone" ? "clone" : "buyer";
+                    const time = m.timestamp ? m.timestamp.slice(11, 16) : "";
+                    const cloneTag = m.chat_mode === "clone" ? `<span class="clone-tag">🧬 CLONE</span>` : "";
+                    const label = m.sent_by === "seller" ? "You (Seller)" : m.chat_mode === "clone" ? "Buyer's Clone" : "Buyer";
+                    return `
+                    <div class="thread-bubble-wrap ${wrapClass}">
+                        <div class="thread-bubble">${m.message}</div>
+                        <div class="thread-bubble-meta">${cloneTag} ${label} · ${time}</div>
+                    </div>`;
+                }).join("");
+                msgEl.scrollTop = msgEl.scrollHeight;
+
+                // Enter to reply
+                const replyInputId = version === 1 ? "threadReplyInput" : "threadReplyInput2";
+                const input = document.getElementById(replyInputId);
+                input.onkeydown = e => { if (e.key === "Enter") version === 1 ? sendSellerReply() : sendSellerReply2(); };
+                setTimeout(() => input.focus(), 100);
+
+            } catch(e) {
+                msgEl.innerHTML = `<div style="color:var(--red);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:20px;">Could not load messages.</div>`;
+            }
+        }
+
+        function closeThread() { document.getElementById("threadView").style.display = "none"; }
+        function closeThread2() { document.getElementById("threadView2").style.display = "none"; }
+
+        async function sendSellerReply() {
+            await _sendReply(window._inboxSellerId_1, activeThreadSessionId, "threadReplyInput", "threadMessages", 1);
+        }
+        async function sendSellerReply2() {
+            await _sendReply(window._inboxSellerId_2 || registeredSellerId, activeThreadSessionId2, "threadReplyInput2", "threadMessages2", 2);
+        }
+
+        async function _sendReply(sellerId, buyerSessionId, inputId, msgId, version) {
+            const input = document.getElementById(inputId);
+            const message = input.value.trim();
+            if (!message) return;
+            input.value = "";
+
+            const msgEl = document.getElementById(msgId);
+            const time = new Date().toTimeString().slice(0, 5);
+            msgEl.innerHTML += `
+                <div class="thread-bubble-wrap seller-reply">
+                    <div class="thread-bubble">${message}</div>
+                    <div class="thread-bubble-meta">You (Seller) · ${time}</div>
+                </div>`;
+            msgEl.scrollTop = msgEl.scrollHeight;
+
+            try {
+                await fetch("/send_message", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        seller_id: sellerId,
+                        buyer_session_id: buyerSessionId,
+                        message,
+                        sent_by: "seller",
+                        chat_mode: "human"
+                    })
+                });
+            } catch(e) {
+                console.error("Reply failed", e);
             }
         }
     </script>

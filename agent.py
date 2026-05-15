@@ -793,3 +793,63 @@ E don do small. Rice price don drop from ₦118k to ₦112k for Lagos side...
         "role": role,
         "user_state": user_state
     }
+    
+    
+# This is called by /clone_negotiate when the clone spots a profitable deal
+# and needs to message a seller on the user's behalf
+ 
+def clone_negotiate_message(commodity, price, profile, chat_history):
+    """
+    Generates a negotiation message from the clone, mimicking the user's tone.
+    
+    Args:
+        commodity: e.g. "Rice (50kg bag)"
+        price: current listed price e.g. 78000
+        profile: dict with role, primary_commodity, bulk_frequency, priority
+        chat_history: list of past messages [{"message": ..., "sent_by": ...}]
+    
+    Returns:
+        str: the message to send, or None if failed
+    """
+     
+ 
+    # Build tone sample from past messages
+    buyer_messages = [m["message"] for m in chat_history if m["sent_by"] in ("buyer", "clone")]
+    tone_sample = "\n".join(buyer_messages[-5:]) if buyer_messages else "No past messages yet."
+ 
+    role = profile.get("role", "consumer")
+    bulk_freq = profile.get("bulk_frequency", "Monthly")
+    priority = profile.get("priority", "Cheapest price")
+ 
+    prompt = f"""You are acting as a market clone — an AI that negotiates on behalf of a Nigerian market buyer when they are offline.
+ 
+The buyer's profile:
+- Role: {role}
+- Commodity of interest: {commodity}
+- Buys in bulk: {bulk_freq}
+- Priority: {priority}
+ 
+The seller has listed {commodity} at ₦{price:,.0f}.
+ 
+Past messages from this buyer (use these to match their tone and style):
+{tone_sample}
+ 
+Write ONE short negotiation message (2-4 sentences max) that:
+1. Expresses interest in the deal
+2. Tries to negotiate the price down slightly OR asks about bulk discount
+3. Sounds natural and matches the buyer's tone — if they're casual, be casual; if formal, be formal
+4. Does NOT mention being an AI or clone
+ 
+Write only the message, nothing else."""
+ 
+    try:
+        response = client.messages.create(
+            model="llama-3.3-70b-versatile",
+            max_tokens=200,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.content[0].text.strip()
+    except Exception as e:
+        print(f"Clone negotiate error: {e}")
+        return None
+ 
