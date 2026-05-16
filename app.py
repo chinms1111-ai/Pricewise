@@ -1042,6 +1042,8 @@ from clone_chat import (
     get_clone_stage
 )
 
+
+
 @app.route("/clone/chat", methods=["POST"])
 def clone_chat():
     from datetime import datetime
@@ -1052,27 +1054,33 @@ def clone_chat():
     side = data.get("side", "buyer")
     context = data.get("context", {})
     seller_id = data.get("seller_id")
+    buyer_session_id = data.get("buyer_session_id")
 
     if not session_id or not incoming:
         return jsonify({"error": "Missing session_id or message"}), 400
 
     response = clone_chat_response(session_id, incoming, history, side=side, context=context)
 
-    # Save clone message to seller_messages if seller_id provided
     if seller_id:
         conn = get_db()
         c = conn.cursor()
+        sent_by = "seller_clone" if side == "seller" else "buyer_clone"
+        target_session = buyer_session_id or session_id
         c.execute("""
             INSERT INTO seller_messages
             (seller_id, buyer_session_id, message, sent_by, chat_mode, timestamp)
-            VALUES (?, ?, ?, 'clone', 'clone', ?)
-        """, (seller_id, session_id, response, datetime.now().isoformat()))
+            VALUES (?, ?, ?, ?, 'clone', ?)
+        """, (seller_id, target_session, response, sent_by, datetime.now().isoformat()))
         conn.commit()
         conn.close()
-        broadcast('message_sent', {'seller_id': seller_id, 'buyer_session_id': session_id})
+        broadcast('message_sent', {
+            'seller_id': seller_id,
+            'buyer_session_id': target_session
+        })
 
     return jsonify({"message": response, "sent_by": "clone"})
 
+ 
 
 @app.route("/clone/questions/<session_id>")
 def clone_questions(session_id):
