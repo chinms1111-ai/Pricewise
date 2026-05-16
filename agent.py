@@ -1,12 +1,12 @@
 import sqlite3
-import os
 import json
+import os
+from datetime import datetime, date
 from groq import Groq
 from dotenv import load_dotenv
-from datetime import date, datetime
- 
+
 load_dotenv()
- 
+
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
  
  

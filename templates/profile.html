@@ -863,6 +863,21 @@
             <div class="chat-modal-header">
                 <div>
                     <div class="chat-modal-title" id="chatModalTitle">Private Chat</div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:var(--surface-2); border-bottom:1px solid var(--border);">
+                        <div id="chatModalTitle" style="font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; color:var(--gold);">Chat</div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <button id="cloneToggleBtn" onclick="toggleCloneMode()"
+                                style="font-family:'DM Mono',monospace; font-size:11px; letter-spacing:1px;
+                                padding:6px 14px; border-radius:20px; cursor:pointer; border:1px solid #333;
+                                background:#1a1a1a; color:#555; transition:all 0.2s;">
+                                🧬 CLONE OFF
+                            </button>
+                            <button onclick="clearChat()" style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); background:none; border:none; cursor:pointer;">Clear</button>
+                            <button onclick="closeChat()" style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); background:none; border:none; cursor:pointer;">✕</button>
+                        </div>
+                    </div>
+
                     <div class="chat-modal-sub">🧬 Your clone will reply on your behalf when you're offline</div>
                 </div>
                 <button class="chat-modal-close" onclick="closeChat()">✕</button>
@@ -1182,6 +1197,7 @@
             const input = document.getElementById("chatInput");
             input.onkeydown = e => { if (e.key === "Enter") sendChatMessage(); };
             setTimeout(() => input.focus(), 200);
+            updateCloneToggleUI()
         }
         
         function closeChat() {
@@ -1330,6 +1346,99 @@
 
 
 
+
+        // ── Clone Mode Toggle ─────────────────────────────────
+        let cloneModeActive = localStorage.getItem('pricewise_clone_mode') === 'true';
+
+        function toggleCloneMode() {
+            cloneModeActive = !cloneModeActive;
+            localStorage.setItem('pricewise_clone_mode', cloneModeActive);
+            updateCloneToggleUI();
+        }
+
+        function updateCloneToggleUI() {
+            const btn = document.getElementById("cloneToggleBtn");
+            if (!btn) return;
+            if (cloneModeActive) {
+                btn.textContent = "🧬 CLONE ON";
+                btn.style.background = "rgba(240,165,0,0.15)";
+                btn.style.borderColor = "#f0a500";
+                btn.style.color = "#f0a500";
+            } else {
+                btn.textContent = "🧬 CLONE OFF";
+                btn.style.background = "#1a1a1a";
+                btn.style.borderColor = "#333";
+                btn.style.color = "#555";
+            }
+        }
+
+        // ── Clone Auto-Reply ──────────────────────────────────
+        async function triggerCloneReply(incomingMessage) {
+            if (!cloneModeActive) return;
+
+            const sessionId = localStorage.getItem("pricewise_session");
+            if (!sessionId) return;
+
+            // Show clone typing indicator
+            const el = document.getElementById("chatModalMessages");
+            const typingId = "cloneTyping_" + Date.now();
+            el.innerHTML += `
+                <div id="${typingId}" class="chat-bubble-wrap clone">
+                    <div class="chat-bubble" style="opacity:0.6; font-family:'DM Mono',monospace; font-size:12px;">
+                        🧬 clone is typing...
+                    </div>
+                </div>`;
+            el.scrollTop = el.scrollHeight;
+
+            // Build chat history for context
+            const messages = [...document.querySelectorAll(".chat-bubble-wrap")].map(el => ({
+                role: el.classList.contains("buyer") ? "user" : "assistant",
+                content: el.querySelector(".chat-bubble")?.textContent || ""
+            })).filter(m => m.content && !m.content.includes("clone is typing"));
+
+            try {
+                const res = await fetch("/clone/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: incomingMessage,
+                        history: messages.slice(-10),
+                        side: "buyer",
+                        seller_id: parseInt(sellerId),
+                        context: {
+                            commodity: sellerData?.products?.[0]?.commodity || "general",
+                            seller_location: sellerData?.seller?.location || "",
+                            seller_state: sellerData?.seller?.state || ""
+                        }
+                    })
+                });
+                const data = await res.json();
+
+                // Remove typing indicator
+                document.getElementById(typingId)?.remove();
+
+                if (data.message) {
+                    const time = new Date().toTimeString().slice(0, 5);
+                    el.innerHTML += `
+                        <div class="chat-bubble-wrap clone">
+                            <div class="chat-bubble" style="background:rgba(240,165,0,0.08); border:1px solid rgba(240,165,0,0.2);">
+                                ${data.message}
+                            </div>
+                            <div class="chat-bubble-meta">
+                                <span class="clone-tag">🧬 CLONE</span> · ${time}
+                            </div>
+                        </div>`;
+                    el.scrollTop = el.scrollHeight;
+                }
+            } catch(e) {
+                document.getElementById(typingId)?.remove();
+                console.error("Clone reply failed", e);
+            }
+        }
+
+
+
         // Real-time SSE listener
         const evtSource = new EventSource('/stream');
 
@@ -1368,6 +1477,25 @@
         evtSource.onerror = () => {
             console.log('SSE reconnecting...');
         };
+
+
+
+        evtSource.addEventListener('message_sent', (e) => {
+            const data = JSON.parse(e.data);
+            if (data.seller_id == sellerId && chatOpen) {
+                loadChatMessages().then(() => {
+                    // If clone mode on and last message was from seller, auto reply
+                    if (cloneModeActive) {
+                        const messages = document.querySelectorAll(".chat-bubble-wrap");
+                        const last = messages[messages.length - 1];
+                        if (last && last.classList.contains("seller")) {
+                            const lastMsg = last.querySelector(".chat-bubble")?.textContent || "";
+                            triggerCloneReply(lastMsg);
+                        }
+                    }
+                });
+            }
+        });
 
 
       

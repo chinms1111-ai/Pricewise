@@ -179,6 +179,46 @@ def init_db():
             FOREIGN KEY (seller_id) REFERENCES community_sellers (id)
         )
     ''')
+    
+    
+    
+    # Clone training questions answered by user
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS clone_training (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            question TEXT NOT NULL,
+            answer TEXT NOT NULL,
+            scenario_type TEXT NOT NULL,
+            timestamp TEXT NOT NULL
+        )
+    ''')
+
+    # Clone daily questions queue
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS clone_questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            question TEXT NOT NULL,
+            scenario_type TEXT NOT NULL,
+            options TEXT NOT NULL,
+            answered INTEGER DEFAULT 0,
+            answer TEXT DEFAULT NULL,
+            date_shown TEXT NOT NULL,
+            timestamp TEXT NOT NULL
+        )
+    ''')
+
+    # Clone chat style examples written by user
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS clone_style_examples (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            example_message TEXT NOT NULL,
+            context TEXT DEFAULT 'general',
+            timestamp TEXT NOT NULL
+        )
+    ''')
  
     conn.commit()
     conn.close()

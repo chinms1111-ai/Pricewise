@@ -855,6 +855,7 @@
             setRole(localStorage.getItem("pricewise_role") || "consumer");
             renderMarketAlerts();
             loadOfflineCloneActivity();
+            checkCloneTrainingPopup();
         };
 
         // ── Products ──────────────────────────────────────────────────
@@ -1227,6 +1228,139 @@
             document.getElementById("reviewMeta").textContent = `₦${Number(data.price_at_review).toLocaleString()} at time of review · ${data.role} · ${data.user_state}`;
             document.getElementById("reviewCard").style.display = "block";
             document.getElementById("cloneCompare").style.display = "none";
+        }
+
+
+
+
+
+        async function checkCloneTrainingPopup() {
+            let sessionId = localStorage.getItem("pricewise_session");
+            if (!sessionId) return;
+
+            const res = await fetch(`/clone/questions/${sessionId}`);
+            const data = await res.json();
+            if (!data.question) return;
+
+            const q = data.question;
+
+            const optionsHtml = q.options.map((opt, i) => `
+            <button onclick="answerCloneQuestion(${q.id}, '${opt}', this)"
+                style="width:100%; background:#1a1a1a; color:white; border:1px solid #333;
+                padding:14px; border-radius:10px; cursor:pointer; font-size:14px;
+                text-align:left; margin-bottom:8px; transition: border-color 0.2s;">
+                ${opt}
+            </button>`).join("") + `
+            <div style="margin-top:8px;">
+                <input id="cloneOtherInput" placeholder="Other — type what you'd actually do..."
+                    style="width:100%; background:#1a1a1a; border:1px solid #333;
+                    border-radius:10px; padding:14px; color:white; font-size:14px;
+                    font-family:'DM Mono',monospace; box-sizing:border-box; margin-bottom:8px;"
+                    onkeydown="if(event.key==='Enter' && this.value.trim()) answerCloneQuestionCustom(${q.id}, this.value.trim())"/>
+                <button onclick="answerCloneQuestionCustom(${q.id}, document.getElementById('cloneOtherInput').value.trim())"
+                    style="width:100%; background:transparent; color:#f0a500;
+                    border:1px solid #f0a500; padding:12px; border-radius:10px;
+                    cursor:pointer; font-size:13px; font-family:'DM Mono',monospace;">
+                    Submit My Own Answer
+                </button>
+            </div>`;
+             
+
+            const popup = document.createElement("div");
+            popup.id = "cloneTrainingPopup";
+            popup.style.cssText = `
+                position:fixed; inset:0; background:rgba(0,0,0,0.92);
+                z-index:2000; display:flex; justify-content:center;
+                align-items:center; backdrop-filter:blur(8px);`;
+            popup.innerHTML = `
+                <div style="background:#141414; border:1px solid #f0a500;
+                    border-radius:20px; padding:40px; max-width:480px;
+                    width:90%; text-align:center;">
+                    <div style="font-size:36px; margin-bottom:12px;">🧬</div>
+                    <div style="font-family:'DM Mono',monospace; font-size:11px;
+                        letter-spacing:3px; color:var(--gold); margin-bottom:8px;">
+                        CLONE TRAINING
+                    </div>
+                    <h3 style="color:white; font-size:17px; margin-bottom:20px; line-height:1.6;">
+                        ${q.question}
+                    </h3>
+                    <div id="cloneTrainingOptions">${optionsHtml}</div>
+                    <div id="cloneTrainingDone" style="display:none;">
+                        <div style="font-size:32px; margin-bottom:10px;">✅</div>
+                        <p style="color:#f0a500; font-family:'DM Mono',monospace; font-size:13px;">
+                            Clone updated. It now knows what to do.
+                        </p>
+                    </div>
+                    <button onclick="document.getElementById('cloneTrainingPopup').remove()"
+                        style="margin-top:16px; background:none; border:none;
+                        color:#555; font-family:'DM Mono',monospace; font-size:11px;
+                        cursor:pointer; letter-spacing:1px;">
+                        SKIP FOR NOW
+                    </button>
+                </div>`;
+            document.body.appendChild(popup);
+
+            // Store question data for answer function
+            window._currentCloneQuestion = q;
+        }
+
+        async function answerCloneQuestion(questionId, answer, btn) {
+            let sessionId = localStorage.getItem("pricewise_session");
+            const q = window._currentCloneQuestion;
+            if (!q) return;
+
+            // Highlight selected
+            btn.style.borderColor = "#f0a500";
+            btn.style.color = "#f0a500";
+
+            await fetch("/clone/answer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    question_id: questionId,
+                    answer: answer,
+                    question_text: q.question,
+                    scenario_type: q.scenario_type
+                })
+            });
+
+            // Show done state then close
+            document.getElementById("cloneTrainingOptions").style.display = "none";
+            document.getElementById("cloneTrainingDone").style.display = "block";
+            setTimeout(() => {
+                const popup = document.getElementById("cloneTrainingPopup");
+                if (popup) popup.remove();
+            }, 2000);
+        }
+
+
+
+
+        async function answerCloneQuestionCustom(questionId, answer) {
+            if (!answer) { alert("Please type your answer first."); return; }
+            let sessionId = localStorage.getItem("pricewise_session");
+            const q = window._currentCloneQuestion;
+            if (!q) return;
+
+            await fetch("/clone/answer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    question_id: questionId,
+                    answer: answer,
+                    question_text: q.question,
+                    scenario_type: q.scenario_type
+                })
+            });
+
+            document.getElementById("cloneTrainingOptions").style.display = "none";
+            document.getElementById("cloneTrainingDone").style.display = "block";
+            setTimeout(() => {
+                const popup = document.getElementById("cloneTrainingPopup");
+                if (popup) popup.remove();
+            }, 2000);
         }
 
 

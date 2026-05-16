@@ -1029,6 +1029,118 @@ def stream():
         }
     )
     
+    
+# ══════════════════════════════════════════════════════════
+#  CLONE CHAT ROUTES
+# ══════════════════════════════════════════════════════════
+
+from clone_chat import (
+    clone_chat_response,
+    generate_daily_questions,
+    answer_training_question,
+    get_unanswered_questions,
+    get_clone_stage
+)
+
+@app.route("/clone/chat", methods=["POST"])
+def clone_chat():
+    from datetime import datetime
+    data = request.get_json()
+    session_id = data.get("session_id")
+    incoming = data.get("message")
+    history = data.get("history", [])
+    side = data.get("side", "buyer")
+    context = data.get("context", {})
+    seller_id = data.get("seller_id")
+
+    if not session_id or not incoming:
+        return jsonify({"error": "Missing session_id or message"}), 400
+
+    response = clone_chat_response(session_id, incoming, history, side=side, context=context)
+
+    # Save clone message to seller_messages if seller_id provided
+    if seller_id:
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO seller_messages
+            (seller_id, buyer_session_id, message, sent_by, chat_mode, timestamp)
+            VALUES (?, ?, ?, 'clone', 'clone', ?)
+        """, (seller_id, session_id, response, datetime.now().isoformat()))
+        conn.commit()
+        conn.close()
+        broadcast('message_sent', {'seller_id': seller_id, 'buyer_session_id': session_id})
+
+    return jsonify({"message": response, "sent_by": "clone"})
+
+
+@app.route("/clone/questions/<session_id>")
+def clone_questions(session_id):
+    """Get today's unanswered training question for popup."""
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT primary_commodity FROM user_profiles WHERE session_id = ?", (session_id,))
+    row = c.fetchone()
+    conn.close()
+    commodity = row["primary_commodity"] if row else None
+
+    # Generate new questions if needed
+    generate_daily_questions(session_id, commodity)
+
+    # Return next unanswered one
+    question = get_unanswered_questions(session_id)
+    if not question:
+        return jsonify({"question": None})
+    return jsonify({"question": question})
+
+
+@app.route("/clone/answer", methods=["POST"])
+def clone_answer():
+    """Save user's answer to a training question."""
+    data = request.get_json()
+    session_id = data.get("session_id")
+    question_id = data.get("question_id")
+    answer = data.get("answer")
+    question_text = data.get("question_text")
+    scenario_type = data.get("scenario_type")
+
+    if not all([session_id, question_id, answer, question_text, scenario_type]):
+        return jsonify({"error": "Missing fields"}), 400
+
+    answer_training_question(session_id, question_id, answer, question_text, scenario_type)
+    return jsonify({"message": "Training saved"})
+
+
+@app.route("/clone/stage/<session_id>")
+def clone_stage(session_id):
+    """Return clone growth stage."""
+    stage = get_clone_stage(session_id)
+    return jsonify(stage)
+
+
+@app.route("/clone/add_example", methods=["POST"])
+def clone_add_example():
+    """User writes an example message to train their clone's style."""
+    from datetime import datetime
+    data = request.get_json()
+    session_id = data.get("session_id")
+    example = data.get("example_message", "").strip()
+    context = data.get("context", "general")
+
+    if not session_id or not example:
+        return jsonify({"error": "Missing fields"}), 400
+
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO clone_style_examples
+        (session_id, example_message, context, timestamp)
+        VALUES (?, ?, ?, ?)
+    """, (session_id, example, context, datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Example saved"})
+    
 
 
  
