@@ -44,6 +44,7 @@ def init_db():
             full_name TEXT NOT NULL,
             business_name TEXT,
             phone TEXT,
+            email TEXT DEFAULT '',
             location TEXT NOT NULL,
             area TEXT NOT NULL,
             lga TEXT NOT NULL,
@@ -54,7 +55,7 @@ def init_db():
             verified INTEGER DEFAULT 0
         )
     ''')
- 
+
     # Community prices table — kept for price history & agent
     c.execute('''
         CREATE TABLE IF NOT EXISTS community_prices (
@@ -71,8 +72,7 @@ def init_db():
         )
     ''')
 
-    # ── NEW: Seller products — live listings managed by seller ──
-    # One seller can have many products. Seller edits these themselves.
+    # Seller products — live listings managed by seller
     c.execute('''
         CREATE TABLE IF NOT EXISTS seller_products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -180,8 +180,6 @@ def init_db():
         )
     ''')
     
-    
-    
     # Clone training questions answered by user
     c.execute('''
         CREATE TABLE IF NOT EXISTS clone_training (
@@ -221,6 +219,16 @@ def init_db():
     ''')
  
     conn.commit()
+
+    # ── Safe migrations — add columns to existing DBs ──────────────
+    # Add email column to community_sellers if it doesn't exist yet
+    try:
+        c.execute("ALTER TABLE community_sellers ADD COLUMN email TEXT DEFAULT ''")
+        conn.commit()
+        print("Migration: email column added to community_sellers.")
+    except Exception:
+        pass  # Column already exists — that's fine
+
     conn.close()
     print("Database ready.")
  

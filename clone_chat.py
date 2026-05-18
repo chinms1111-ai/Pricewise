@@ -190,32 +190,164 @@ You are NOT a customer service bot. You are a real market person's digital stand
 #  CLONE CHAT — main function
 # ══════════════════════════════════════════════════════════
 
-def clone_chat_response(session_id, incoming_message, chat_history, side="buyer", context=None):
+def get_seller_price_context(seller_id):
+    """Fetch seller's listed prices and market prices for context."""
+    if not seller_id:
+        return {}
+    
+    conn = get_db()
+    c = conn.cursor()
+    
+    # Seller's own listed prices
+    c.execute("""
+        SELECT commodity, price, unit FROM seller_products
+        WHERE seller_id = ? ORDER BY date_updated DESC
+    """, (seller_id,))
+    products = c.fetchall()
+    
+    # Seller info
+    c.execute("SELECT * FROM community_sellers WHERE id = ?", (seller_id,))
+    seller = c.fetchone()
+    
+    # State market prices for seller's state
+    state_prices = []
+    if seller:
+        c.execute("""
+            SELECT cp.commodity, AVG(cp.price) as avg_price, 
+                   MIN(cp.price) as min_price, MAX(cp.price) as max_price
+            FROM community_prices cp
+            WHERE cp.state = ?
+            GROUP BY cp.commodity
+        """, (seller["state"],))
+        state_prices = c.fetchall()
+    
+    conn.close()
+    
+    price_context = {}
+    
+    if products:
+        price_context["my_listings"] = [
+            f"{p['commodity']}: ₦{p['price']:,.0f} per {p['unit']}"
+            for p in products
+        ]
+        price_context["minimum_prices"] = {
+            p["commodity"]: p["price"] for p in products
+        }
+    
+    if state_prices:
+        price_context["market_prices"] = [
+            f"{sp['commodity']}: avg ₦{sp['avg_price']:,.0f} (min ₦{sp['min_price']:,.0f}, max ₦{sp['max_price']:,.0f})"
+            for sp in state_prices
+        ]
+    
+    if seller:
+        price_context["seller_state"] = seller["state"]
+        price_context["seller_email"] = seller["email"] or ""
+        price_context["seller_name"] = seller["full_name"]
+    
+    return price_context
+
+
+def detect_deal_closed(message):
+    """
+    Detect if a deal has been closed in the message.
+    Returns True if deal closing language detected.
+    """
+    deal_phrases = [
+        "deal", "we don agree", "i go take am", "i go buy",
+        "send your account", "i accept", "okay i go pay",
+        "we don settle", "done deal", "i go come",
+        "payment incoming", "transfer coming", "i agree",
+        "make we do am", "confirmed", "let's do it",
+        "i'll take it", "sold", "we good", "sharp sharp"
+    ]
+    msg_lower = message.lower()
+    return any(phrase in msg_lower for phrase in deal_phrases)
+
+
+def extract_deal_details(chat_history, seller_price_context):
+    """Extract deal details from conversation for email."""
+    commodity = "Not specified"
+    price = "Not specified"
+    quantity = "Not specified"
+    
+    # Try to find commodity from seller listings
+    if seller_price_context.get("minimum_prices"):
+        commodity = list(seller_price_context["minimum_prices"].keys())[0]
+    
+    # Look through last 10 messages for price mentions
+    for msg in chat_history[-10:]:
+        content = msg.get("content", "")
+        # Find price pattern ₦XX,XXX or XX,XXX
+        import re
+        price_match = re.search(r'₦?([\d,]+(?:\.\d+)?)', content)
+        if price_match:
+            price = f"₦{price_match.group(1)}"
+        # Find quantity
+        qty_match = re.search(r'(\d+)\s*(bags?|kg|litres?|loaves?|units?)', 
+                               content, re.IGNORECASE)
+        if qty_match:
+            quantity = f"{qty_match.group(1)} {qty_match.group(2)}"
+    
+    return {
+        "commodity": commodity,
+        "price": price,
+        "quantity": quantity,
+        "summary": f"Your clone negotiated a deal for {commodity} at {price} for {quantity}."
+    }
+
+
+def clone_chat_response(session_id, incoming_message, chat_history, 
+                         side="buyer", context=None, seller_id=None):
     """
     Generate a clone response to an incoming message.
-    
-    session_id: the user whose clone is responding
-    incoming_message: what the other party just said
-    chat_history: list of {role, content} for conversation so far
-    side: 'buyer' or 'seller'
-    context: optional dict with commodity, price, seller info etc
+    Now price-aware and deal-detecting.
     """
     clone_data = get_clone_profile(session_id)
+    
+    # Get seller price context if seller_id provided
+    price_context = {}
+    if seller_id:
+        price_context = get_seller_price_context(seller_id)
+    
     system_prompt = build_clone_personality(clone_data, side=side)
+
+    # Inject price intelligence into system prompt
+    if price_context:
+        price_section = "\n\n=== PRICE INTELLIGENCE — USE THIS ===\n"
+        
+        if price_context.get("my_listings"):
+            price_section += "YOUR LISTED PRICES (NEVER GO BELOW THESE):\n"
+            price_section += "\n".join(f"- {p}" for p in price_context["my_listings"])
+            price_section += "\n"
+        
+        if price_context.get("market_prices"):
+            price_section += "\nCURRENT MARKET PRICES IN YOUR STATE:\n"
+            price_section += "\n".join(f"- {p}" for p in price_context["market_prices"])
+            price_section += "\n"
+        
+        price_section += """
+PRICING RULES:
+- NEVER agree to a price below your listed price
+- If buyer pushes too low, remind them of market rates
+- You can offer max 5% discount for bulk orders only
+- Always quote in Naira (₦)
+- If buyer asks for price you don't have listed, check market rates and quote fairly
+"""
+        system_prompt += price_section
 
     # Add context if provided
     if context:
         context_str = "\n".join(f"{k}: {v}" for k, v in context.items())
         system_prompt += f"\n\n=== CURRENT DEAL CONTEXT ===\n{context_str}"
 
-    # Build messages for Claude
+    # Build messages
     messages = []
-    for msg in chat_history[-10:]:  # last 10 messages for context
+    for msg in chat_history[-10:]:
         messages.append({
             "role": msg.get("role", "user"),
             "content": msg.get("content", "")
         })
-
     messages.append({"role": "user", "content": incoming_message})
 
     try:
@@ -224,15 +356,41 @@ def clone_chat_response(session_id, incoming_message, chat_history, side="buyer"
             max_tokens=300,
             messages=[{"role": "system", "content": system_prompt}] + messages
         )
-        return response.choices[0].message.content.strip()
-    
-    
+        reply = response.choices[0].message.content.strip()
+        
+        # Check if deal was closed
+        if detect_deal_closed(incoming_message) or detect_deal_closed(reply):
+            # Send email confirmation
+            if price_context.get("seller_email") and price_context.get("seller_name"):
+                deal_details = extract_deal_details(
+                    chat_history + [{"role": "user", "content": incoming_message}],
+                    price_context
+                )
+                # Send email in background
+                import threading
+                from email_service import send_deal_confirmation
+                buyer_session = context.get("buyer_session_id", session_id) if context else session_id
+                threading.Thread(
+                    target=send_deal_confirmation,
+                    args=(
+                        price_context["seller_email"],
+                        price_context["seller_name"],
+                        buyer_session,
+                        deal_details
+                    ),
+                    daemon=True
+                ).start()
+                
+                # Append deal closing message to reply
+                reply += "\n\n📧 *Sending deal confirmation to seller...*"
+        
+        return reply
+        
     except Exception as e:
         import traceback
         print(f"[CLONE CHAT] Error: {e}")
         print(f"[CLONE CHAT] Traceback: {traceback.format_exc()}")
         return "Abeg hold on small, I go sort this out."
-
 
 # ══════════════════════════════════════════════════════════
 #  DAILY TRAINING QUESTIONS — generates 3 per day

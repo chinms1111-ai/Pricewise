@@ -246,8 +246,9 @@ def register_seller():
     c = conn.cursor()
     c.execute("""
         INSERT INTO community_sellers
-        (full_name, business_name, phone, location, area, lga, state, seller_type, commodities, date_registered)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (full_name, business_name, phone, email, location, area, lga, state, seller_type, commodities, date_registered)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         
     """, (
         data.get("full_name"),
         data.get("business_name", ""),
@@ -1062,7 +1063,7 @@ def clone_chat():
     if not session_id or not incoming:
         return jsonify({"error": "Missing session_id or message"}), 400
 
-    response = clone_chat_response(session_id, incoming, history, side=side, context=context)
+    response = clone_chat_response(session_id, incoming, history, side=side, context=context, seller_id = seller_id)
 
     if seller_id:
         conn = get_db()
