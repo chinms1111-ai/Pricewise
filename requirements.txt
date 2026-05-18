@@ -5,3 +5,4 @@ gevent
 groq
 python-dotenv
 apscheduler
+urllib3
