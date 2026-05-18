@@ -4,10 +4,17 @@ import os
 from datetime import datetime, date
 from groq import Groq
 from dotenv import load_dotenv
+import httpx
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+http_client = httpx.Client(verify=False, timeout=30.0)
+
 
 load_dotenv()
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"), http_client=http_client)
+ 
  
  
 def get_db():
