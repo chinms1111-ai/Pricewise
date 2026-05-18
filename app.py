@@ -1,3 +1,6 @@
+from gevent import monkey
+monkey.patch_all()
+
 from flask import Flask, request, jsonify, render_template, send_from_directory , Response
 from flask_cors import CORS
 import sqlite3
