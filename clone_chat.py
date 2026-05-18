@@ -219,8 +219,12 @@ def clone_chat_response(session_id, incoming_message, chat_history, side="buyer"
             messages=[{"role": "system", "content": system_prompt}] + messages
         )
         return response.choices[0].message.content.strip()
+    
+    
     except Exception as e:
+        import traceback
         print(f"[CLONE CHAT] Error: {e}")
+        print(f"[CLONE CHAT] Traceback: {traceback.format_exc()}")
         return "Abeg hold on small, I go sort this out."
 
 
