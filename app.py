@@ -253,6 +253,7 @@ def register_seller():
         data.get("full_name"),
         data.get("business_name", ""),
         data.get("phone"),
+        data.get("email",""),
         data.get("location"),
         data.get("area"),
         data.get("lga"),

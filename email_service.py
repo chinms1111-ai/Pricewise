@@ -16,7 +16,7 @@ GMAIL_USER = os.environ.get("GMAIL_USER")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
 
 
-def send_deal_confirmation(seller_email, seller_name, buyer_session_id, deal_details):
+def send_deal_confirmation(seller_email, seller_name, buyer_session_id, deal_details, seller_id=None):
     """
     Send deal confirmation email to seller after clone closes a deal.
     
@@ -37,6 +37,8 @@ def send_deal_confirmation(seller_email, seller_name, buyer_session_id, deal_det
         msg["To"] = seller_email
 
         buyer_id = buyer_session_id[:12] + "..." if buyer_session_id else "Unknown"
+        base_url = os.environ.get("APP_URL", "https://pricewise-2qrj.onrender.com")
+        profile_url = f"{base_url}/seller/profile/{seller_id}" if seller_id else base_url
         commodity = deal_details.get("commodity", "Not specified")
         price = deal_details.get("price", "Not specified")
         quantity = deal_details.get("quantity", "Not specified")
@@ -126,15 +128,18 @@ def send_deal_confirmation(seller_email, seller_name, buyer_session_id, deal_det
                         Please follow up with the buyer to confirm delivery details 
                         and payment. Log in to PriceWise to view the full conversation.
                     </p>
-
+                    
+                    
                     <div style="text-align:center; margin:24px 0;">
-                        <a href="https://pricewise-2qrj.onrender.com/seller/profile/1" 
+                        <a href="{profile_url}" 
                             style="background:#f0a500; color:#0a0800; padding:12px 28px; 
                             border-radius:6px; text-decoration:none; font-weight:bold; 
                             font-size:14px; letter-spacing:1px;">
                             VIEW CONVERSATION →
                         </a>
                     </div>
+
+                     
                 </div>
 
                 <!-- Footer -->

@@ -266,34 +266,49 @@ def detect_deal_closed(message):
 
 
 def extract_deal_details(chat_history, seller_price_context):
-    """Extract deal details from conversation for email."""
+    import re
     commodity = "Not specified"
     price = "Not specified"
     quantity = "Not specified"
-    
-    # Try to find commodity from seller listings
+
     if seller_price_context.get("minimum_prices"):
         commodity = list(seller_price_context["minimum_prices"].keys())[0]
-    
-    # Look through last 10 messages for price mentions
-    for msg in chat_history[-10:]:
+
+    for msg in reversed(chat_history[-6:]):
         content = msg.get("content", "")
-        # Find price pattern ₦XX,XXX or XX,XXX
-        import re
-        price_match = re.search(r'₦?([\d,]+(?:\.\d+)?)', content)
-        if price_match:
-            price = f"₦{price_match.group(1)}"
-        # Find quantity
-        qty_match = re.search(r'(\d+)\s*(bags?|kg|litres?|loaves?|units?)', 
-                               content, re.IGNORECASE)
-        if qty_match:
-            quantity = f"{qty_match.group(1)} {qty_match.group(2)}"
-    
+
+        # Quantity MUST have a unit word — match this first
+        if quantity == "Not specified":
+            qty_match = re.search(r'(\d+)\s*(bags?|kg|litres?|loaves?|units?)',
+                                   content, re.IGNORECASE)
+            if qty_match:
+                quantity = f"{qty_match.group(1)} {qty_match.group(2)}"
+
+        # Price must have ₦ sign OR be a large number (>= 100)
+        if price == "Not specified":
+            price_match = re.search(r'₦([\d,]+(?:\.\d+)?)', content)
+            if price_match:
+                price = f"₦{price_match.group(1)}"
+            else:
+                # Fallback — bare number but only if >= 100 (likely a price not quantity)
+                bare_match = re.search(r'\b(\d{3,}(?:,\d{3})*(?:\.\d+)?)\b', content)
+                if bare_match:
+                    price = f"₦{bare_match.group(1)}"
+
+        if price != "Not specified" and quantity != "Not specified":
+            break
+
+    # Final fallback — use seller's listed price
+    if price == "Not specified" and seller_price_context.get("minimum_prices"):
+        listed = list(seller_price_context["minimum_prices"].values())[0]
+        price = f"₦{listed:,.0f}"
+
     return {
         "commodity": commodity,
         "price": price,
         "quantity": quantity,
-        "summary": f"Your clone negotiated a deal for {commodity} at {price} for {quantity}."
+        "summary": f"Your clone negotiated a deal for {commodity} at {price}" +
+                   (f" for {quantity}" if quantity != "Not specified" else "") + "."
     }
 
 
@@ -358,15 +373,35 @@ PRICING RULES:
         )
         reply = response.choices[0].message.content.strip()
         
+        
+        
+        
         # Check if deal was closed
         if detect_deal_closed(incoming_message) or detect_deal_closed(reply):
-            # Send email confirmation
+            
+            import re
+            quantity_found = None
+            for msg in reversed(chat_history[-6:] + [{"role": "user", "content": incoming_message}]):
+                if not isinstance(msg, dict):
+                    continue
+                qty_match = re.search(r'(\d+)\s*(bags?|kg|litres?|loaves?|units?)',
+                                      msg.get("content", ""), re.IGNORECASE)
+                if qty_match:
+                    quantity_found = f"{qty_match.group(1)} {qty_match.group(2)}"
+                    break
+
+            if not quantity_found:
+                return reply + "\n\n✅ Almost done! How many units/bags are you taking so I can confirm the full order?"
+
             if price_context.get("seller_email") and price_context.get("seller_name"):
+                safe_history = [m for m in chat_history if isinstance(m, dict)]
                 deal_details = extract_deal_details(
-                    chat_history + [{"role": "user", "content": incoming_message}],
+                    safe_history + [{"role": "user", "content": incoming_message}],
                     price_context
                 )
-                # Send email in background
+                print(f"[DEBUG] seller_email: {price_context.get('seller_email')}")
+                print(f"[DEBUG] seller_name: {price_context.get('seller_name')}")
+                print(f"[DEBUG] deal_details: {deal_details}")
                 import threading
                 from email_service import send_deal_confirmation
                 buyer_session = context.get("buyer_session_id", session_id) if context else session_id
@@ -376,13 +411,48 @@ PRICING RULES:
                         price_context["seller_email"],
                         price_context["seller_name"],
                         buyer_session,
-                        deal_details
+                        deal_details,
+                        seller_id
                     ),
                     daemon=True
                 ).start()
-                
-                # Append deal closing message to reply
                 reply += "\n\n📧 *Sending deal confirmation to seller...*"
+        
+        
+   
+
+            # Quantity known — send email
+            print(f"[DEBUG] seller_email: {price_context.get('seller_email')}")
+            print(f"[DEBUG] seller_name: {price_context.get('seller_name')}")
+            print(f"[DEBUG] deal detected: True")
+            print(f"[DEBUG] deal_details: {deal_details}")
+            if price_context.get("seller_email") and price_context.get("seller_name"):
+                
+                safe_history = [m for m in chat_history if isinstance(m, dict)]
+                deal_details = extract_deal_details(
+                    safe_history + [{"role": "user", "content": incoming_message}],
+                    price_context
+                )
+                                
+                import threading
+                from email_service import send_deal_confirmation
+                buyer_session = context.get("buyer_session_id", session_id) if context else session_id
+                threading.Thread(
+                    target=send_deal_confirmation,
+                    args=(
+                        price_context["seller_email"],
+                        price_context["seller_name"],
+                        buyer_session,
+                        seller_id,
+                        deal_details
+                        
+                    ),
+                    daemon=True
+                ).start()
+                 
+                reply += "\n\n📧 *Sending deal confirmation to seller...*"
+        
+         
         
         return reply
         
