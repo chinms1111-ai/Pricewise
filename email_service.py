@@ -158,6 +158,7 @@ def send_deal_confirmation(seller_email, seller_name, buyer_session_id, deal_det
         msg.attach(MIMEText(html, "html"))
 
         with smtplib.SMTP_SSL("smtp.gmail.com", 587) as server:
+            server.starttls()
             server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
             server.sendmail(GMAIL_USER, seller_email, msg.as_string())
 

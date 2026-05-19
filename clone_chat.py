@@ -376,16 +376,14 @@ PRICING RULES:
         
         
         
-        # Check if deal was closed
         if detect_deal_closed(incoming_message) or detect_deal_closed(reply):
-            
             import re
             quantity_found = None
             for msg in reversed(chat_history[-6:] + [{"role": "user", "content": incoming_message}]):
                 if not isinstance(msg, dict):
                     continue
                 qty_match = re.search(r'(\d+)\s*(bags?|kg|litres?|loaves?|units?)',
-                                      msg.get("content", ""), re.IGNORECASE)
+                                    msg.get("content", ""), re.IGNORECASE)
                 if qty_match:
                     quantity_found = f"{qty_match.group(1)} {qty_match.group(2)}"
                     break
@@ -399,8 +397,6 @@ PRICING RULES:
                     safe_history + [{"role": "user", "content": incoming_message}],
                     price_context
                 )
-                print(f"[DEBUG] seller_email: {price_context.get('seller_email')}")
-                print(f"[DEBUG] seller_name: {price_context.get('seller_name')}")
                 print(f"[DEBUG] deal_details: {deal_details}")
                 import threading
                 from email_service import send_deal_confirmation
@@ -418,8 +414,6 @@ PRICING RULES:
                 ).start()
                 reply += "\n\n📧 *Sending deal confirmation to seller...*"
         
-        
-   
 
             # Quantity known — send email
             print(f"[DEBUG] seller_email: {price_context.get('seller_email')}")
