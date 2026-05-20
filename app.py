@@ -1156,6 +1156,44 @@ def clone_add_example():
     
 
 
+# ══════════════════════════════════════════════════════════
+#  TASK B — SEARCH + RANKED RESULTS
+# ══════════════════════════════════════════════════════════
+
+from search_engine import search_products, generate_agent_advice, log_search_behavior
+
+@app.route("/search", methods=["POST"])
+def search():
+    data = request.get_json()
+    query = data.get("query", "").strip()
+    session_id = data.get("session_id")
+    user_state = data.get("state")  # optional, from user profile
+
+    if not query:
+        return jsonify({"error": "Missing query"}), 400
+
+    # If no state passed, try to get from user profile
+    if not user_state and session_id:
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("SELECT state FROM user_profiles WHERE session_id = ?", (session_id,))
+        row = c.fetchone()
+        conn.close()
+        if row:
+            user_state = row["state"]
+
+    ranked, market_context = search_products(query, user_state=user_state, user_session=session_id)
+    advice = generate_agent_advice(query, ranked, market_context or {}, user_state)
+    log_search_behavior(session_id, query, len(ranked), ranked[0] if ranked else None)
+
+    return jsonify({
+        "query": query,
+        "results": ranked,
+        "market_context": market_context,
+        "agent_advice": advice,
+        "total": len(ranked)
+    })
+
  
  
 if __name__ == "__main__":

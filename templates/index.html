@@ -321,6 +321,140 @@
         }
         .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 
+
+
+
+        /* ── Search Card ── */
+        .search-bar-wrap {
+            display: flex; gap: 0; position: relative;
+        }
+        #searchInput {
+            flex: 1; padding: 13px 18px;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-right: none;
+            border-radius: 3px 0 0 3px;
+            color: var(--text-primary);
+            font-family: 'DM Mono', monospace;
+            font-size: 14px; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: auto; margin: 0;
+        }
+        #searchInput:focus { border-color: var(--gold-dim); box-shadow: 0 0 0 2px var(--gold-glow); }
+        #searchInput::placeholder { color: var(--text-muted); }
+        .search-btn {
+            background: var(--gold); color: #0a0800;
+            border: none; padding: 13px 24px;
+            border-radius: 0 3px 3px 0;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 15px; letter-spacing: 2px;
+            cursor: pointer; transition: box-shadow 0.2s;
+            flex-shrink: 0;
+        }
+        .search-btn:hover { box-shadow: 0 0 16px var(--gold-glow-strong); }
+
+        .search-agent-advice {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--gold);
+            border-radius: 3px;
+            padding: 14px 18px;
+            font-family: 'DM Mono', monospace;
+            font-size: 13px; line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 18px;
+        }
+        .search-agent-label {
+            font-size: 10px; letter-spacing: 2px;
+            color: var(--gold); margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .search-market-bar {
+            display: flex; gap: 20px; flex-wrap: wrap;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px; padding: 12px 16px;
+            margin-bottom: 18px;
+            font-family: 'DM Mono', monospace; font-size: 12px;
+        }
+        .search-market-stat { display: flex; flex-direction: column; gap: 2px; }
+        .search-market-stat .label { color: var(--text-muted); font-size: 10px; letter-spacing: 1px; }
+        .search-market-stat .val { color: var(--text-primary); font-size: 14px; font-weight: 500; }
+        .search-market-stat .val.green { color: var(--green); }
+        .search-market-stat .val.gold { color: var(--gold); }
+
+        .search-result-item {
+            display: flex; gap: 14px; align-items: flex-start;
+            padding: 16px; margin-bottom: 10px;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .search-result-item:hover { border-color: var(--border-glow); background: var(--surface-hover); }
+        .search-result-item.rank-1 { border-color: rgba(240,165,0,0.4); }
+        .search-result-rank {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px; line-height: 1;
+            color: var(--text-muted); flex-shrink: 0;
+            width: 28px; text-align: center;
+        }
+        .search-result-item.rank-1 .search-result-rank { color: var(--gold); }
+        .search-result-body { flex: 1; min-width: 0; }
+        .search-result-commodity {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px; letter-spacing: 2px;
+            color: var(--text-primary); margin-bottom: 2px;
+        }
+        .search-result-seller {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px; color: var(--text-muted); margin-bottom: 8px;
+        }
+        .search-result-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+        .search-result-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; letter-spacing: 1px;
+            padding: 2px 8px; border-radius: 2px;
+            text-transform: uppercase;
+        }
+        .tag-green { background: rgba(0,230,118,0.08); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+        .tag-gold { background: rgba(240,165,0,0.08); color: var(--gold); border: 1px solid rgba(240,165,0,0.2); }
+        .tag-blue { background: rgba(0,194,255,0.08); color: var(--blue); border: 1px solid rgba(0,194,255,0.2); }
+        .tag-muted { background: rgba(122,132,153,0.08); color: var(--text-muted); border: 1px solid rgba(122,132,153,0.2); }
+        .search-result-price {
+            text-align: right; flex-shrink: 0;
+        }
+        .search-result-price .amount {
+            font-family: 'DM Mono', monospace;
+            font-size: 20px; font-weight: 500;
+            color: var(--text-primary); letter-spacing: 1px;
+        }
+        .search-result-price .unit {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px; color: var(--text-muted); margin-top: 2px;
+        }
+        .search-result-price .score-bar {
+            width: 60px; height: 3px;
+            background: var(--border); border-radius: 2px;
+            margin-top: 6px; margin-left: auto; overflow: hidden;
+        }
+        .search-result-price .score-fill {
+            height: 100%; background: var(--gold); border-radius: 2px;
+            transition: width 0.6s ease;
+        }
+        .search-empty-state {
+            text-align: center; padding: 40px 20px;
+            color: var(--text-muted);
+            font-family: 'DM Mono', monospace; font-size: 13px;
+        }
+        .search-loading {
+            display: flex; align-items: center; gap: 10px;
+            padding: 20px; color: var(--text-muted);
+            font-family: 'DM Mono', monospace; font-size: 12px;
+            letter-spacing: 1px;
+        }
+
         /* ── Community prices ── */
         .community-price-row {
             display: flex;
@@ -661,6 +795,30 @@
             </div>
             <p class="card-desc">Latest price per platform — see where it's cheapest today</p>
             <div class="chart-wrapper"><canvas id="barChart"></canvas></div>
+        </div>
+
+
+
+        <!-- ── Product Search ── -->
+        <div class="card">
+            <div class="card-title"><div class="card-title-icon">🔍</div>Search Products</div>
+            <p class="card-desc">Find the best price across all sellers — ranked by relevance, recency & value</p>
+            <div class="search-bar-wrap" style="margin-bottom:16px;">
+                <input type="text" id="searchInput" placeholder="e.g. tomatoes, rice, palm oil...">
+                <button class="search-btn" onclick="runSearch()">Search</button>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;" id="searchSuggestions">
+                <button class="btn-ghost" onclick="quickSearch('Rice')">🌾 Rice</button>
+                <button class="btn-ghost" onclick="quickSearch('Tomatoes')">🍅 Tomatoes</button>
+                <button class="btn-ghost" onclick="quickSearch('Palm Oil')">🛢 Palm Oil</button>
+                <button class="btn-ghost" onclick="quickSearch('Onions')">🧅 Onions</button>
+            </div>
+            <div id="searchResults">
+                <div class="search-empty-state">
+                    <div style="font-size:28px;opacity:0.3;margin-bottom:10px;">🔍</div>
+                    <p>Search any commodity above — agent ranks results by best value for you</p>
+                </div>
+            </div>
         </div>
 
         <!-- ── Community Prices ── -->
@@ -1362,6 +1520,141 @@
                 if (popup) popup.remove();
             }, 2000);
         }
+
+
+
+
+
+        // ── Product Search ────────────────────────────────────────
+        function quickSearch(term) {
+            document.getElementById("searchInput").value = term;
+            runSearch();
+        }
+
+        async function runSearch() {
+            const query = document.getElementById("searchInput").value.trim();
+            if (!query) return;
+
+            const resultsEl = document.getElementById("searchResults");
+            resultsEl.innerHTML = `<div class="search-loading"><div class="chat-thinking"><span></span><span></span><span></span></div> Searching & ranking results...</div>`;
+
+            let sessionId = localStorage.getItem("pricewise_session");
+            let userState = null;
+            if (sessionId) {
+                try {
+                    const profileRes = await fetch(`/get_profile/${sessionId}`);
+                    const profile = await profileRes.json();
+                    if (profile) userState = profile.state;
+                } catch(e) {}
+            }
+
+            try {
+                const res = await fetch("/search", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query, session_id: sessionId, state: userState })
+                });
+                const data = await res.json();
+                renderSearchResults(data, query);
+            } catch(e) {
+                resultsEl.innerHTML = `<div class="search-empty-state"><p>Search failed. Check your connection.</p></div>`;
+            }
+        }
+
+        function renderSearchResults(data, query) {
+            const el = document.getElementById("searchResults");
+
+            if (!data.results || data.results.length === 0) {
+                el.innerHTML = `
+                    <div class="search-empty-state">
+                        <div style="font-size:28px;opacity:0.3;margin-bottom:10px;">📭</div>
+                        <p>No results for "<strong style="color:var(--gold)">${query}</strong>"</p>
+                        <p style="margin-top:8px;font-size:11px;">Try a different keyword or register as a seller</p>
+                    </div>`;
+                return;
+            }
+
+            const mc = data.market_context || {};
+            const marketBar = mc.avg_price ? `
+                <div class="search-market-bar">
+                    <div class="search-market-stat">
+                        <span class="label">MARKET AVG</span>
+                        <span class="val gold">₦${Number(mc.avg_price).toLocaleString()}</span>
+                    </div>
+                    <div class="search-market-stat">
+                        <span class="label">CHEAPEST</span>
+                        <span class="val green">₦${Number(mc.min_price).toLocaleString()}</span>
+                    </div>
+                    <div class="search-market-stat">
+                        <span class="label">HIGHEST</span>
+                        <span class="val">₦${Number(mc.max_price).toLocaleString()}</span>
+                    </div>
+                    <div class="search-market-stat">
+                        <span class="label">SELLERS FOUND</span>
+                        <span class="val">${mc.total_found}</span>
+                    </div>
+                </div>` : '';
+
+            const agentBox = data.agent_advice ? `
+                <div class="search-agent-advice">
+                    <div class="search-agent-label">🤖 Agent Advice</div>
+                    ${data.agent_advice.replace(/\n/g, '<br>')}
+                </div>` : '';
+
+            const resultsHtml = data.results.map(r => {
+                const rankClass = r.rank === 1 ? 'rank-1' : '';
+                const scoreWidth = Math.min(100, Math.round((r.score / 100) * 100));
+
+                // Build tags from rank_reasons
+                const tagMap = {
+                    'exact match': ['tag-gold', '✓ Exact'],
+                    'strong name match': ['tag-gold', '✓ Match'],
+                    'verified seller': ['tag-blue', '✓ Verified'],
+                    'in stock': ['tag-green', 'In Stock'],
+                    'listed today': ['tag-green', 'Today'],
+                };
+                const tags = (r.rank_reasons || []).slice(0, 3).map(reason => {
+                    for (const [key, [cls, label]] of Object.entries(tagMap)) {
+                        if (reason.includes(key)) return `<span class="search-result-tag ${cls}">${label}</span>`;
+                    }
+                    // Price reasons
+                    if (reason.includes('below market')) return `<span class="search-result-tag tag-green">💰 ${reason}</span>`;
+                    if (reason.includes('your state')) return `<span class="search-result-tag tag-blue">📍 Local</span>`;
+                    return `<span class="search-result-tag tag-muted">${reason}</span>`;
+                }).join('');
+
+                const profileLink = r.seller_id
+                    ? `<a href="/seller/profile/${r.seller_id}" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);">View Seller →</a>`
+                    : '';
+
+                return `
+                <div class="search-result-item ${rankClass}">
+                    <div class="search-result-rank">${r.rank}</div>
+                    <div class="search-result-body">
+                        <div class="search-result-commodity">${r.commodity}</div>
+                        <div class="search-result-seller">${r.seller_name} · ${r.lga ? r.lga + ', ' : ''}${r.state}</div>
+                        <div class="search-result-tags">${tags}</div>
+                        <div style="margin-top:8px;">${profileLink}</div>
+                    </div>
+                    <div class="search-result-price">
+                        <div class="amount">₦${Number(r.price).toLocaleString()}</div>
+                        <div class="unit">per ${r.unit}</div>
+                        <div class="score-bar"><div class="score-fill" style="width:${scoreWidth}%"></div></div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            el.innerHTML = agentBox + marketBar +
+                `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);letter-spacing:1px;margin-bottom:12px;">
+                    RANKED RESULTS — ${data.total} found for "${query}"
+                </div>` + resultsHtml;
+        }
+
+        // Enter key on search
+        document.addEventListener("DOMContentLoaded", function() {
+            const si = document.getElementById("searchInput");
+            if (si) si.addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
+        });
 
 
 
