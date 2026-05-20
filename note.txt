@@ -143,6 +143,9 @@ def get_history(product_id):
     return jsonify(history)
 
 
+    y
+
+
 
      
 
