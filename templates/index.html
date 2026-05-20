@@ -755,6 +755,29 @@
 
     <div class="container">
 
+
+        <!-- ── Product Search ── -->
+        <div class="card">
+            <div class="card-title"><div class="card-title-icon">🔍</div>Search Products</div>
+            <p class="card-desc">Find the best price across all sellers — ranked by relevance, recency & value</p>
+            <div class="search-bar-wrap" style="margin-bottom:16px;">
+                <input type="text" id="searchInput" placeholder="e.g. tomatoes, rice, palm oil...">
+                <button class="search-btn" onclick="runSearch()">Search</button>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;" id="searchSuggestions">
+                <button class="btn-ghost" onclick="quickSearch('Rice')">🌾 Rice</button>
+                <button class="btn-ghost" onclick="quickSearch('Tomatoes')">🍅 Tomatoes</button>
+                <button class="btn-ghost" onclick="quickSearch('Palm Oil')">🛢 Palm Oil</button>
+                <button class="btn-ghost" onclick="quickSearch('Onions')">🧅 Onions</button>
+            </div>
+            <div id="searchResults">
+                <div class="search-empty-state">
+                    <div style="font-size:28px;opacity:0.3;margin-bottom:10px;">🔍</div>
+                    <p>Search any commodity above — agent ranks results by best value for you</p>
+                </div>
+            </div>
+        </div>
+
         <!-- ── Add Product ── -->
         <div class="card">
             <div class="card-title"><div class="card-title-icon">+</div>Add Product</div>
@@ -799,27 +822,7 @@
 
 
 
-        <!-- ── Product Search ── -->
-        <div class="card">
-            <div class="card-title"><div class="card-title-icon">🔍</div>Search Products</div>
-            <p class="card-desc">Find the best price across all sellers — ranked by relevance, recency & value</p>
-            <div class="search-bar-wrap" style="margin-bottom:16px;">
-                <input type="text" id="searchInput" placeholder="e.g. tomatoes, rice, palm oil...">
-                <button class="search-btn" onclick="runSearch()">Search</button>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;" id="searchSuggestions">
-                <button class="btn-ghost" onclick="quickSearch('Rice')">🌾 Rice</button>
-                <button class="btn-ghost" onclick="quickSearch('Tomatoes')">🍅 Tomatoes</button>
-                <button class="btn-ghost" onclick="quickSearch('Palm Oil')">🛢 Palm Oil</button>
-                <button class="btn-ghost" onclick="quickSearch('Onions')">🧅 Onions</button>
-            </div>
-            <div id="searchResults">
-                <div class="search-empty-state">
-                    <div style="font-size:28px;opacity:0.3;margin-bottom:10px;">🔍</div>
-                    <p>Search any commodity above — agent ranks results by best value for you</p>
-                </div>
-            </div>
-        </div>
+         
 
         <!-- ── Community Prices ── -->
         <div class="card">
@@ -928,6 +931,41 @@
             </div>
         </div>
 
+
+        <!-- ── Rating Predictor Card — paste after cloneCard closing </div> ── -->
+        <div class="card" id="ratingPredictorCard">
+            <div class="card-title"><div class="card-title-icon">🎯</div>Rating Predictor</div>
+            <p class="card-desc">What would you rate this market right now? Your clone predicts before you even check.</p>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+                <button class="btn-ghost" onclick="predictRating('Rice (50kg bag)')">🌾 Rice</button>
+                <button class="btn-ghost" onclick="predictRating('Bread (sliced loaf)')">🍞 Bread</button>
+                <button class="btn-ghost" onclick="predictRating('Fuel (per litre)')">⛽ Fuel</button>
+            </div>
+
+            <div id="predictorResult">
+                <div class="search-empty-state">
+                    <div style="font-size:28px;opacity:0.3;margin-bottom:10px;">🎯</div>
+                    <p>Pick a commodity — your clone predicts your rating instantly</p>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- ── Behavior Dashboard ── -->
+        <div class="card" id="dashboardCard">
+            <div class="card-title"><div class="card-title-icon">📊</div>What Your Clone Knows</div>
+            <p class="card-desc">Everything the clone has learned about you so far</p>
+            <div id="dashboardContent">
+                <div class="search-empty-state">
+                    <div style="font-size:28px;opacity:0.3;margin-bottom:10px;">🧬</div>
+                    <p>Loading your profile intelligence...</p>
+                </div>
+            </div>
+        </div>
+
+
         <!-- ── Agent Chat ── -->
         <div class="card">
             <div class="card-title"><div class="card-title-icon">🤖</div>PriceWise Agent</div>
@@ -1014,6 +1052,7 @@
             renderMarketAlerts();
             loadOfflineCloneActivity();
             checkCloneTrainingPopup();
+            loadDashboard();
         };
 
         // ── Products ──────────────────────────────────────────────────
@@ -1649,6 +1688,185 @@
                     RANKED RESULTS — ${data.total} found for "${query}"
                 </div>` + resultsHtml;
         }
+
+
+
+
+         
+        async function predictRating(commodity) {
+            let sessionId = localStorage.getItem("pricewise_session");
+            if (!sessionId) { alert("Complete onboarding first."); return; }
+
+            const el = document.getElementById("predictorResult");
+            el.innerHTML = `<div class="search-loading"><div class="chat-thinking"><span></span><span></span><span></span></div> Clone is predicting your rating...</div>`;
+
+            try {
+                const res = await fetch("/predict_rating", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ session_id: sessionId, commodity })
+                });
+                const data = await res.json();
+                if (data.error) { el.innerHTML = `<div class="search-empty-state"><p>${data.error}</p></div>`; return; }
+
+                const stars = "⭐".repeat(data.predicted_rating) + "☆".repeat(5 - data.predicted_rating);
+                const confColor = { High: "var(--green)", Medium: "var(--gold)", Low: "var(--text-muted)" };
+                const confBg = { High: "rgba(0,230,118,0.08)", Medium: "rgba(240,165,0,0.08)", Low: "rgba(122,132,153,0.08)" };
+                const conf = data.confidence || "Medium";
+
+                const factorsHtml = (data.factors || []).map(f =>
+                    `<span class="search-result-tag tag-muted">${f}</span>`
+                ).join("");
+
+                el.innerHTML = `
+                <div style="background:var(--surface-1); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:3px; padding:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+                        <div>
+                            <div style="font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; color:var(--gold);">${commodity}</div>
+                            <div style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); margin-top:2px;">
+                                ${data.role} · ${data.user_state} · ₦${data.latest_price ? Number(data.latest_price).toLocaleString() : 'N/A'} current price
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:24px; margin-bottom:4px;">${stars}</div>
+                            <div style="font-family:'DM Mono',monospace; font-size:18px; font-weight:500; color:var(--text-primary);">${data.predicted_rating}/5</div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+                        <span style="font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; color:var(--text-muted);">CONFIDENCE</span>
+                        <span style="font-family:'DM Mono',monospace; font-size:11px; padding:3px 10px; border-radius:2px;
+                            color:${confColor[conf]}; background:${confBg[conf]}; border:1px solid ${confColor[conf]};">
+                            ${conf}
+                        </span>
+                    </div>
+
+                    <p style="font-family:'DM Mono',monospace; font-size:13px; line-height:1.8; color:var(--text-secondary); margin-bottom:14px;">
+                        ${data.reasoning}
+                    </p>
+
+                    <div style="font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; color:var(--text-muted); margin-bottom:8px;">KEY FACTORS</div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">${factorsHtml}</div>
+
+                    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border);">
+                        <div style="font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; color:var(--text-muted); margin-bottom:10px;">WAS THE CLONE RIGHT?</div>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <button onclick="confirmPrediction('${commodity}', ${data.predicted_rating}, true)"
+                                class="btn-ghost" style="color:var(--green); border-color:rgba(0,230,118,0.3);">
+                                ✓ Yes, that's what I'd give
+                            </button>
+                            <button onclick="confirmPrediction('${commodity}', ${data.predicted_rating}, false)"
+                                class="btn-ghost" style="color:var(--red); border-color:rgba(255,79,79,0.3);">
+                                ✗ No, I'd rate it differently
+                            </button>
+                        </div>
+                        <div id="predictionFeedback" style="display:none; margin-top:10px; font-family:'DM Mono',monospace; font-size:11px; color:var(--green);">
+                            ✓ Feedback saved — clone is learning
+                        </div>
+                    </div>
+                </div>`;
+            } catch(e) {
+                el.innerHTML = `<div class="search-empty-state"><p>Prediction failed. Check connection.</p></div>`;
+            }
+        }
+
+        function confirmPrediction(commodity, predictedRating, wasCorrect) {
+            let sessionId = localStorage.getItem("pricewise_session");
+            // Log as behavior signal — clone accuracy feedback
+            fetch("/log_behavior", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    action_type: wasCorrect ? "prediction_correct" : "prediction_wrong",
+                    commodity,
+                    question_type: "rating_feedback",
+                    state_mentioned: null
+                })
+            }).catch(() => {});
+
+            document.getElementById("predictionFeedback").style.display = "block";
+            document.querySelectorAll("#ratingPredictorCard .btn-ghost").forEach(b => {
+                if (b.textContent.includes("Yes") || b.textContent.includes("No")) b.style.display = "none";
+            });
+        }
+
+
+
+
+        async function loadDashboard() {
+            let sessionId = localStorage.getItem("pricewise_session");
+            if (!sessionId) return;
+
+            const res = await fetch(`/user_insights/${sessionId}`);
+            const ctx = await res.json();
+            const el = document.getElementById("dashboardContent");
+
+            const profile = ctx.profile || {};
+            const topCommodities = ctx.top_commodities || [];
+            const topQuestions = ctx.top_question_types || [];
+            const topStates = ctx.top_states || [];
+            const reviews = ctx.reviews || [];
+            const training = ctx.training || [];
+            const messages = ctx.messages || [];
+
+            const statBlock = (label, value) => `
+                <div class="search-market-stat">
+                    <span class="label">${label}</span>
+                    <span class="val">${value}</span>
+                </div>`;
+
+            const tagHtml = (items, color) => items.map(([name, count]) =>
+                `<span class="search-result-tag ${color}">${name} (${count})</span>`
+            ).join("");
+
+            el.innerHTML = `
+                <div class="search-market-bar" style="margin-bottom:16px;">
+                    ${statBlock("ROLE", profile.role || "—")}
+                    ${statBlock("STATE", profile.state || "—")}
+                    ${statBlock("PRIORITY", profile.priority || "—")}
+                    ${statBlock("AVG RATING", ctx.avg_rating ? ctx.avg_rating + "/5" : "—")}
+                    ${statBlock("BEHAVIORS LOGGED", ctx.behavior_count)}
+                    ${statBlock("REVIEWS GENERATED", reviews.length)}
+                </div>
+
+                <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;">TOP COMMODITIES</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+                    ${topCommodities.length ? tagHtml(topCommodities, "tag-gold") : "<span style='color:var(--text-muted);font-size:12px;font-family:DM Mono,monospace;'>None yet</span>"}
+                </div>
+
+                <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;">QUESTION PATTERNS</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+                    ${topQuestions.length ? tagHtml(topQuestions, "tag-blue") : "<span style='color:var(--text-muted);font-size:12px;font-family:DM Mono,monospace;'>None yet</span>"}
+                </div>
+
+                <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;">STATES MENTIONED</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+                    ${topStates.length ? tagHtml(topStates, "tag-green") : "<span style='color:var(--text-muted);font-size:12px;font-family:DM Mono,monospace;'>None yet</span>"}
+                </div>
+
+                ${training.length ? `
+                <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;">CLONE TRAINING DECISIONS</div>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+                    ${training.slice(0,5).map(t => `
+                    <div style="background:var(--surface-1);border:1px solid var(--border);border-radius:3px;padding:10px 14px;">
+                        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);">${t.scenario_type}</div>
+                        <div style="font-size:13px;color:var(--text-primary);margin-top:2px;">${t.question}</div>
+                        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);margin-top:4px;">→ ${t.answer}</div>
+                    </div>`).join("")}
+                </div>` : ""}
+
+                ${messages.length ? `
+                <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;">YOUR CHAT STYLE SAMPLES</div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    ${messages.slice(0,3).map(m => `
+                    <div style="background:var(--surface-1);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:3px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:12px;color:var(--text-secondary);">
+                        "${m.message}"
+                    </div>`).join("")}
+                </div>` : ""}
+            `;
+        }
+        
 
         // Enter key on search
         document.addEventListener("DOMContentLoaded", function() {

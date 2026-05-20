@@ -609,41 +609,31 @@ def generate_user_review(session_id, commodity):
     generates a star rating + written review as if the user wrote it.
     Saves to generated_reviews table and returns the result.
     """
-    conn = get_db()
-    c = conn.cursor()
- 
-    # Get user profile
-    c.execute("SELECT * FROM user_profiles WHERE session_id = ?", (session_id,))
-    profile = c.fetchone()
- 
-    # FIX 2 — Get count AND full behavior detail for this commodity
-    c.execute("""
-        SELECT COUNT(*) as cnt FROM user_behavior_log
-        WHERE session_id = ? AND commodity = ?
-    """, (session_id, commodity))
-    commodity_searches = c.fetchone()["cnt"]
- 
-    # Get full behavior log — last 20 interactions across all commodities
-    c.execute("""
-        SELECT action_type, commodity, question_type, state_mentioned, timestamp
-        FROM user_behavior_log
-        WHERE session_id = ?
-        ORDER BY timestamp DESC LIMIT 20
-    """, (session_id,))
-    behavior_rows = c.fetchall()
- 
+     
+    
+    
+    ctx = get_full_user_context(session_id)
+    profile = ctx["profile"]
+    commodity_searches = sum(count for name, count in ctx.get("top_commodities", []) if name == commodity)
+
     # Build human-readable behavior summary
-    if behavior_rows:
+    top_commodities = ctx.get("top_commodities", [])
+    top_questions = ctx.get("top_question_types", [])
+    if top_commodities:
         behavior_summary = "What this user has actually been asking about:\n"
-        for b in behavior_rows:
-            line = f"- {b['question_type']} question about {b['commodity']}"
-            if b['state_mentioned']:
-                line += f" (mentioned {b['state_mentioned']})"
-            behavior_summary += line + "\n"
+        for name, count in top_commodities:
+            behavior_summary += f"- searched {name} {count} times\n"
+        for qtype, count in top_questions:
+            behavior_summary += f"- {qtype} questions ({count} times)\n"
     else:
         behavior_summary = "No behavior logged yet — base review on profile and price data only."
- 
+        
+    
+    
+    
     # Get current price data for this commodity
+    conn = get_db()
+    c = conn.cursor()
     c.execute("""
         SELECT ph.price, ph.platform, ph.date, p.name
         FROM price_history ph
@@ -860,3 +850,259 @@ Write only the message, nothing else."""
         print(f"Clone negotiate error: {e}")
         return None
  
+ 
+ 
+ 
+def predict_rating(session_id, commodity, context_override=None):
+    """
+    Feature 5 — Rating Predictor.
+    Predicts what star rating this user WOULD give a commodity
+    based on their profile, behavior history, and past reviews.
+    Does NOT generate a review — just the predicted score + confidence + reasoning.
+    
+    Returns dict: { predicted_rating, confidence, reasoning, factors }
+    """
+     
+    
+    
+    
+    ctx = get_full_user_context(session_id)
+    profile = ctx["profile"]
+    past_reviews = ctx["reviews"]
+    behavior = ctx["behavior_count"]
+
+     
+    # Current price data for this commodity
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        SELECT ph.price, ph.platform, ph.date
+        FROM price_history ph
+        JOIN products p ON ph.product_id = p.id
+        WHERE p.name = ?
+        ORDER BY ph.date DESC LIMIT 6
+    """, (commodity,))
+    recent_prices = c.fetchall()
+
+    # State prices
+    c.execute("""
+        SELECT sp.state, sp.price
+        FROM state_prices sp
+        JOIN products p ON sp.product_id = p.id
+        WHERE p.name = ?
+        ORDER BY sp.price ASC
+    """, (commodity,))
+    state_prices = c.fetchall()
+
+    # Community prices for this commodity
+    c.execute("""
+        SELECT cp.price, cp.state, cs.seller_type
+        FROM community_prices cp
+        JOIN community_sellers cs ON cp.seller_id = cs.id
+        WHERE cp.commodity = ?
+        ORDER BY cp.date_submitted DESC LIMIT 10
+    """, (commodity,))
+    community = c.fetchall()
+
+    conn.close()
+
+    # Build factors string for the prompt
+    role = profile["role"] if profile else "consumer"
+    user_state = profile["state"] if profile else "Nigeria"
+    priority = profile["priority"] if profile else "best price"
+    bulk_freq = profile["bulk_frequency"] if profile else "occasionally"
+
+    # Price trend calculation
+    price_trend = "unknown"
+    volatility = "unknown"
+    latest_price = None
+    if recent_prices:
+        prices = [r["price"] for r in recent_prices]
+        latest_price = prices[0]
+        avg = sum(prices) / len(prices)
+        change = ((latest_price - prices[-1]) / prices[-1]) * 100 if prices[-1] else 0
+        price_trend = f"{'rising' if change > 2 else 'falling' if change < -2 else 'stable'} ({change:+.1f}%)"
+        spread = max(prices) - min(prices)
+        volatility = f"high (₦{spread:,.0f} spread)" if spread > avg * 0.1 else "low"
+
+    # Past review pattern
+    past_pattern = ""
+    if past_reviews:
+        avg_rating = sum(r["star_rating"] for r in past_reviews) / len(past_reviews)
+        ratings_for_commodity = [r for r in past_reviews if r["commodity"] == commodity]
+        past_pattern = f"This user's average rating across all reviews: {avg_rating:.1f}/5. "
+        if ratings_for_commodity:
+            last = ratings_for_commodity[0]
+            past_pattern += f"Last time they rated {commodity} they gave {last['star_rating']}/5 when price was ₦{last['price_at_review']:,.0f}."
+
+    # Behavior pattern  
+    commodity_hits = sum(1 for b in ctx.get("top_commodities", []) if b[0] == commodity)
+    arbitrage_hits = sum(1 for qt in ctx.get("top_question_types", []) if qt[0] == "arbitrage")
+    price_check_hits = sum(1 for qt in ctx.get("top_question_types", []) if qt[0] == "price_check")
+     
+
+    # Community price range
+    community_note = ""
+    if community:
+        comm_prices = [r["price"] for r in community]
+        community_note = f"Community sellers: ₦{min(comm_prices):,.0f}–₦{max(comm_prices):,.0f} across {len(community)} listings."
+
+    # State arbitrage note
+    arb_note = ""
+    if state_prices and len(state_prices) >= 2:
+        cheapest = state_prices[0]
+        priciest = state_prices[-1]
+        gap = priciest["price"] - cheapest["price"]
+        arb_note = f"Arbitrage gap: ₦{gap:,.0f} ({cheapest['state']} → {priciest['state']})."
+
+    prompt = f"""You are a rating prediction engine for PriceWise, a Nigerian commodity intelligence platform.
+
+Your job: predict what star rating (1-5) this specific user would give the current {commodity} market.
+This is NOT a review — just a prediction with reasoning.
+
+USER SIGNAL PROFILE:
+- Role: {role}
+- State: {user_state}  
+- Bulk frequency: {bulk_freq}
+- Priority: {priority}
+- Times searched {commodity}: {commodity_hits}
+- Arbitrage-focused questions: {arbitrage_hits}
+- Price check questions: {price_check_hits}
+
+CURRENT MARKET DATA:
+- Latest price: ₦{f"{latest_price:,.0f}" if latest_price else "N/A"}
+- Price trend: {price_trend}
+- Price volatility: {volatility}
+- {community_note}
+- {arb_note}
+
+PAST REVIEW PATTERN:
+{past_pattern if past_pattern else "No past reviews — predict from profile and market data only."}
+
+CONTEXT OVERRIDE (if provided):
+{context_override if context_override else "None"}
+
+RATING LOGIC BY ROLE:
+- consumer: cares about affordability. Rising prices = low stars. Falling/stable = high stars.
+- trader: cares about arbitrage opportunity. Big gap + favorable trend = high stars regardless of direction.
+- small_business: cares about supply stability. Volatile = low stars. Stable + affordable = high stars.
+
+OUTPUT FORMAT (strictly follow this):
+PREDICTED_RATING: X
+CONFIDENCE: High|Medium|Low
+REASONING: [2-3 sentences max explaining the prediction in Nigerian market context]
+FACTORS: [comma-separated list of 3-4 key factors that drove this prediction]
+
+Nothing else. No preamble."""
+
+    try:
+        response = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile",
+            max_tokens=300
+        )
+        raw = response.choices[0].message.content.strip()
+
+        # Parse output
+        result = {
+            "predicted_rating": 3,
+            "confidence": "Medium",
+            "reasoning": "Based on current market data and your profile.",
+            "factors": [],
+            "commodity": commodity,
+            "role": role,
+            "user_state": user_state,
+            "latest_price": latest_price
+        }
+
+        for line in raw.split("\n"):
+            line = line.strip()
+            if line.startswith("PREDICTED_RATING:"):
+                try:
+                    val = int(line.split(":")[1].strip().split("/")[0])
+                    result["predicted_rating"] = max(1, min(5, val))
+                except:
+                    pass
+            elif line.startswith("CONFIDENCE:"):
+                result["confidence"] = line.split(":")[1].strip()
+            elif line.startswith("REASONING:"):
+                result["reasoning"] = line.split(":", 1)[1].strip()
+            elif line.startswith("FACTORS:"):
+                result["factors"] = [f.strip() for f in line.split(":", 1)[1].split(",")]
+
+        # Save prediction to DB (reuse generated_reviews table with triggered_by='predicted')
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO generated_reviews
+            (session_id, commodity, star_rating, review_text, sentiment, price_at_review, generated_at, triggered_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            session_id, commodity,
+            result["predicted_rating"],
+            f"[PREDICTION] {result['reasoning']}",
+            "POSITIVE" if result["predicted_rating"] >= 4 else ("NEGATIVE" if result["predicted_rating"] <= 2 else "NEUTRAL"),
+            latest_price or 0,
+            datetime.now().isoformat(),
+            "predicted"
+        ))
+        conn.commit()
+        conn.close()
+
+        return result
+
+    except Exception as e:
+        print(f"[PREDICT RATING] Error: {e}")
+        return None
+    
+    
+    
+    
+def get_full_user_context(session_id):
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute("SELECT * FROM user_profiles WHERE session_id = ?", (session_id,))
+    profile = c.fetchone()
+
+    c.execute("""SELECT action_type, commodity, question_type, state_mentioned, timestamp
+        FROM user_behavior_log WHERE session_id = ? ORDER BY timestamp DESC LIMIT 50
+    """, (session_id,))
+    behavior = c.fetchall()
+
+    c.execute("""SELECT commodity, star_rating, sentiment, price_at_review
+        FROM generated_reviews WHERE session_id = ? ORDER BY generated_at DESC LIMIT 10
+    """, (session_id,))
+    reviews = c.fetchall()
+
+    c.execute("""SELECT question, answer, scenario_type
+        FROM clone_training WHERE session_id = ? ORDER BY timestamp DESC LIMIT 20
+    """, (session_id,))
+    training = c.fetchall()
+
+    c.execute("""SELECT message, sent_by FROM seller_messages
+        WHERE buyer_session_id = ? AND sent_by = 'buyer'
+        ORDER BY timestamp DESC LIMIT 20
+    """, (session_id,))
+    messages = c.fetchall()
+
+    conn.close()
+
+    # Summarise behavior
+    from collections import Counter
+    top_commodities = Counter(b["commodity"] for b in behavior).most_common(3)
+    top_question_types = Counter(b["question_type"] for b in behavior).most_common(3)
+    top_states = Counter(b["state_mentioned"] for b in behavior if b["state_mentioned"]).most_common(3)
+    avg_rating = round(sum(r["star_rating"] for r in reviews) / len(reviews), 1) if reviews else None
+
+    return {
+        "profile": dict(profile) if profile else {},
+        "top_commodities": top_commodities,
+        "top_question_types": top_question_types,
+        "top_states": top_states,
+        "avg_rating": avg_rating,
+        "reviews": [dict(r) for r in reviews],
+        "training": [dict(t) for t in training],
+        "messages": [dict(m) for m in messages],
+        "behavior_count": len(behavior)
+    }

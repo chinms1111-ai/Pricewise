@@ -652,7 +652,7 @@ def log_behavior():
  
 @app.route("/generate_review", methods=["POST"])
 def generate_review():
-    from agent import generate_user_review
+    from agent import generate_user_review ,predict_rating
     data = request.get_json()
     session_id = data.get("session_id")
     commodity = data.get("commodity")
@@ -664,6 +664,28 @@ def generate_review():
     if not result:
         return jsonify({"error": "No price data for this commodity yet"}), 404
  
+    return jsonify(result)
+
+
+# ══════════════════════════════════════════════════════════
+# ADD TO app.py — paste after the /generate_review route
+# ══════════════════════════════════════════════════════════
+
+@app.route("/predict_rating", methods=["POST"])
+def predict_rating_route():
+    from agent import predict_rating
+    data = request.get_json()
+    session_id = data.get("session_id")
+    commodity = data.get("commodity")
+    context_override = data.get("context")  # optional extra context
+
+    if not session_id or not commodity:
+        return jsonify({"error": "Missing session_id or commodity"}), 400
+
+    result = predict_rating(session_id, commodity, context_override)
+    if not result:
+        return jsonify({"error": "Could not generate prediction"}), 500
+
     return jsonify(result)
  
  
@@ -1193,6 +1215,12 @@ def search():
         "agent_advice": advice,
         "total": len(ranked)
     })
+    
+@app.route("/user_insights/<session_id>")
+def user_insights(session_id):
+    from agent import get_full_user_context
+    ctx = get_full_user_context(session_id)
+    return jsonify(ctx)
 
  
  
