@@ -93,6 +93,7 @@ def init_db():
             full_name TEXT NOT NULL,
             business_name TEXT,
             phone TEXT,
+            email TEXT,
             location TEXT NOT NULL,
             area TEXT NOT NULL,
             lga TEXT NOT NULL,
@@ -262,6 +263,18 @@ def init_db():
  
  
 init_db()
+
+def run_migrations():
+    conn = get_db()
+    c = conn.cursor()
+    try:
+        c.execute("ALTER TABLE community_sellers ADD COLUMN email TEXT")
+    except:
+        pass
+    conn.commit()
+    conn.close()
+
+run_migrations()
  
  
 @app.route("/")
