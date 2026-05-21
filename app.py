@@ -275,6 +275,19 @@ def run_migrations():
     conn.close()
 
 run_migrations()
+
+
+def auto_seed():
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) as cnt FROM products")
+    count = c.fetchone()["cnt"]
+    conn.close()
+    if count == 0:
+        from seed_data import seed
+        seed()
+
+auto_seed()
  
  
 @app.route("/")
