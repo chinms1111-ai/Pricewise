@@ -148,6 +148,114 @@ def init_db():
             FOREIGN KEY (product_id) REFERENCES products (id)
         )
     ''')
+    
+    
+        
+        
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS user_profiles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT UNIQUE NOT NULL,
+            role TEXT,
+            primary_commodity TEXT,
+            state TEXT,
+            bulk_frequency TEXT,
+            priority TEXT,
+            behavior_type TEXT,
+            total_sessions INTEGER DEFAULT 1,
+            created_at TEXT,
+            updated_at TEXT
+        )
+    ''')
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS user_behavior_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            action_type TEXT,
+            commodity TEXT,
+            question_type TEXT,
+            state_mentioned TEXT,
+            timestamp TEXT
+        )
+    ''')
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS generated_reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            commodity TEXT,
+            star_rating INTEGER,
+            review_text TEXT,
+            sentiment TEXT,
+            price_at_review REAL,
+            generated_at TEXT,
+            triggered_by TEXT DEFAULT 'manual'
+        )
+    ''')
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS clone_training (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            question TEXT,
+            answer TEXT,
+            scenario_type TEXT,
+            timestamp TEXT
+        )
+    ''')
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS clone_questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            question TEXT,
+            scenario_type TEXT,
+            options TEXT,
+            answered INTEGER DEFAULT 0,
+            answer TEXT,
+            date_shown TEXT,
+            timestamp TEXT
+        )
+    ''')
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS clone_style_examples (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            example_message TEXT,
+            context TEXT,
+            timestamp TEXT
+        )
+    ''')
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS seller_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            seller_id INTEGER,
+            buyer_session_id TEXT,
+            message TEXT,
+            sent_by TEXT,
+            chat_mode TEXT DEFAULT 'human',
+            is_read INTEGER DEFAULT 0,
+            saved INTEGER DEFAULT 1,
+            timestamp TEXT
+        )
+    ''')
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS commodity_comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            seller_id INTEGER,
+            commodity TEXT,
+            session_id TEXT,
+            comment TEXT,
+            star_rating INTEGER,
+            sentiment TEXT,
+            sent_by TEXT,
+            timestamp TEXT
+        )
+    ''')
  
     conn.commit()
     conn.close()
