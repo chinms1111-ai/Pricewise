@@ -782,6 +782,45 @@
             .btn-primary, .btn-ghost, .btn-share { padding: 9px 14px; font-size: 12px; }
             .top-bar { padding: 0 16px; }
         }
+
+
+
+
+            
+        #judgeGuideProfile {
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            z-index: 9999;
+            width: 300px;
+            font-family: 'DM Mono', monospace;
+            display: none;
+        }
+        #jgpToggle {
+            background: linear-gradient(135deg, #d49200, #f0a500);
+            color: #0a0800;
+            border: none;
+            border-radius: 3px;
+            padding: 10px 16px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 14px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 24px rgba(240,165,0,0.4);
+        }
+        #jgpBody {
+            background: #0e1015;
+            border: 1px solid #f0a500;
+            border-radius: 4px 4px 0 0;
+            border-bottom: none;
+            padding: 16px;
+            font-family: 'DM Mono', monospace;
+        }
+     
     </style>
 </head>
 <body>
@@ -860,28 +899,26 @@
 
     <div class="chat-modal-overlay" id="chatModalOverlay">
         <div class="chat-modal">
+
             <div class="chat-modal-header">
                 <div>
                     <div class="chat-modal-title" id="chatModalTitle">Private Chat</div>
-
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:var(--surface-2); border-bottom:1px solid var(--border);">
-                        <div id="chatModalTitle" style="font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; color:var(--gold);">Chat</div>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <button id="cloneToggleBtn" onclick="toggleCloneMode()"
-                                style="font-family:'DM Mono',monospace; font-size:11px; letter-spacing:1px;
-                                padding:6px 14px; border-radius:20px; cursor:pointer; border:1px solid #333;
-                                background:#1a1a1a; color:#555; transition:all 0.2s;">
-                                🧬 CLONE OFF
-                            </button>
-                            <button onclick="clearChat()" style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); background:none; border:none; cursor:pointer;">Clear</button>
-                            <button onclick="closeChat()" style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); background:none; border:none; cursor:pointer;">✕</button>
-                        </div>
-                    </div>
-
                     <div class="chat-modal-sub">🧬 Your clone will reply on your behalf when you're offline</div>
                 </div>
-                <button class="chat-modal-close" onclick="closeChat()">✕</button>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <button id="cloneToggleBtn" onclick="toggleCloneMode()"
+                        style="font-family:'DM Mono',monospace; font-size:11px; letter-spacing:1px;
+                        padding:6px 14px; border-radius:20px; cursor:pointer;
+                        border:1px solid #f0a500; background:rgba(240,165,0,0.15);
+                        color:#f0a500; transition:all 0.2s;">
+                        🧬 CLONE ON
+                    </button>
+                    <button class="chat-modal-close" onclick="closeChat()">✕</button>
+                </div>
             </div>
+                        
+
+
             <div class="chat-modal-messages" id="chatModalMessages">
                 <div style="text-align:center; padding:40px 20px; color:var(--text-muted); font-family:'DM Mono',monospace; font-size:12px;">
                     Start a conversation about a deal...
@@ -1273,6 +1310,8 @@
                         chat_mode: "human"
                     })
                 });
+
+                await triggerCloneReply(message);
             } catch(e) {
                 console.error("Message failed to send", e);
             }
@@ -1401,11 +1440,12 @@
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        session_id: sessionId,
+                        session_id: String(sellerId),
                         message: incomingMessage,
                         history: messages.slice(-10),
-                        side: "buyer",
+                        side: "seller",
                         seller_id: parseInt(sellerId),
+                        buyer_session_id: sessionId,
                         context: {
                             commodity: sellerData?.products?.[0]?.commodity || "general",
                             seller_location: sellerData?.seller?.location || "",
@@ -1419,18 +1459,10 @@
                 document.getElementById(typingId)?.remove();
 
                 if (data.message) {
-                    const time = new Date().toTimeString().slice(0, 5);
-                    el.innerHTML += `
-                        <div class="chat-bubble-wrap clone">
-                            <div class="chat-bubble" style="background:rgba(240,165,0,0.08); border:1px solid rgba(240,165,0,0.2);">
-                                ${data.message}
-                            </div>
-                            <div class="chat-bubble-meta">
-                                <span class="clone-tag">🧬 CLONE</span> · ${time}
-                            </div>
-                        </div>`;
-                    el.scrollTop = el.scrollHeight;
+                    await loadChatMessages();
                 }
+
+                 
             } catch(e) {
                 document.getElementById(typingId)?.remove();
                 console.error("Clone reply failed", e);
@@ -1772,10 +1804,31 @@
             }
         });
 
-                
- 
 
-      
+
+
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('demo') !== 'true') return;
+
+            document.getElementById('judgeGuideProfile').style.display = 'block';
+            document.getElementById('jgpBody').style.display = 'block';
+
+            // Auto-enable clone mode so judges see clone replies immediately
+            localStorage.setItem('pricewise_clone_mode', 'true');
+            cloneModeActive = true;
+            updateCloneToggleUI();
+
+            let open = true;
+            window.toggleProfileGuide = function() {
+                open = !open;
+                document.getElementById('jgpBody').style.display = open ? 'block' : 'none';
+                document.getElementById('jgpArrow').textContent = open ? '▼' : '▲';
+            };
+        })();
+
+
+ 
     </script>
 
 
@@ -1876,6 +1929,57 @@
         </div>
     </div>
 
+
+
+
+     
+
+    <div id="judgeGuideProfile">
+        <div id="jgpBody">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;color:#f0a500;margin-bottom:10px;">
+                🏆 JUDGE GUIDE — CLONE CHAT
+            </div>
+            <div style="font-size:10px;color:#3d4557;letter-spacing:1px;margin-bottom:14px;">
+                TASK A · STEP 5 · BEHAVIOURAL FIDELITY
+            </div>
+
+            <div style="background:rgba(240,165,0,0.06);border:1px solid rgba(240,165,0,0.2);border-radius:3px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:#f0a500;">
+                🧬 You are chatting with the seller's CLONE — not the real seller. The seller is offline.
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+                <div style="background:#131720;border:1px solid #1e2535;border-radius:3px;padding:10px 12px;">
+                    <div style="font-size:10px;color:#3d4557;letter-spacing:1px;margin-bottom:6px;">TRY ASKING</div>
+                    <div style="font-size:11px;color:#7a8499;line-height:1.8;">
+                        · "What's your best price for rice?"<br>
+                        · "Do you do bulk discount?"<br>
+                        · "Are you available this week?"<br>
+                        · "How do I pay?"
+                    </div>
+                </div>
+                <div style="background:#131720;border:1px solid #1e2535;border-radius:3px;padding:10px 12px;">
+                    <div style="font-size:10px;color:#3d4557;letter-spacing:1px;margin-bottom:6px;">WHAT TO LOOK FOR</div>
+                    <div style="font-size:11px;color:#7a8499;line-height:1.8;">
+                        · Nigerian market language & pidgin<br>
+                        · Seller-specific pricing knowledge<br>
+                        · Consistent personality with seller profile<br>
+                        · Naira (₦) denomination in responses
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:rgba(0,194,255,0.06);border:1px solid rgba(0,194,255,0.15);border-radius:3px;padding:8px 12px;font-size:10px;color:#7a8499;line-height:1.6;">
+                This demonstrates Task A behavioural fidelity — the clone mirrors the seller's trading style, language patterns, and market knowledge even when offline.
+            </div>
+        </div>
+
+        <button id="jgpToggle" onclick="toggleProfileGuide()">
+            <span>🏆 JUDGE GUIDE</span>
+            <span id="jgpArrow">▼</span>
+        </button>
+    </div>
+
+     
 
         
      

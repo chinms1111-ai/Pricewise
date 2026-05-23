@@ -9,6 +9,9 @@ from agent import ask_agent
 import queue
 import threading
 
+
+
+
 # SSE client registry
 sse_clients = []
 sse_lock = threading.Lock()
@@ -288,6 +291,10 @@ def auto_seed():
         seed()
 
 auto_seed()
+from dataset_integration import init_dataset
+init_dataset(csv_path="amazon.csv")
+from seed_wfp import seed as seed_wfp
+seed_wfp()
  
  
 @app.route("/")
@@ -1355,6 +1362,19 @@ def user_insights(session_id):
     from agent import get_full_user_context
     ctx = get_full_user_context(session_id)
     return jsonify(ctx)
+
+
+
+@app.route("/demo/user-agent")
+def demo_user_agent():
+    return render_template("demo_user_agent.html")
+
+@app.route("/demo/recommendation")
+def demo_recommendation():
+    return render_template("demo_recommendation.html")
+
+
+ 
 
  
  

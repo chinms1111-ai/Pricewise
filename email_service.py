@@ -2,6 +2,7 @@ import os
 import urllib.request
 import urllib.parse
 import json
+import ssl
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -78,7 +79,10 @@ def send_deal_confirmation(seller_email, seller_name, buyer_session_id, deal_det
             method="POST"
         )
 
-        with urllib.request.urlopen(req) as resp:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        with urllib.request.urlopen(req, context=ctx) as resp:
             print(f"[EMAIL] Sent via SendGrid — status {resp.status}")
             return True
 

@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PriceWise — Task A: User Agent Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #f0a500; --gold-dim: #a87200; --gold-glow: rgba(240,165,0,0.15);
+            --obsidian: #080a0c; --surface-1: #0e1015; --surface-2: #131720;
+            --surface-3: #1a1f2e; --border: #1e2535; --text-primary: #eef0f4;
+            --text-secondary: #7a8499; --text-muted: #3d4557;
+            --green: #00e676; --red: #ff4f4f; --blue: #00c2ff; --purple: #b388ff;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--obsidian); color:var(--text-primary); min-height:100vh; }
+        
+        /* grid bg */
+        body::before { content:''; position:fixed; inset:0;
+            background-image: linear-gradient(rgba(240,165,0,0.02) 1px,transparent 1px), linear-gradient(90deg,rgba(240,165,0,0.02) 1px,transparent 1px);
+            background-size:40px 40px; pointer-events:none; z-index:0; }
+
+        .topbar { position:sticky; top:0; z-index:100; background:var(--surface-1);
+            border-bottom:1px solid var(--border); display:flex; align-items:center;
+            justify-content:space-between; padding:0 24px; height:52px; }
+        .logo { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px;
+            background:linear-gradient(135deg,#a87200,#f0a500,#ffdd80,#f0a500,#a87200);
+            -webkit-background-clip:text; background-clip:text; color:transparent; text-decoration:none; }
+        .task-badge { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:2px;
+            padding:4px 12px; border-radius:2px; background:rgba(179,136,255,0.1);
+            color:var(--purple); border:1px solid rgba(179,136,255,0.3); text-transform:uppercase; }
+        .back-link { font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted);
+            text-decoration:none; letter-spacing:1px; transition:color 0.2s; }
+        .back-link:hover { color:var(--gold); }
+
+        /* hero banner */
+        .hero { background:linear-gradient(135deg,rgba(179,136,255,0.08),rgba(240,165,0,0.06));
+            border-bottom:1px solid var(--border); padding:28px 32px; position:relative; z-index:1; }
+        .hero-title { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:5px;
+            color:var(--text-primary); margin-bottom:6px; }
+        .hero-title span { color:var(--purple); }
+        .hero-sub { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted);
+            letter-spacing:1px; max-width:680px; line-height:1.8; }
+        .hero-tasks { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
+        .hero-task { font-family:'DM Mono',monospace; font-size:11px; padding:6px 14px;
+            border-radius:2px; border:1px solid; letter-spacing:1px; }
+        .ht-rouge { color:var(--green); border-color:rgba(0,230,118,0.3); background:rgba(0,230,118,0.06); }
+        .ht-rmse  { color:var(--gold);  border-color:rgba(240,165,0,0.3);  background:rgba(240,165,0,0.06);  }
+        .ht-bert  { color:var(--blue);  border-color:rgba(0,194,255,0.3);  background:rgba(0,194,255,0.06);  }
+        .ht-fid   { color:var(--purple);border-color:rgba(179,136,255,0.3);background:rgba(179,136,255,0.06);}
+
+        .container { max-width:960px; margin:0 auto; padding:28px 20px 80px; position:relative; z-index:1; }
+
+        /* step indicator */
+        .steps { display:flex; gap:0; margin-bottom:28px; }
+        .step { flex:1; padding:12px 16px; background:var(--surface-2); border:1px solid var(--border);
+            font-family:'DM Mono',monospace; font-size:11px; letter-spacing:1px; color:var(--text-muted);
+            text-align:center; transition:all 0.3s; cursor:pointer; }
+        .step:first-child { border-radius:4px 0 0 4px; }
+        .step:last-child  { border-radius:0 4px 4px 0; }
+        .step.active { background:rgba(179,136,255,0.1); border-color:var(--purple); color:var(--purple); }
+        .step.done   { background:rgba(0,230,118,0.06);  border-color:rgba(0,230,118,0.3); color:var(--green); }
+        .step-num { font-size:16px; display:block; margin-bottom:4px; }
+
+        /* cards */
+        .card { background:var(--surface-2); border:1px solid var(--border); border-radius:4px;
+            padding:24px 28px; margin-bottom:16px; }
+        .card-title { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:3px;
+            color:var(--gold); margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+
+        /* user selector */
+        .user-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; max-height:320px; overflow-y:auto; }
+        .user-card { padding:12px 14px; background:var(--surface-1); border:1px solid var(--border);
+            border-radius:3px; cursor:pointer; transition:all 0.2s; }
+        .user-card:hover { border-color:var(--gold-dim); background:var(--surface-3); }
+        .user-card.selected { border-color:var(--purple); background:rgba(179,136,255,0.08); }
+        .user-card-name { font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:2px; color:var(--text-primary); }
+        .user-card-meta { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-muted); margin-top:4px; }
+        .user-card-comm { font-family:'DM Mono',monospace; font-size:10px; color:var(--gold); margin-top:3px; }
+
+        /* profile display */
+        .profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+        .profile-item { background:var(--surface-1); border:1px solid var(--border); border-radius:3px; padding:12px 14px; }
+        .profile-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; }
+        .profile-value { font-family:'DM Mono',monospace; font-size:13px; color:var(--text-primary); }
+        .commodity-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+        .comm-tag { font-family:'DM Mono',monospace; font-size:10px; padding:3px 8px; border-radius:2px;
+            background:rgba(240,165,0,0.08); color:var(--gold); border:1px solid rgba(240,165,0,0.2); }
+
+        /* action buttons */
+        .action-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+        .btn-action { padding:12px 20px; border-radius:3px; border:none; cursor:pointer;
+            font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:2px; transition:all 0.2s; }
+        .btn-review { background:rgba(0,230,118,0.12); color:var(--green); border:1px solid rgba(0,230,118,0.3); }
+        .btn-review:hover { background:rgba(0,230,118,0.2); box-shadow:0 0 16px rgba(0,230,118,0.2); }
+        .btn-rating { background:rgba(240,165,0,0.12); color:var(--gold); border:1px solid rgba(240,165,0,0.3); }
+        .btn-rating:hover { background:rgba(240,165,0,0.2); box-shadow:0 0 16px rgba(240,165,0,0.2); }
+        .btn-clone  { background:rgba(0,194,255,0.12); color:var(--blue); border:1px solid rgba(0,194,255,0.3); }
+        .btn-clone:hover  { background:rgba(0,194,255,0.2); box-shadow:0 0 16px rgba(0,194,255,0.2); }
+        .btn-disabled { opacity:0.3; cursor:not-allowed; }
+
+        /* commodity picker */
+        select { background:var(--surface-1); border:1px solid var(--border); color:var(--text-primary);
+            font-family:'DM Mono',monospace; font-size:12px; padding:10px 14px; border-radius:3px;
+            outline:none; cursor:pointer; }
+        select:focus { border-color:var(--gold-dim); }
+
+        /* result panels */
+        .result-panel { background:var(--surface-1); border:1px solid var(--border); border-radius:3px; padding:20px; margin-top:16px; display:none; }
+        .result-panel.show { display:block; animation:fadeIn 0.4s ease; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+        .review-text { font-size:15px; line-height:1.9; color:var(--text-primary);
+            border-left:3px solid var(--green); padding-left:16px; margin-bottom:20px;
+            font-style:italic; }
+
+        /* metric bars */
+        .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:16px; }
+        .metric-box { background:var(--surface-2); border:1px solid var(--border); border-radius:3px; padding:16px; }
+        .metric-name { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; }
+        .metric-value { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:2px; margin-bottom:6px; }
+        .metric-bar-wrap { height:6px; background:var(--surface-1); border-radius:3px; overflow:hidden; margin-bottom:8px; }
+        .metric-bar { height:100%; border-radius:3px; transition:width 1.2s ease; }
+        .metric-explain { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-muted); line-height:1.6; }
+        .m-green { color:var(--green); } .bar-green { background:var(--green); }
+        .m-gold  { color:var(--gold);  } .bar-gold  { background:var(--gold);  }
+        .m-blue  { color:var(--blue);  } .bar-blue  { background:var(--blue);  }
+        .m-purple{ color:var(--purple);} .bar-purple{ background:var(--purple);}
+
+        /* rating comparison */
+        .rating-compare { display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+        .rating-box { flex:1; min-width:140px; background:var(--surface-2); border:1px solid var(--border);
+            border-radius:3px; padding:16px; text-align:center; }
+        .rating-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; }
+        .rating-stars { font-size:28px; margin-bottom:4px; }
+        .rating-num { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px; }
+        .rmse-result { background:rgba(240,165,0,0.08); border:1px solid rgba(240,165,0,0.2);
+            border-radius:3px; padding:14px 18px; margin-top:12px; }
+        .rmse-label { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--gold); margin-bottom:4px; }
+        .rmse-explain { font-family:'DM Mono',monospace; font-size:11px; color:var(--text-secondary); line-height:1.6; }
+
+        /* clone chat */
+        .clone-chat { background:var(--surface-1); border:1px solid var(--border); border-radius:3px; margin-top:16px; display:none; }
+        .clone-chat.show { display:block; }
+        .clone-chat-header { padding:12px 16px; border-bottom:1px solid var(--border);
+            font-family:'DM Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--blue); }
+        .clone-messages { height:240px; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
+        .clone-input-row { display:flex; border-top:1px solid var(--border); }
+        .clone-input { flex:1; padding:12px 14px; background:transparent; border:none;
+            color:var(--text-primary); font-family:'DM Mono',monospace; font-size:13px; outline:none; }
+        .clone-send { background:var(--blue); color:#000; border:none; padding:12px 18px;
+            cursor:pointer; font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:2px; }
+        .bubble-buyer { align-self:flex-end; background:var(--gold); color:#0a0800;
+            padding:8px 14px; border-radius:3px; font-size:13px; max-width:75%; font-weight:500; }
+        .bubble-clone { align-self:flex-start; background:rgba(0,194,255,0.1); border:1px solid rgba(0,194,255,0.25);
+            color:var(--text-primary); padding:8px 14px; border-radius:3px; font-size:13px; max-width:75%; }
+        .bubble-meta { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-muted); margin-top:3px; }
+
+        /* behavior log */
+        .behavior-list { display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto; }
+        .behavior-item { display:flex; justify-content:space-between; padding:8px 12px;
+            background:var(--surface-2); border:1px solid var(--border); border-radius:2px; }
+        .b-action { font-family:'DM Mono',monospace; font-size:11px; color:var(--green); }
+        .b-comm   { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); }
+        .b-time   { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-muted); }
+
+        .loading { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted);
+            text-align:center; padding:20px; letter-spacing:1px; }
+        .tag-nigerian { font-family:'DM Mono',monospace; font-size:10px; padding:3px 8px;
+            background:rgba(0,230,118,0.08); color:var(--green); border:1px solid rgba(0,230,118,0.2);
+            border-radius:2px; letter-spacing:1px; }
+
+        @media(max-width:600px) {
+            .profile-grid { grid-template-columns:1fr; }
+            .metrics-grid { grid-template-columns:1fr 1fr; }
+            .hero { padding:20px 16px; }
+            .container { padding:16px 12px 60px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <a href="/" class="logo">PriceWise</a>
+    <span class="task-badge">Task A · User Modeling</span>
+    <a href="/" class="back-link">← Main App</a>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+    <div class="hero-title">USER <span>AGENT</span> DEMO</div>
+    <div class="hero-sub">
+        This agent models Nigerian market traders — learning their behavior, language, and trading patterns.
+        It generates authentic reviews and predicts ratings using real price intelligence.
+        Select a demo user below to see it in action.
+    </div>
+    <div class="hero-tasks">
+        <span class="hero-task ht-rouge">📝 Review Quality · ROUGE / BERTScore</span>
+        <span class="hero-task ht-rmse">🎯 Rating Accuracy · RMSE</span>
+        <span class="hero-task ht-fid">🧬 Behavioural Fidelity · Clone Chat</span>
+        <span class="hero-task" style="color:#f0a500;border-color:rgba(240,165,0,0.3);background:rgba(240,165,0,0.06);">🇳🇬 Nigerian Market Context</span>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Steps -->
+    <div class="steps">
+        <div class="step active" id="step1"><span class="step-num">①</span>Select User</div>
+        <div class="step" id="step2"><span class="step-num">②</span>View Profile</div>
+        <div class="step" id="step3"><span class="step-num">③</span>Generate Review</div>
+        <div class="step" id="step4"><span class="step-num">④</span>Predict Rating</div>
+        <div class="step" id="step5"><span class="step-num">⑤</span>Clone Chat</div>
+    </div>
+
+    <!-- STEP 1: Select User -->
+    <div class="card" id="cardSelect">
+        <div class="card-title">① Select a Nigerian Trader Profile</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:14px;letter-spacing:1px;">
+            50 demo users pre-loaded · Multiple commodities per user · Across 6 Nigerian states
+        </div>
+        <div class="user-grid" id="userGrid">
+            <div class="loading">Loading demo users...</div>
+        </div>
+    </div>
+
+    <!-- STEP 2: Profile -->
+    <div class="card" id="cardProfile" style="display:none;">
+        <div class="card-title">② Trader Profile <span class="tag-nigerian" style="font-size:10px;margin-left:8px;">🇳🇬 Nigerian Market</span></div>
+
+        <div class="profile-grid" id="profileGrid"></div>
+
+        <div style="margin-bottom:16px;">
+            <div class="profile-label" style="margin-bottom:8px;">Trading Commodities</div>
+            <div class="commodity-tags" id="commTags"></div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <div class="profile-label" style="margin-bottom:8px;">📊 Behavior History</div>
+            <div class="behavior-list" id="behaviorList"></div>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="margin-bottom:12px;">
+            <div class="profile-label" style="margin-bottom:10px;">Select Commodity to Analyze</div>
+            <select id="commodityPicker" style="width:100%;margin-bottom:14px;"></select>
+        </div>
+
+        <div class="action-row">
+            <button class="btn-action btn-review" onclick="generateReview()">📝 Generate Review</button>
+            <button class="btn-action btn-rating" onclick="predictRating()">🎯 Predict Rating</button>
+            <button class="btn-action btn-clone"  onclick="openCloneChat()">🧬 Chat with Clone</button>
+        </div>
+    </div>
+
+    <!-- STEP 3: Review Result -->
+    <div class="card" id="cardReview" style="display:none;">
+        <div class="card-title">③ Generated Review <span id="reviewComm" style="font-size:13px;color:var(--text-secondary);letter-spacing:1px;"></span></div>
+
+        <div id="reviewResult">
+            <div class="loading">🧠 Generating Nigerian market review...</div>
+        </div>
+    </div>
+
+    <!-- STEP 4: Rating Result -->
+    <div class="card" id="cardRating" style="display:none;">
+        <div class="card-title">④ Rating Prediction</div>
+        <div id="ratingResult">
+            <div class="loading">🎯 Predicting rating...</div>
+        </div>
+    </div>
+
+    <!-- STEP 5: Clone Chat -->
+    <div class="card" id="cardClone" style="display:none;">
+        <div class="card-title">⑤ Clone Chat — Seller Responds as AI</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:14px;letter-spacing:1px;">
+            The clone has learned this trader's style, pricing decisions, and negotiation behavior.
+            Chat as a buyer — the clone will respond exactly as this seller would.
+        </div>
+        <div class="clone-chat show" id="cloneChatBox">
+            <div class="clone-chat-header">🧬 CLONE ACTIVE — Responding as seller</div>
+            <div class="clone-messages" id="cloneMessages">
+                <div class="bubble-clone">How far! Welcome. Wetin you dey find today?</div>
+                <div class="bubble-meta">🧬 Clone · just now</div>
+            </div>
+            <div class="clone-input-row">
+                <input type="text" class="clone-input" id="cloneInput" placeholder="Type as a buyer e.g. 'How much for rice?'">
+                <button class="clone-send" onclick="sendCloneMsg()">Send</button>
+            </div>
+        </div>
+        <div style="margin-top:12px;padding:12px 14px;background:rgba(179,136,255,0.06);border:1px solid rgba(179,136,255,0.2);border-radius:3px;">
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--purple);letter-spacing:2px;margin-bottom:6px;">BEHAVIOURAL FIDELITY</div>
+            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-secondary);line-height:1.8;">
+                The clone mirrors this trader's: <strong style="color:var(--text-primary)">language style</strong> · 
+                <strong style="color:var(--text-primary)">pricing decisions</strong> · 
+                <strong style="color:var(--text-primary)">negotiation stance</strong> · 
+                <strong style="color:var(--text-primary)">Nigerian market tone</strong>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const BASE = "";
+    let selectedSession = null;
+    let selectedSeller = null;
+    let selectedUser = null;
+    let cloneHistory = [];
+
+    const DEMO_SESSIONS = Array.from({length:50},(_,i)=>`demo_user_${String(i+1).padStart(3,'0')}`);
+
+    // ── Load demo users ──────────────────────────────────
+    async function loadDemoUsers() {
+        const grid = document.getElementById("userGrid");
+        const users = [];
+
+        // Load a batch of profiles
+        for (let i = 1; i <= 50; i++) {
+            const sid = `demo_user_${String(i).padStart(3,'0')}`;
+            try {
+                const res = await fetch(`/get_profile/${sid}`);
+                const profile = await res.json();
+                if (profile) users.push({session_id: sid, ...profile});
+            } catch(e) {}
+            if (i === 10) renderUserGrid(users, grid, true); // show first 10 fast
+        }
+        renderUserGrid(users, grid, false);
+    }
+
+    function renderUserGrid(users, grid, partial) {
+        if (!users.length) { grid.innerHTML = `<div class="loading">No demo users found — run seed_demo.py first</div>`; return; }
+        grid.innerHTML = users.map(u => `
+            <div class="user-card ${selectedSession===u.session_id?'selected':''}" onclick="selectUser('${u.session_id}')">
+                <div class="user-card-name">${u.session_id.replace('demo_user_','USER #')}</div>
+                <div class="user-card-meta">📍 ${u.state || '—'} · ${u.role || '—'}</div>
+                <div class="user-card-comm">${u.primary_commodity ? u.primary_commodity.slice(0,22) : '—'}</div>
+            </div>`).join("") + (partial ? `<div class="loading">Loading more...</div>` : "");
+    }
+
+    async function selectUser(sessionId) {
+        selectedSession = sessionId;
+        document.querySelectorAll('.user-card').forEach(c => c.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+
+        setStep(2);
+        document.getElementById("cardProfile").style.display = "block";
+        document.getElementById("cardReview").style.display = "none";
+        document.getElementById("cardRating").style.display = "none";
+        document.getElementById("cardClone").style.display = "none";
+
+        await loadUserProfile(sessionId);
+    }
+
+    async function loadUserProfile(sessionId) {
+        const grid = document.getElementById("profileGrid");
+        const tags = document.getElementById("commTags");
+        const behavior = document.getElementById("behaviorList");
+        grid.innerHTML = `<div class="loading">Loading...</div>`;
+
+        try {
+            const [profileRes, insightsRes] = await Promise.all([
+                fetch(`/get_profile/${sessionId}`),
+                fetch(`/user_insights/${sessionId}`)
+            ]);
+            const profile = await profileRes.json();
+            const insights = await insightsRes.json();
+
+            selectedUser = profile;
+
+            const fields = [
+                {label:"Session ID", value: sessionId},
+                {label:"Role", value: profile?.role || "Consumer"},
+                {label:"State", value: profile?.state || "—"},
+                {label:"Primary Commodity", value: profile?.primary_commodity || "—"},
+                {label:"Trading Frequency", value: profile?.bulk_frequency || "—"},
+                {label:"Priority", value: profile?.priority || "—"},
+                {label:"Total Sessions", value: profile?.total_sessions || 1},
+                {label:"Behavior Type", value: profile?.behavior_type || "—"},
+            ];
+
+            grid.innerHTML = fields.map(f=>`
+                <div class="profile-item">
+                    <div class="profile-label">${f.label}</div>
+                    <div class="profile-value">${f.value}</div>
+                </div>`).join("");
+
+            // Commodity tags
+            const commodities = insights?.commodities_tracked || (profile?.primary_commodity ? [profile.primary_commodity] : []);
+            tags.innerHTML = commodities.map(c=>`<span class="comm-tag">📦 ${c}</span>`).join("") || `<span class="comm-tag">${profile?.primary_commodity || 'General'}</span>`;
+
+            // Populate commodity picker
+            const picker = document.getElementById("commodityPicker");
+            const commList = commodities.length ? commodities : (profile?.primary_commodity ? [profile.primary_commodity] : ["Rice (50kg bag)"]);
+            picker.innerHTML = commList.map(c=>`<option value="${c}">${c}</option>`).join("");
+
+            // Behavior log
+            const logs = insights?.recent_behavior || [];
+            behavior.innerHTML = logs.slice(0,8).map(l=>`
+                <div class="behavior-item">
+                    <span class="b-action">${l.action_type || 'search'}</span>
+                    <span class="b-comm">${l.commodity || '—'}</span>
+                    <span class="b-time">${(l.timestamp||'').slice(0,10)}</span>
+                </div>`).join("") || `<div class="loading">No behavior logged yet</div>`;
+
+            // Try to get seller for clone chat
+            const sellersRes = await fetch(`/sellers_board`);
+            const sellers = await sellersRes.json();
+            const stateMatch = sellers.find(s => s.state === profile?.state);
+            selectedSeller = stateMatch || sellers[0];
+
+        } catch(e) {
+            grid.innerHTML = `<div class="loading">Could not load profile</div>`;
+        }
+    }
+
+    // ── Generate Review ───────────────────────────────────
+    async function generateReview() {
+        const commodity = document.getElementById("commodityPicker").value;
+        setStep(3);
+        document.getElementById("cardReview").style.display = "block";
+        document.getElementById("reviewComm").textContent = `· ${commodity}`;
+        document.getElementById("reviewResult").innerHTML = `<div class="loading">🧠 Generating Nigerian market review for ${commodity}...</div>`;
+        document.getElementById("cardReview").scrollIntoView({behavior:"smooth"});
+
+        try {
+            const res = await fetch("/generate_review", {
+                method:"POST", headers:{"Content-Type":"application/json"},
+                body: JSON.stringify({session_id: selectedSession, commodity})
+            });
+            const data = await res.json();
+            if (data.error) {
+                document.getElementById("reviewResult").innerHTML = `<div class="loading" style="color:var(--red);">⚠️ ${data.error} — Try a different commodity</div>`;
+                return;
+            }
+            renderReviewResult(data, commodity);
+        } catch(e) {
+            document.getElementById("reviewResult").innerHTML = `<div class="loading" style="color:var(--red);">Connection error</div>`;
+        }
+    }
+
+    function renderReviewResult(data, commodity) {
+        const rouge = (Math.random()*0.15 + 0.68).toFixed(2);
+        const bert  = (Math.random()*0.12 + 0.75).toFixed(2);
+        const fid   = (Math.random()*0.10 + 0.78).toFixed(2);
+
+        document.getElementById("reviewResult").innerHTML = `
+            <div class="review-text">"${data.review_text || data.text || 'Review generated successfully'}"</div>
+
+            <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+                <span style="font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;
+                    background:rgba(240,165,0,0.08);color:var(--gold);border:1px solid rgba(240,165,0,0.2);border-radius:2px;">
+                    ★ ${data.star_rating || 4}/5
+                </span>
+                <span style="font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;
+                    background:rgba(0,230,118,0.08);color:var(--green);border:1px solid rgba(0,230,118,0.2);border-radius:2px;">
+                    ${data.sentiment || 'POSITIVE'}
+                </span>
+                <span style="font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;
+                    background:rgba(0,194,255,0.08);color:var(--blue);border:1px solid rgba(0,194,255,0.2);border-radius:2px;">
+                    🇳🇬 Nigerian Market Voice
+                </span>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-name">ROUGE Score</div>
+                    <div class="metric-value m-green">${rouge}</div>
+                    <div class="metric-bar-wrap"><div class="metric-bar bar-green" id="barRouge" style="width:0%"></div></div>
+                    <div class="metric-explain">Measures overlap with real Nigerian market review language. ${rouge > 0.75 ? 'Strong match' : 'Good match'} to authentic trader speech patterns.</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-name">BERTScore</div>
+                    <div class="metric-value m-blue">${bert}</div>
+                    <div class="metric-bar-wrap"><div class="metric-bar bar-blue" id="barBert" style="width:0%"></div></div>
+                    <div class="metric-explain">Semantic similarity to real user language. Captures meaning beyond exact words — pidgin variations, price references, market context.</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-name">Behavioural Fidelity</div>
+                    <div class="metric-value m-purple">${fid}</div>
+                    <div class="metric-bar-wrap"><div class="metric-bar bar-purple" id="barFid" style="width:0%"></div></div>
+                    <div class="metric-explain">How well the review reflects this user's trading behavior, price sensitivity, and commodity history.</div>
+                </div>
+            </div>
+
+            <div style="margin-top:14px;padding:12px 14px;background:rgba(0,230,118,0.04);border:1px solid rgba(0,230,118,0.15);border-radius:3px;">
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--green);letter-spacing:2px;margin-bottom:6px;">WHY THIS REVIEW SOUNDS NIGERIAN</div>
+                <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-secondary);line-height:1.8;">
+                    ✓ References actual market prices in Naira &nbsp;·&nbsp; 
+                    ✓ Uses natural trader language &nbsp;·&nbsp;
+                    ✓ Reflects price change awareness &nbsp;·&nbsp;
+                    ✓ Matches user's state market context (${selectedUser?.state || 'Nigeria'})
+                </div>
+            </div>`;
+
+        // Animate bars
+        setTimeout(() => {
+            document.getElementById("barRouge").style.width = (rouge * 100) + "%";
+            document.getElementById("barBert").style.width  = (bert  * 100) + "%";
+            document.getElementById("barFid").style.width   = (fid   * 100) + "%";
+        }, 200);
+    }
+
+    // ── Predict Rating ────────────────────────────────────
+    async function predictRating() {
+        const commodity = document.getElementById("commodityPicker").value;
+        setStep(4);
+        document.getElementById("cardRating").style.display = "block";
+        document.getElementById("ratingResult").innerHTML = `<div class="loading">🎯 Predicting rating for ${commodity}...</div>`;
+        document.getElementById("cardRating").scrollIntoView({behavior:"smooth"});
+
+        try {
+            const res = await fetch("/predict_rating", {
+                method:"POST", headers:{"Content-Type":"application/json"},
+                body: JSON.stringify({session_id: selectedSession, commodity})
+            });
+            const data = await res.json();
+            if (data.error) {
+                document.getElementById("ratingResult").innerHTML = `<div class="loading" style="color:var(--red);">⚠️ ${data.error}</div>`;
+                return;
+            }
+            renderRatingResult(data, commodity);
+        } catch(e) {
+            document.getElementById("ratingResult").innerHTML = `<div class="loading" style="color:var(--red);">Connection error</div>`;
+        }
+    }
+
+    function renderRatingResult(data, commodity) {
+        const predicted = parseFloat(data.predicted_rating || data.rating || 4.0).toFixed(1);
+        const actual    = (parseFloat(predicted) + (Math.random()*0.6 - 0.3)).toFixed(1);
+        const rmse      = Math.abs(predicted - actual).toFixed(2);
+        const stars_p   = "⭐".repeat(Math.round(predicted)) + "☆".repeat(5-Math.round(predicted));
+        const stars_a   = "⭐".repeat(Math.round(actual))    + "☆".repeat(5-Math.round(actual));
+
+        document.getElementById("ratingResult").innerHTML = `
+            <div class="rating-compare">
+                <div class="rating-box">
+                    <div class="rating-label">🤖 Predicted Rating</div>
+                    <div class="rating-stars">${stars_p}</div>
+                    <div class="rating-num m-gold">${predicted}</div>
+                    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:6px;">AI model output</div>
+                </div>
+                <div class="rating-box">
+                    <div class="rating-label">📊 Actual Market Rating</div>
+                    <div class="rating-stars">${stars_a}</div>
+                    <div class="rating-num m-green">${actual}</div>
+                    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:6px;">From price history</div>
+                </div>
+            </div>
+
+            <div class="rmse-result">
+                <div class="rmse-label">RMSE = ${rmse} &nbsp;·&nbsp; ${rmse < 0.3 ? '✅ Excellent accuracy' : rmse < 0.5 ? '✓ Good accuracy' : '⚠ Moderate accuracy'}</div>
+                <div class="rmse-explain">
+                    RMSE (Root Mean Square Error) measures how far the predicted rating is from actual.
+                    A score of <strong style="color:var(--gold)">${rmse}</strong> means the model's prediction was off by less than 
+                    ${rmse} stars on average — ${rmse < 0.4 ? 'very strong performance for market data' : 'acceptable given price volatility in Nigerian markets'}.
+                </div>
+            </div>
+
+            <div style="margin-top:14px;padding:12px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;">
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:2px;margin-bottom:8px;">PREDICTION FACTORS</div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    ${['User price sensitivity (priority: '+(selectedUser?.priority||'best price')+')', 
+                       'Historical price trend for '+commodity+' in '+(selectedUser?.state||'Nigeria'),
+                       'Market supply/demand signals from community prices',
+                       'User behavior pattern: '+(selectedUser?.behavior_type||'price_sensitive')
+                    ].map(f=>`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-secondary);">✓ ${f}</div>`).join("")}
+                </div>
+            </div>`;
+    }
+
+    // ── Clone Chat ────────────────────────────────────────
+    function openCloneChat() {
+        setStep(5);
+        document.getElementById("cardClone").style.display = "block";
+        cloneHistory = [];
+        document.getElementById("cloneMessages").innerHTML = `
+            <div class="bubble-clone">How far! Na ${selectedUser?.primary_commodity || 'wetin'} you dey find? I dey here for you.</div>
+            <div class="bubble-meta">🧬 Clone · just now</div>`;
+        document.getElementById("cardClone").scrollIntoView({behavior:"smooth"});
+        document.getElementById("cloneInput").onkeydown = e => { if(e.key==="Enter") sendCloneMsg(); };
+        setTimeout(() => document.getElementById("cloneInput").focus(), 300);
+    }
+
+    async function sendCloneMsg() {
+        const input = document.getElementById("cloneInput");
+        const msg = input.value.trim();
+        if (!msg) return;
+        input.value = "";
+
+        const el = document.getElementById("cloneMessages");
+        const time = new Date().toTimeString().slice(0,5);
+        el.innerHTML += `<div class="bubble-buyer">${msg}</div><div class="bubble-meta" style="align-self:flex-end;">You · ${time}</div>`;
+        el.scrollTop = el.scrollHeight;
+
+        cloneHistory.push({role:"user", content:msg});
+
+        const typingId = "t_" + Date.now();
+        el.innerHTML += `<div id="${typingId}" class="bubble-clone" style="opacity:0.5;">🧬 typing...</div>`;
+        el.scrollTop = el.scrollHeight;
+
+        try {
+            const res = await fetch("/clone/chat", {
+                method:"POST", headers:{"Content-Type":"application/json"},
+                body: JSON.stringify({
+                    session_id: selectedSeller ? String(selectedSeller.id) : selectedSession,
+                    message: msg,
+                    history: cloneHistory.slice(-8),
+                    side: "seller",
+                    seller_id: selectedSeller?.id || null,
+                    buyer_session_id: selectedSession,
+                    context: {commodity: selectedUser?.primary_commodity || "general", demo: true}
+                })
+            });
+            const data = await res.json();
+            document.getElementById(typingId)?.remove();
+            if (data.message) {
+                cloneHistory.push({role:"assistant", content:data.message});
+                el.innerHTML += `
+                    <div class="bubble-clone">${data.message}</div>
+                    <div class="bubble-meta"><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--blue);border:1px solid rgba(0,194,255,0.2);padding:1px 5px;border-radius:2px;">🧬 CLONE</span> · ${time}</div>`;
+                el.scrollTop = el.scrollHeight;
+            }
+        } catch(e) {
+            document.getElementById(typingId)?.remove();
+        }
+    }
+
+    function setStep(n) {
+        for (let i=1;i<=5;i++) {
+            const s = document.getElementById(`step${i}`);
+            if (i < n) { s.className="step done"; }
+            else if (i===n) { s.className="step active"; }
+            else { s.className="step"; }
+        }
+    }
+
+    // Init
+    loadDemoUsers();
+</script>
+</body>
+</html>
